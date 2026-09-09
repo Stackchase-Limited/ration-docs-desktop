@@ -1,6 +1,6 @@
 [submodule "desktop-apps"]
 	path = desktop-apps
-	url = https://github.com/ONLYOFFICE/desktop-apps.git
+	url = https://lab02.ration.works/ration/ration-docs-desktop-apps.git
 [submodule "desktop-sdk"]
 	path = desktop-sdk
 	url = https://github.com/ONLYOFFICE/desktop-sdk.git
@@ -12,7 +12,7 @@
 	url = https://github.com/ONLYOFFICE/sdkjs.git
 [submodule "dictionaries"]
 	path = dictionaries
-	url = https://github.com/ONLYOFFICE/dictionaries.git
+	url = https://lab02.ration.works/ration/ration-docs-dictionaries.git
 [submodule "web-apps"]
 	path = web-apps
 	url = https://github.com/ONLYOFFICE/web-apps-pro.git
