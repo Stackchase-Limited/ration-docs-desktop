@@ -203,6 +203,7 @@ C++), `issue-2429-saveas-extension/` (real QtCore).
 | #2136 | A folder named with an emoji segfaulted the GTK file chooser: libgraphics exported its bundled FreeType 2.10.4 and cairo bound to it | `core` |
 | #2312 | The GUI waited on a CUPS connect timeout before appearing, for a printer name nothing reads | `desktop-apps` |
 | #2056 | A save reported success before the bytes reached the disk, so a power cut lost the document | `desktop-sdk` |
+| #2168 | The file dialog froze on Wayland: an in-process GTK chooser inside an XWayland Qt app | `desktop-apps` |
 
 Two defects in our own tooling were fixed alongside: CEF remote debugging was
 pinned to a hardcoded port 8080 that could not be overridden, and CEF failures
@@ -401,6 +402,46 @@ repair glyph indices already returned. And note the rebuild is reproducible but
 **not bit-identical**, so the first ship is a real change to the font engine
 rather than a like-for-like swap - it deserves a wider render smoke test than
 this issue alone.
+
+### #2421, #2189, #2347 - swept, and where each one stands
+
+**#2421 (clipboard freeze, then the wrong image pasted).** An unusually good report: a
+104 MB GIF copied, then a 1.9 MB JPG copied, and the subsequent pastes produce a mixture
+of both. The reporter's own diagnosis - an asynchronous clipboard write for the large
+image racing a later copy - is the right shape, but **the race is not in our code.** On
+desktop, `Button_Copy` hands straight to `window["AscDesktopEditor"]["Copy"]()`
+(`sdkjs/common/clipboard_base.js:1378`), and that binding is
+`CefV8Context::GetCurrentContext()->GetFrame()->Copy()`
+(`client_renderer_wrapper.cpp:1207`). There is nothing of ours between the keystroke and
+Chromium's clipboard, and we ship CEF as a prebuilt binary - the same wall as #2438.
+
+What *is* ours is the payload: sdkjs still builds the clipboard HTML on the copy event,
+and a 104 MB image base64'd into a DOM node is a plausible second source of the freeze.
+That part is worth measuring before anything else - `harness/` can time a copy of a large
+image in the real editor. Do not touch `clipboard_base.js` on suspicion; the async
+`navigator.clipboard` paths there are the *browser* route and are not what the desktop
+build takes.
+
+**#2189 (closes itself on startup, Windows).** Not actionable as filed - no error, no log,
+no dump, and the reporter says outright they have nothing more to give. Same position as
+#2145. It needs a Windows Error Reporting dump or a run with logging enabled before there
+is anything to read.
+
+**#2347 (unresponsive after a half-screen snap).** Left for now, and worth pairing with
+#2438 rather than reading on its own: that report established that a burst of
+`X11Window::OnConfigureEvent` -> `DispatchResize` -> `PostTask` is what finally blocks the
+main thread on a full wakeup pipe, and snapping is exactly a resize storm. We fixed the
+one resize defect that was ours (#2018, a synthetic event per intermediate size), so
+anyone picking this up should first check whether #2018's fix already changed it.
+
+### #2168 - a note on the flag that reads backwards
+
+`--xdg-desktop-portal=default` sounds like "use the default dialog". It does not: it
+selects the portal, exactly like the plain `--xdg-desktop-portal`, and the two differ only
+in whether the preference is stored - `=default` clears it, the plain form sets it. This
+predates the Wayland fix and was left alone deliberately; the test asserts the behaviour
+as it is. If it is ever changed, `--xdg-desktop-portal=default` meaning "GTK, and forget
+my preference" is the reading that matches the name.
 
 ### #2011, #2145 - swept this round, neither actionable yet
 

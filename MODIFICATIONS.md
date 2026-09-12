@@ -84,6 +84,13 @@ prompted by a public ONLYOFFICE report, but the code is ours.
   discarded the poster frame's real dimensions and hardcoded 50x50 pixels, so
   every video and audio insert became a 50x50 box. Upstream: #2310, #1509.
 
+- **The file dialog works on Wayland** (`desktop-apps`). `useGtkDialog()` returned true
+  for every Linux session, so the default everywhere was a GTK file chooser running
+  inside this process - a Qt application on XWayland. Under a Wayland compositor that
+  dialog never repaints and ignores input. Wayland sessions now default to the xdg
+  desktop portal, which runs the dialog in its own process; X11 is unchanged and both
+  command-line flags still decide. Upstream: #2168.
+
 - **A saved document reaches the disk before the save is called a success**
   (`desktop-sdk`). There was no durability barrier anywhere in the save path - no
   `fsync`, `fdatasync` or `FlushFileBuffers` in `core/DesktopEditor` or `desktop-sdk`,
@@ -202,3 +209,4 @@ prompted by a public ONLYOFFICE report, but the code is ours.
 - 2026-09-12: CUPS printer lookup moved off the startup path (#2312).
 - 2026-09-12: Saves are flushed to stable storage before being reported successful
   (#2056).
+- 2026-09-13: Wayland sessions use the desktop portal for file dialogs (#2168).
