@@ -84,6 +84,15 @@ prompted by a public ONLYOFFICE report, but the code is ours.
   discarded the poster frame's real dimensions and hardcoded 50x50 pixels, so
   every video and audio insert became a 50x50 box. Upstream: #2310, #1509.
 
+- **The default AutoFit for new text boxes can be chosen** (`sdkjs` + `web-apps`).
+  Dragging out a text box in the Presentation Editor stated a size that the editor
+  then discarded: the box was created with "resize shape to fit text", and the
+  extents check kept the drawn width but recomputed the height from the empty
+  content, collapsing it to one line before anything was typed. A new setting in
+  Advanced Settings chooses the mode a new box starts in, and the extents check now
+  runs only for "resize shape to fit text". Left as a preference rather than a change
+  of default: unset behaves exactly as before. Upstream: #2442 (feature request).
+
 - **Save As works again on KDE with the desktop portal** (`desktop-apps`). A format
   id with no entry in the file dialog's filter map produced an empty filter name -
   `QMap::value()` returns an empty `QString` for a missing key, silently - and
@@ -159,3 +168,5 @@ prompted by a public ONLYOFFICE report, but the code is ours.
   the file dialog (#2243).
 - 2026-09-12: Help images stored once instead of once per language; desktop payload
   1.8G -> 1.5G.
+- 2026-09-12: Default AutoFit for new presentation text boxes is now configurable
+  (#2442). First feature built on the fork rather than a bug fix.
