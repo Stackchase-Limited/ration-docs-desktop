@@ -15,17 +15,18 @@ Branch `ration/9.4-stability` in the superproject and in every submodule it
 bumps. Everything described in this file is committed; nothing is pushed, and no
 human has run a build with any of it.
 
-**Next task, already traced:** #2252 - a reference to a password-protected
-workbook shows `#REF!` because nothing ever asks for the password. See that entry
-below; it is the largest of the remaining items, four layers of plumbing across
-`desktop-sdk` and `core` before `sdkjs` can act, and the next steps are listed in
-order. The other traced-but-unfixed item is the caret half of #1868, which is
-blocked on a format change.
+**Next task:** nothing is traced and waiting. The two items left from earlier
+rounds are both blocked rather than untouched - the caret half of #1868 needs a
+format change, and the password *prompt* for #2252 needs a `web-apps` dialog that
+should wait until the localization diff below is settled. So the next round starts
+with fresh triage from the upstream tracker; prefer crashes and data loss, and
+prefer what can be tested without a compiler.
 
-**Unverified by a compiler:** the #2278 fix touches `desktop-sdk` C++ that cannot
-be built here - CEF headers are not set up. The extracted blocks compile and run,
-and the signatures they depend on were checked by hand, but no full build has
-seen them.
+**Unverified by a compiler:** #2278 and the #2252 plumbing both touch
+`desktop-sdk` C++ that cannot be built here - CEF headers are not set up. The
+extracted blocks compile and run under `clang++`, the signatures they depend on
+were checked by hand, and the JS shim embedded in `client_renderer_wrapper.cpp` was
+extracted and passed through `node --check`. No full build has seen any of it.
 
 **Owed before shipping:** integration smoke testing of the rebuilt
 `fonts.wasm`, which no test in `../fork-fix-tests/` can do. The list is at the
@@ -83,6 +84,7 @@ C++), `issue-2429-saveas-extension/` (real QtCore).
 | #2262 | macOS Control+click opened no context menu in any editor | `sdkjs` |
 | #1179, #402 | A keyboard layout's LANGID became the text language unvalidated; a custom or neutral layout set it to 8192 and spell check stopped | `sdkjs` |
 | #2278 | Copying a sheet to a new file opened the whole original workbook; the selected-sheets binary was written only for cloud-crypto documents | `desktop-sdk` |
+| #2252 | A reference to a password-protected workbook showed `#REF!`; no password could be supplied and the failure reason never reached JS | `desktop-sdk` + `sdkjs`, partial |
 
 Two defects in our own tooling were fixed alongside: CEF remote debugging was
 pinned to a hardcoded port 8080 that could not be overridden, and CEF failures
@@ -282,28 +284,41 @@ repair glyph indices already returned. And note the rebuild is reproducible but
 rather than a like-for-like swap - it deserves a wider render smoke test than
 this issue alone.
 
-### #2252 - a reference to a password-protected workbook shows #REF!
+### #2252 - plumbing done; an interactive prompt still has no home
 
-It is a defect, but not fixable in `core` or `sdkjs`. Refusing to read the
-encrypted workbook is right; refusing *without ever asking for the password* is
-not - Excel prompts.
+The chain now works end to end for the common case, and the layer that could not
+act can now act.
 
-`core` already has everything: x2t parses `<m_sPassword>`
-(`X2tConverter/src/cextracttools.h:796-799`), decrypts with it
-(`ASCConverters.cpp:1076-1092`), and has a distinct
-`AVS_FILEUTILS_ERROR_CONVERT_DRM`. `sdkjs` cannot act:
-`getLocalDesktopPromise` (`common/ExternalDataLoader.js:163-179`) maps any
-failure to `#REF!` because the `AscDesktopEditor.convertFile` shim takes no
-password (`client_renderer_wrapper.cpp:2682-2692`), `CConvertFileInEditor`
-(`desktop-sdk/.../fileconverter.h:1539-1560`) has no password member and never
-emits `<m_sPassword>`, and the completion message drops the error code
-(`cefview.cpp:1496-1508`) so JS cannot even tell "needs a password" from
-"missing file".
+`CConvertFileInEditor` has an `m_sPassword` and emits `<m_sPassword>`, which x2t
+has always parsed. `on_convert_local_file` carries x2t's exit code, and the
+renderer hands it to the JS callback, so `getLocalDesktopPromise` can finally tell
+an encrypted workbook from a missing one instead of mapping both to `#REF!`.
+`convertFile` takes a password as a fourth argument; retrying through the ordinary
+message keeps the converter stateless, so the `_convertFileSetPassword` binding the
+earlier note called for was not needed.
 
-**Next steps, in order:** add `m_sPassword` to `CConvertFileInEditor` and emit
-it; propagate `nError` on `on_convert_local_file` plus a
-`_convertFileSetPassword` binding that restarts the converter; only then raise
-`asc_onDocumentPassword` and retry from `ExternalDataLoader.js`.
+**Read the codes as exit codes.** `NSX2T::Convert` returns x2t's *process exit
+code*, and `getReturnErrorCode()`
+(`core/X2tConverter/src/cextracttools.cpp:72-75`) subtracts both bases from the
+`AVS_FILEUTILS_ERROR_*` value. So the numbers on this wire are the offsets: 80 is
+`..._CONVERT`, 89 `..._NEED_PARAMS`, 90 `..._CONVERT_DRM`, 91
+`..._CONVERT_PASSWORD` - which is why the codes already handled in `cefview.cpp`
+are the small 89/90/91 and not full HRESULTs. Anything written here that looks like
+a full `AVS_*` value is a bug.
+
+`ExternalDataLoader.js` retries once on 90 or 91 with the password the user already
+gave for this document. That fixes the common case outright - a workbook and the
+workbook it references are usually protected with the same password - and the
+password goes only to the local converter.
+
+**Still open: a prompt for a reference with its own password.** The main document's
+channel (`asc_onAdvancedOptions` with `c_oAscAdvancedOptionsID.DRM = 2`,
+`common/commonDefines.js:599`) is wired to reopening the main document, so it
+cannot be reused for one external reference. This needs a new event plus a dialog
+in `web-apps` - which is also where the undecided 158-file localization diff sits,
+so that should be settled first. Everything below that dialog is now in place: pass
+the collected password as `convertFile`'s fourth argument and the retry already
+works.
 
 The community patch attached to the issue is the right shape but not usable:
 its braced block orphans the code after an existing `return true;`, it sends a

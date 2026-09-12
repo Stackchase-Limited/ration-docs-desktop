@@ -84,6 +84,18 @@ prompted by a public ONLYOFFICE report, but the code is ours.
   discarded the poster frame's real dimensions and hardcoded 50x50 pixels, so
   every video and audio insert became a 50x50 box. Upstream: #2310, #1509.
 
+- **A password-protected workbook behind an external reference can now be read**
+  (`desktop-sdk` + `sdkjs`). A formula referencing an encrypted workbook showed
+  `#REF!` and nothing ever asked for a password. `CConvertFileInEditor` now has an
+  `m_sPassword` and emits `<m_sPassword>`, which x2t has always parsed;
+  `on_convert_local_file` carries x2t's exit code through to the JS callback, so
+  `ExternalDataLoader.js` can finally tell an encrypted file from a missing one
+  rather than mapping both to `#REF!`; and `convertFile` takes a password. On exit
+  code 90 or 91 the reference is retried once with the password the user already
+  gave for this document, which covers the common case of a workbook and its
+  reference sharing a password. Prompting for a password specific to the reference
+  still needs a `web-apps` dialog. Upstream: #2252.
+
 - **Copying a sheet to a new file copies that sheet, not the whole workbook**
   (`desktop-sdk`). The selected-sheets binary `sdkjs` hands to
   `AscDesktopEditor.OpenWorkbook` was written to disk only when
@@ -131,3 +143,5 @@ prompted by a public ONLYOFFICE report, but the code is ours.
   language (#1179, #402).
 - 2026-09-12: Copy-sheet-to-new-file writes its binary for local documents, not
   only cloud-crypto ones (#2278).
+- 2026-09-12: Password and converter error code plumbed between the editor and
+  x2t, so an encrypted external reference can be read (#2252, partial).
