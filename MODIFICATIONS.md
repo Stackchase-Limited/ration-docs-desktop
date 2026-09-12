@@ -84,6 +84,14 @@ prompted by a public ONLYOFFICE report, but the code is ours.
   discarded the poster frame's real dimensions and hardcoded 50x50 pixels, so
   every video and audio insert became a 50x50 box. Upstream: #2310, #1509.
 
+- **The window no longer waits on CUPS before it appears** (`desktop-apps`). Startup
+  set a `defaultPrinterName` JS variable from `QPrinterInfo::defaultPrinterName()`
+  before the main window was created. With no CUPS installed the client falls back to
+  connecting to localhost, where nothing answers and nothing refuses, so it polls in
+  250 ms steps until it gives up - with the whole application behind it. Resolved on
+  first use instead, at print time. Nothing reads the variable today in any case.
+  Upstream: #2312.
+
 - **A folder named with an emoji no longer crashes the file dialog** (`core`).
   `libgraphics` compiles FreeType 2.10.4 into itself and exported every `FT_*` symbol,
   so on Linux - where ELF resolves through one process-wide scope in load order -
@@ -181,3 +189,4 @@ prompted by a public ONLYOFFICE report, but the code is ours.
   (#2442). First feature built on the fork rather than a bug fix.
 - 2026-09-12: Bundled FreeType/harfbuzz/brotli symbols hidden inside `libgraphics`,
   fixing the emoji file-name crash (#2136).
+- 2026-09-12: CUPS printer lookup moved off the startup path (#2312).

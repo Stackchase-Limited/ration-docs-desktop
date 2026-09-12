@@ -15,10 +15,42 @@ Branch `ration/9.4-stability` in the superproject and in every submodule it
 bumps. Everything described in this file is committed; nothing is pushed, and no
 human has run a build with any of it.
 
-**Next task:** #2110, #2208 and #2148 are all traced below but **none is fixed**,
-and none should be attempted without being able to run the app. Each needs an
-observation this tree cannot produce by reading. The harness in `../../harness/`
-can now launch a real build and drive the editor over CDP, so that is the way in.
+**Next task:** continue the stability sweep. A pass over all 200 open issues for
+crash/freeze/data-loss titles turned up these, none yet triaged, roughly in order of
+how tractable they look from source:
+
+- **#2430** Spreadsheet fails to save/convert an XLSM with Form Control checkboxes -
+  a save that does not complete is the data-loss case that matters most.
+- **#2056** changes not saved on pressing save, and **#2230** changes disappearing
+  when switching document tabs. Both data loss; both need reproduction first.
+- **#2011** freeze copying all cells, **#2421** clipboard freeze on Linux/AppImage,
+  **#2168** file dialog unresponsive on Arch/GNOME, **#2347** window unresponsive in
+  a half-screen snap.
+- **#2145** crash in `libascdocumentscore.so` on Fedora 42 - worth reading straight
+  after #2136, since a symbol collision between a bundled and a system library is
+  exactly the shape that just caused #2136, and that fix may already cover it.
+- **#2189** the app closes itself on startup.
+
+**Not ours, and recorded so nobody re-derives it:** #2438 is an outstanding piece of
+diagnosis - the main thread deadlocks writing to Chromium's own `MessagePumpGlib`
+wakeup pipe once it fills, because the write end is blocking and the main thread is
+the only drainer. It is entirely inside Chromium, and we ship CEF as a prebuilt
+binary; there is no `message_pump_glib` source in this tree to patch. The reporter's
+own suggested fixes (open the write end `O_NONBLOCK`, or dedupe `ScheduleWork`) are
+upstream CEF/Chromium changes. What *is* ours is the precondition: the main thread
+running for seconds without returning to the pump during document load. Shortening
+that would make the pipe drain and is the only lever on our side.
+
+**Not reproducible from the report:** #2432, a macOS 9.4.0 crash applying a custom
+page size when printing a presentation. `KERN_PROTECTION_FAILURE` at a stack address
+on `CrBrowserMain` is a stack overflow, so infinite recursion somewhere in the print
+path - but the attached report is truncated before the frames, the maintainer could
+not reproduce it, and the promised video never arrived. Needs frames before anyone
+guesses at the print code.
+
+#2110, #2208 and #2148 remain traced below and unfixed; each needs an observation
+this tree cannot produce by reading. The harness in `../../harness/` can launch a
+real build and drive the editor over CDP, so that is the way in.
 
 The two items left from earlier rounds are both blocked rather than untouched - the
 caret half of #1868 needs a format change, and the password *prompt* for #2252
@@ -131,6 +163,7 @@ C++), `issue-2429-saveas-extension/` (real QtCore).
 | #2243 | An unmapped format id made a nameless filter, and the portal then refused the whole Save As dialog - the document could not be saved | `desktop-apps` |
 | #2442 | *Feature.* The default AutoFit for a new text box is now a setting, so a box keeps the size it was drawn at | `sdkjs` + `web-apps` |
 | #2136 | A folder named with an emoji segfaulted the GTK file chooser: libgraphics exported its bundled FreeType 2.10.4 and cairo bound to it | `core` |
+| #2312 | The GUI waited on a CUPS connect timeout before appearing, for a printer name nothing reads | `desktop-apps` |
 
 Two defects in our own tooling were fixed alongside: CEF remote debugging was
 pinned to a hardcoded port 8080 that could not be overridden, and CEF failures
