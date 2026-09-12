@@ -48,10 +48,32 @@ C++), `issue-2429-saveas-extension/` (real QtCore).
 | #2400 | A defined name in a VLOOKUP dependency threw and forced the document read-only | `sdkjs` |
 | #2383 | No `.~lock` marker on network shares, so a second user got no warning | `desktop-sdk` |
 | #2018 | A synthetic resize event per intermediate size, flashing the grid | `desktop-sdk` |
+| #963 | Ctrl+S with a cell in edit mode saved nothing and lost the typed value | `sdkjs` |
+| #1333, #1016, #1641 | A truthiness test discarded a print range of `0` (Active sheets) | `sdkjs` |
+| #2310, #1509 | An inserted video became a 50x50 box instead of its poster size | `sdkjs` |
+| #459 | Spanish spell-check worked only for es-ES; 20 other locales were unmapped | `sdkjs` + `dictionaries` |
+| #2262 | macOS Control+click opened no context menu in any editor | `sdkjs` |
 
 Two defects in our own tooling were fixed alongside: CEF remote debugging was
 pinned to a hardcoded port 8080 that could not be overridden, and CEF failures
 were silenced by `LOGSEVERITY_DISABLE` (both `desktop-sdk`).
+
+**Correction.** An earlier working note said the `codes` arrays in
+`dictionaries/<name>/<name>.json` are not read by the desktop build, on the
+grounds that `spellchecker.cpp` builds dictionary paths as
+`"/" + name + "/" + name + ".aff"` from the JS-supplied name. The path building
+is right but the conclusion was wrong. `CSpellChecker::Init`
+(`desktop-sdk/.../spellchecker.cpp:683-714`) keys `m_map_dictionaries_files` on
+`Dictionaries[i].m_lang` from `core/Common/3dParty/hunspell/autogen/records.h`,
+and `SetLanguage(nLang)` returns `NULL` for any LCID absent from it.
+`records.h` is generated from exactly those `codes` arrays by
+`core/Common/3dParty/hunspell/autogen/generate.py` (checked in, run by hand -
+no build step invokes it). So the `codes` arrays **are** the source of truth for
+the native side, and a locale needs to appear in three places to work:
+that JSON, the regenerated `records.h`, and the hand-maintained
+`spellcheckGetLanguages()` in `sdkjs/common/spell/spell.js`. The #459 test
+asserts the JS map and the generated table agree, since a mismatch is invisible
+at runtime.
 
 ## Root-caused, not fixed
 
@@ -171,6 +193,46 @@ repair glyph indices already returned. And note the rebuild is reproducible but
 **not bit-identical**, so the first ship is a real change to the font engine
 rather than a like-for-like swap - it deserves a wider render smoke test than
 this issue alone.
+
+### #1179 and #402 - the keyboard layout's LANGID is adopted as the text language unvalidated
+
+Both reporters see the same literal symptom: the spell-check language becomes
+**8192** as soon as they type, and nothing is underlined. #1179 is on a custom
+Microsoft Keyboard Layout Creator layout; #402 on a "Russian (Ukraine)" layout.
+8192 is `0x2000`, whose primary-language field (`& 0x3FF`) is 0 - `LANG_NEUTRAL`.
+It is not a language at all, so no dictionary can match it.
+
+The whole chain is unvalidated, end to end:
+
+1. `CAscApplicationManager::GetPlatformKeyboardLayout()` returns the OS LANGID.
+2. `CAscKeyboardChecker::Check` (`desktop-sdk/.../keyboardchecker.cpp:57-81`)
+   stores it and calls `Send` **before** the big `switch` on known languages -
+   that switch only builds a log string (`sLang`), it gates nothing.
+3. `Send` (`:265-273`) puts the raw value on the event.
+4. `cefview.cpp:7173-7181` forwards it as the `keyboard_layout` process message.
+5. `client_renderer_wrapper.cpp:6243-6247` assigns it verbatim:
+   `window["asc_current_keyboard_layout"] = <value>;`
+6. `asc_getKeyboardLanguage` returns it as-is (`sdkjs/cell/api.js:6042-6047`,
+   `word/api.js:7173`, `slide/api.js:6859`), and `asc_getInputLanguage`
+   (`cell/api.js:6048`) prefers it over every other source.
+
+So any LANGID the OS reports - including a custom layout's, or a neutral one -
+becomes the text language of whatever is typed.
+
+**Next step:** validate in `asc_getKeyboardLanguage` rather than deeper in the
+C++, since all three editors share that one accessor and the JS side already
+has both authorities: `AscCommon.spellcheckGetLanguages()` (the LCID ->
+dictionary map) and `g_aLcidNameIdArray` in `common/commonDefines.js`. Return
+`-1` for a LANGID in neither, which makes `asc_getInputLanguage` fall through to
+the document's own language instead of overwriting it - exactly what #1179 asks
+for ("manually changing it should make it so it does not change"). Check what
+`GetPlatformKeyboardLayout` returns on each platform first;
+`mac_keyboardlayout.h:45` returns a `uint16_t`.
+
+**#402 cannot be fixed by adding a locale.** There is no `ru-UA` LCID anywhere
+in `g_aLcidNameIdArray` - Russian has only `ru-RU` (1049) and `ru-MO` (2073) -
+so no dictionary mapping can satisfy it. It is this defect, not a missing
+dictionary.
 
 ### #2278 - copying a sheet to a new file opens the whole original instead
 
@@ -479,22 +541,16 @@ Not localised. The slide visibility flag exists as `nullable_bool show` in
 export. Next step: trace `show` through the binary presentation format into the
 PDF writer, and check whether the editor's export path filters slides at all.
 
-### #1641 - cannot export a selected spreadsheet range to PDF
+### #1641 - cannot export a selected spreadsheet range to PDF  [FIXED]
 
-The `web-apps` half is correct in our baseline. Running the real
-`resultPrintSettings` and `querySavePrintSettings` against stubs shows all three
-range choices propagating on both the print and the PDF path: Active sheets
-gives `printType=0, activeSheetsArray=[1]`, Entire workbook `printType=1, null`,
-Selection `printType=2, [1]`. Examined
-`apps/spreadsheeteditor/main/app/controller/Print.js:175, 298-320, 435, 479, 540`,
-`view/PrintSettings.js:90-103, 324-330`, `controller/LeftMenu.js:375-421`
-(PDF always routes through the download-settings dialog), and ruled out a
-falsy-zero hazard in `ComboBox.js:712-748`. The consumer side also branches
-correctly at `sdkjs/cell/view/WorkbookView.js:4173-4199`.
-**Next step:** instrument `sdkjs/cell/api.js` `asc_DownloadAs` for
-`c_oAscFileType.PDF` in a built app to confirm `calcPagesPrint` is reached with
-`adjustPrint`, and check the desktop-local route at
-`sdkjs/cell/Local/api.js:291`. This is an sdkjs question, not a web-apps one.
+Resolved by the falsy-zero fix in `sdkjs/cell/api.js`; see the Fixed table.
+The next step recorded here - "this is an sdkjs question, not a web-apps one" -
+was right. `web-apps` sends `printType` correctly for all three range choices;
+`asc_Print`/`asc_DownloadAs` then dropped it, because "Active sheets" is
+`c_oAscPrintType.ActiveSheets === 0` and the option was read under
+`if (_options["adjustOptions"]["printType"])`. A chosen range of 0 was
+indistinguishable from "not supplied", so it silently fell back to Entire
+workbook. Same root cause as #1333 and #1016.
 
 ### #1916 - the menu in the formula bar is not scaled
 

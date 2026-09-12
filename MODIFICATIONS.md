@@ -26,6 +26,15 @@ prompted by a public ONLYOFFICE report, but the code is ours.
   wordlists built from open corpora.
 - Combining-mark input accepted, not only precomposed spellings.
 - English words that had leaked into the Yoruba wordlist removed.
+- **Every Spanish locale now reaches the `es_ES` dictionary** (`dictionaries`,
+  `core`, `sdkjs`). Only `es-ES` (3082) was mapped, so text tagged Spanish
+  (Mexico), (Colombia), (Argentina) and 17 others was never checked at all. A
+  locale has to appear in three places to work - the `codes` array in
+  `dictionaries/<name>/<name>.json`, the `records.h` generated from it by
+  `core/Common/3dParty/hunspell/autogen/generate.py` (the table
+  `CSpellChecker::SetLanguage()` keys on), and the hand-maintained
+  `spellcheckGetLanguages()` in `sdkjs` - and all three were updated together,
+  68 entries to 89. `ru-MO` (2073) was unmapped the same way. Upstream: #459.
 
 ### Stability: crash and data-loss fixes
 
@@ -44,12 +53,44 @@ prompted by a public ONLYOFFICE report, but the code is ours.
   escaped to `window.onerror`, which reports `EditingError` and forces view
   mode - leaving the document uneditable rather than merely unformatted. A
   throwing rule now degrades to "no formatting" and is logged once per rule.
-  Containment only; the underlying exception in upstream #2418 is still
-  unidentified.
+  The underlying exception in #2418 was subsequently found and fixed too: the
+  `Asc.ECfType.expression` branch built its formula parent inside a nested
+  function invoked bare, so under `"use strict"` `this` was `undefined` and the
+  parent carried no worksheet. The containment does not cover that path - the
+  throw is on the dependency-graph notify path inside `calcTree`, outside the
+  wrapped style evaluation - and was kept for the path it does guard.
+  Upstream: #2418.
 
 - **Home key in wrapped cell text** (`sdkjs`). Soft-wrapped lines share a
   character index, and `kBeginOfLine` did not disambiguate it, so Home moved the
   caret to the end of the previous visual line. Upstream: #2082.
+
+- **Saving with a cell still in edit mode no longer discards the edit**
+  (`sdkjs`). `asc_Save` asked whether the document needed saving *before*
+  calling `_prepareSave`, which is what closes the cell editor - and the text in
+  that editor only becomes a history change when it closes. On an otherwise
+  unmodified workbook the test therefore saw no changes, abandoned the save, and
+  left the typed value uncommitted, with no error. The close now happens before
+  the test. Upstream: #963.
+
+- **A chosen print range of "Active sheets" is no longer discarded** (`sdkjs`).
+  `Asc.c_oAscPrintType.ActiveSheets` is `0`, and the print options were read
+  under `if (_options["adjustOptions"]["printType"])`, so the chosen range was
+  indistinguishable from "not supplied" and silently became Entire workbook.
+  `startPageIndex`/`endPageIndex` had the same hazard, page 0 being the first
+  page. Upstream: #1333, #1016, #1641.
+
+- **An inserted video keeps its own size** (`sdkjs`). `addMediaCallback`
+  discarded the poster frame's real dimensions and hardcoded 50x50 pixels, so
+  every video and audio insert became a 50x50 box. Upstream: #2310, #1509.
+
+- **macOS Control+click opens the context menu** (`sdkjs`). The editors suppress
+  the DOM `contextmenu` event and raise their own menu from `Button === 2`, but
+  `getMouseButton` returned the raw `e.button`, so the macOS secondary-click
+  gesture arrived as a left click - and with Control still reported as a held
+  modifier, it altered the selection instead. Normalised in `getMouseButton`,
+  narrowly: macOS only, and `ctrlKey` without `metaKey`, so Cmd+click and
+  Ctrl+click on other platforms are unchanged. Upstream: #2262.
 
 ## Modification history
 
@@ -60,3 +101,6 @@ prompted by a public ONLYOFFICE report, but the code is ours.
   submodule checkouts pinned.
 - 2026-09-12: Stability round - silent local-save failure, conditional
   formatting crash containment, Home key in wrapped cells.
+- 2026-09-12: Second stability round - save with a cell in edit mode, print
+  range falsy-zero, inserted video size, Spanish spell-check locales, macOS
+  Control+click. 8 upstream issues from 5 fixes; see `UPSTREAM_TRIAGE.md`.
