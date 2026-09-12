@@ -15,10 +15,24 @@
  */
 var out = {steps: [], errors: [], ok: false};
 
+// The result travels back over CDP by value, so a step must never record a live
+// sdkjs model object: those are deeply cyclic and CDP answers "Object reference
+// chain is too long" instead of returning anything at all. Record only what
+// survives a JSON round-trip.
+function reportable(v) {
+	if (v === undefined || v === null) return null;
+	if (typeof v !== 'object') return v;
+	try {
+		return JSON.parse(JSON.stringify(v));
+	} catch (e) {
+		return '[not serialisable: ' + (v.constructor && v.constructor.name || typeof v) + ']';
+	}
+}
+
 function step(name, fn) {
 	try {
 		var v = fn();
-		out.steps.push({step: name, ok: true, value: v === undefined ? null : v});
+		out.steps.push({step: name, ok: true, value: reportable(v)});
 		return v;
 	} catch (e) {
 		out.steps.push({step: name, ok: false});
@@ -38,8 +52,8 @@ if (!api.canEdit || !api.canEdit()) {
 	return out;
 }
 
-var wsModel = step('get active worksheet', function () { return api.wbModel.getActiveWs(); }) &&
-	api.wbModel.getActiveWs();
+step('get active worksheet', function () { return api.wbModel.getActiveWs().sName; });
+var wsModel = api.wbModel.getActiveWs();
 
 function setCell(ref, value) {
 	AscCommon.History.Create_NewPoint();
@@ -60,21 +74,31 @@ step('add rule =OR(C2<A2,C2>B2) on C2', function () {
 	formula.Text = 'OR(C2<A2,C2>B2)';
 	rule.aRuleElements = [formula];
 
-	// A dxf (the red fill in the report) is not needed to trigger evaluation,
-	// so attach one only if a preset makes it easy.
-	try {
-		var presets = api.asc_getCFPresets && api.asc_getCFPresets();
-		if (presets) {
-			for (var k in presets) {
-				var list = presets[k];
-				if (list && list.length && list[0] && list[0].dxf) { rule.dxf = list[0].dxf; break; }
-			}
-		}
-	} catch (e) { /* formatting is cosmetic here */ }
+	// The dxf is NOT cosmetic. _updateConditionalFormatting bails out with
+	// `if (!oRule.dxf) { continue; }` before it ever reaches doExpression, so a
+	// rule without one is never evaluated and the bug cannot appear. Build it
+	// the way FormatRulesEditDlg.onFormatsSelect does - an asc_CellXfs with the
+	// report's red fill.
+	var xfs = new Asc.asc_CellXfs();
+	xfs.asc_setFillColor(new Asc.asc_CColor(255, 199, 206));
+	rule.asc_setDxf(xfs);
 
-	api.asc_setCF([rule], null, null);
-	return {rules: wsModel.aConditionalFormattingRules ? wsModel.aConditionalFormattingRules.length : 'n/a',
-	        dxf: !!rule.dxf};
+	// Exactly two arguments. WorksheetView.setCF branches on
+	// `presetId !== undefined`, so passing an explicit null third argument sends
+	// the call down the preset path (generateCFRuleFromPreset(null)) and our rule
+	// is silently dropped - the rule list stays empty and nothing evaluates.
+	api.asc_setCF([rule], null);
+
+	// aConditionalFormattingRules is a map keyed by rule id, not an array.
+	var installed = [];
+	if (wsModel.isConditionalFormattingRules()) {
+		wsModel.forEachConditionalFormattingRules(function (r) {
+			installed.push({id: r.id, type: r.type, priority: r.priority,
+			                text: r.aRuleElements && r.aRuleElements[0] && r.aRuleElements[0].Text,
+			                ranges: (r.ranges || []).map(function (x) { return x.getName ? x.getName() : String(x); })});
+		});
+	}
+	return {installedRules: installed, dxf: !!rule.dxf};
 });
 
 // Step 9: enter a value in the referenced cell.
@@ -110,6 +134,25 @@ step('force a redraw', function () {
 	var wsView = api.wb && api.wb.getWorksheet && api.wb.getWorksheet();
 	if (wsView && wsView.draw) wsView.draw();
 	else if (api.asc_Resize) api.asc_Resize();
+});
+
+// The report's step 9 in its true order. Only now has the rule's formula been
+// parsed and registered in the dependency graph (CFormulaCF.init ->
+// buildDependencies, reached from doExpression's compareFunction). Editing a
+// cell the formula refers to is therefore the first thing that can make the
+// dependency graph call back into the rule's formula parent.
+step('edit C2 again, now that the rule has been evaluated (report step 9)', function () {
+	setCell('C2', 25);
+	wsModel.workbook.dependencyFormulas.calcTree();
+	var style = wsModel.sheetMergedStyles.getStyle(null, 1, 2, wsModel);
+	return {conditionalStyles: style && style.conditional ? style.conditional.length : 0};
+});
+
+step('edit A2, a cell the rule formula references', function () {
+	setCell('A2', 30);
+	wsModel.workbook.dependencyFormulas.calcTree();
+	var style = wsModel.sheetMergedStyles.getStyle(null, 1, 2, wsModel);
+	return {conditionalStyles: style && style.conditional ? style.conditional.length : 0};
 });
 
 out.ok = out.errors.length === 0;

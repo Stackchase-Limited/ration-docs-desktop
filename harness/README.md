@@ -52,51 +52,104 @@ independent of when the manager happens to read its settings.
 Both need a build from this tree. On a build without them, use F1, or free up
 port 8080.
 
-### Verified, and what is still missing
+### Verified
 
-Verified on 2026-09-12 against a build from this tree: launching with
-`--remote-debugging-port=9222` prints
+Verified on 2026-09-12 against a packaged build from this tree, end to end:
+`/json` lists an editor page target, `editor-eval.js` evaluates inside it, and
+`repros/2418-conditional-formatting.js` produced the stack trace behind #2418.
 
+Getting there turned up three things that all look like a broken build and are
+not. Each is now handled by a script, but they are worth knowing:
+
+**The "no window at all" app was never a framework mismatch.** An earlier
+attempt swapped a fresh `ascdocumentscore.framework` into an existing bundle and
+got an app that launched with no window, which was read as an old-binary /
+new-framework mismatch. It is not. `AppDelegate.mm`'s
+`applicationDidFinishLaunching` calls `PFMoveToApplicationsFolderIfNecessary`,
+and `PFMoveApplication.m` puts up a **modal** "Move to Applications folder?"
+alert whenever the bundle is not in an Applications folder - which a bundle in
+`desktop-apps/build` never is. Launched from a terminal the alert usually never
+gets drawn, so the app sits there alive, foreground, with no window and no CEF
+browser. `sample <pid>` shows it plainly, parked in `-[NSAlert runModal]` under
+`PFMoveToApplicationsFolderIfNecessary`. LetsMove's own suppression key gets
+past it, and `run-editor.sh` sets it:
+
+```sh
+defaults write com.stackchase.rationdocs moveToApplicationsFolderAlertSuppress -bool YES
 ```
-DevTools listening on ws://127.0.0.1:9222/devtools/browser/<id>
-```
 
-and `http://127.0.0.1:9222/json/version` answers, reporting
-`AscDesktopEditor/9.4.0.0`. Before the fix nothing bound any port.
+**A document must arrive as an Apple Event, not as argv.** `open -a <app>
+<file>` opens an editor; a path on the command line does not - the app starts,
+shows the start window, and never creates an editor. `run-editor.sh` launches
+bare and then sends the document.
 
-What is **not** yet demonstrated is attaching to an editor *page*. `/json`
-reports zero targets, because a CEF browser only exists once a document is
-open - the start window is native. Two things stand in the way, neither of them
-about the port:
+**The start window is CEF, not native.** This file used to say the opposite. On
+the packaged build `/json` lists `login/index.html` as soon as the app is up,
+before any document exists. So an empty `/json` means the app has not finished
+starting (or is blocked on the alert above) - it does not mean "no document
+open".
 
-- Swapping a freshly built `ascdocumentscore.framework` into an existing app
-  bundle is not enough to get a usable app: the resulting mixture of an older
-  app binary and a new framework launched with no window at all. Testing pages
-  needs a properly packaged build from `desktop-apps/macos`, not an injected
-  framework.
-- In that broken bundle neither a file path on the command line nor an
-  `open -a <app> <file>` Apple Event opened a document. Which of those works on
-  a properly packaged build is untested.
-
-So `editor-eval.js` and `repros/` are ready and the transport is proven, but
-running a repro end to end still needs a packaged app with a document open.
+One more layout fact matters for scripting: the page target is web-apps'
+*wrapper*, `apps/api/documents/index.html`. The editor - and with it `Asc`,
+`AscCommon`, `AscCommonExcel` and `Asc.editor` - lives in a child iframe
+(`apps/spreadsheeteditor/main/index.html` and friends) which CEF does not expose
+as a target of its own. `editor-eval.js` reaches into it; see below.
 
 ## Setup
 
 ```sh
+harness/bin/build-app.sh                      # package a launchable .app
 harness/bin/enable-debug.sh                   # once; writes the flag into settings.xml
 harness/bin/blank-doc.sh xlsx /tmp/blank.xlsx # the app's "new document" flow is not scriptable
-harness/bin/run-editor.sh /tmp/blank.xlsx     # launches the app, waits for CDP
+harness/bin/run-editor.sh /tmp/blank.xlsx     # launches, sends the doc, waits for a page target
 ```
+
+### Packaging the app
+
+`build-app.sh` drives the `ONLYOFFICE-arm` target of
+`desktop-apps/macos/ONLYOFFICE.xcodeproj` and writes to `desktop-apps/build`,
+which is where `lib/env.sh` looks for `RD_APP`. Signing is ad-hoc, because a dev
+machine has no identities; the bundle is for local use only.
+
+Only the Xcode target does the packaging properly: its phases copy the CEF
+framework and the three `editors_helper` apps in, rewrite Chromium's load path
+from `@executable_path` to `@rpath`, stage `Vendor/ONLYOFFICE` (gitignored) into
+`Resources`, and re-sign everything in dependency order. Dropping a framework
+into an existing bundle does none of that.
+
+The payload is whatever `build_tools` produced, by default
+`build_tools/out/mac_arm64/onlyoffice/desktopeditors`. Two knobs:
+
+| Variable | Meaning |
+|---|---|
+| `RD_PAYLOAD` | payload to package (default: `build_tools/out/mac_arm64/...`) |
+| `RD_BUILD_DIR` | where the `.app` lands (default: `desktop-apps/build`) |
+| `RD_TARGET` | Xcode target (default: `ONLYOFFICE-arm`) |
+
+`RD_PAYLOAD` reaches the project's script phases as `RD_CORE_PAYLOAD`, a
+`desktop-apps` change made for this: the phases had the `build_tools/out` path
+hardcoded. **If someone else is running a `build_tools` build, that directory is
+rewritten underneath you mid-package.** Take an APFS clone first - it is
+near-instant and costs no disk - and package the clone:
+
+```sh
+cp -Rc build_tools/out/mac_arm64/onlyoffice/desktopeditors /tmp/payload
+RD_PAYLOAD=/tmp/payload harness/bin/build-app.sh
+```
+
+The target's "Increment Build Number" phase edits the *tracked*
+`Info.plist` on every Release build; `build-app.sh` puts `CFBundleVersion` back
+afterwards, so a harness build leaves no diff.
 
 The harness asks for port 9222 rather than the app's built-in 8080, which
 collides with common dev servers. Override with `RD_PORT`. `run-editor.sh`
 distinguishes "debugging is off" from "someone else owns that port", because
 they look identical from the outside.
 
-`run-editor.sh` takes an optional document path. The app is a
-`SingleApplication`, so a second launch forwards arguments to the running
-instance - quit it first if it was started without debugging.
+`run-editor.sh` takes an optional document path and sends it with `open -a`
+once CDP answers, then waits for an `apps/api/documents` page target and fails
+loudly if none appears. It will not relaunch over a running instance: quit the
+app first if it was started without debugging.
 
 To run **our** editor code rather than the shipped bundle:
 
@@ -118,6 +171,13 @@ node --experimental-websocket harness/bin/editor-eval.js --file harness/repros/<
 
 Node 20 needs `--experimental-websocket`; Node 22+ has `WebSocket` built in.
 
+Both `--expr` and `--file` run in the **editor iframe**, not the page target
+`editor-eval.js` attaches to: it walks the wrapper page's iframes for one with
+`Asc.editor` and evaluates through that window's own `eval`, so free names like
+`AscCommonExcel` resolve in the scope where they actually exist. `--top`
+evaluates in the wrapper page instead. Without this, everything reports
+`Asc.editor missing`.
+
 `editor-eval.js` subscribes to `Runtime.exceptionThrown`, console errors and
 `Log.entryAdded` before evaluating, and exits non-zero if anything went
 uncaught. **An uncaught exception is the thing that matters**: `apiBase.js`
@@ -128,6 +188,11 @@ that only appear on a later render.
 
 Script files are evaluated wrapped in a function, so they can `return` a value;
 it comes back as JSON.
+
+The result crosses CDP **by value**, so never return a live sdkjs model object.
+They are deeply cyclic and CDP answers `Object reference chain is too long`
+instead of returning anything at all - the script looks like it failed when it
+ran fine. Return names, counts and plain objects.
 
 ## Converting without the editor
 
@@ -148,12 +213,46 @@ works in a test loop.
 
 ## Repros
 
-| File | Upstream issue |
-|---|---|
-| `repros/2418-conditional-formatting.js` | #2418 - formula-based conditional formatting rule makes the editor unusable |
+| File | Upstream issue | Status |
+|---|---|---|
+| `repros/2418-conditional-formatting.js` | #2418 - formula-based conditional formatting rule makes the editor unusable | reproduces; root cause found |
 
 A repro should reproduce the reported steps *and* then poke the suspected code
 path directly, so the failure is attributable rather than just observable.
+
+### What #2418 turned out to be
+
+```
+TypeError: Cannot read properties of undefined (reading 'setDirtyConditionalFormatting')
+    at CConditionalFormattingFormulaParent.onFormulaEvent (sdk-all.js:432648)
+    at parserFormula.notify (sdk-all.js:305079)
+    at DependencyGraph._broadcastNotifyListeners (sdk-all.js:392099)
+    at DependencyGraph._broadcastCellsByCells (sdk-all.js:391703)
+    at DependencyGraph._broadcastCells (sdk-all.js:391314)
+    at DependencyGraph.calcTree (sdk-all.js:391019)
+    at Workbook.sortDependency (sdk-all.js:394390)
+    at Cell.setValue (sdk-all.js:404873)
+```
+
+`cell/model/Workbook.js` builds the rule's formula parent inside
+`_updateConditionalFormatting` as
+`new AscCommonExcel.CConditionalFormattingFormulaParent(this, oRule, true)` -
+but for `Asc.ECfType.expression` that line sits in the local `doExpression`,
+which is invoked as a bare `doExpression()`. The file is `"use strict"`, so
+`this` is `undefined` and the parent is built with **no worksheet**. Every other
+branch of the same `switch` writes that `this` straight in the method body,
+where it really is the worksheet, which is why only formula-based rules break.
+
+Then `onFormulaEvent` does `this.ws.setDirtyConditionalFormatting(...)` on the
+`Change` notification, and editing any cell the rule's formula refers to throws.
+Confirmed at runtime: the installed rule's `aRuleElements[0]._f.parent.ws` is
+`undefined`. Left uncaught it reaches `apiBase.js`, becomes `EditingError` and
+forces view mode - measured, `canEdit()` goes `true` -> `false`.
+
+This is why the containment in `getSafeCompareFunction` did not cure it. The
+throw is not on the compare/render path it wraps; it is on the dependency-graph
+notify path, which nothing guards. `doExpression.call(this)` - or using the
+method's existing `t` - is the actual fix.
 
 ## Limits
 
@@ -164,3 +263,15 @@ path directly, so the failure is attributable rather than just observable.
   `desktop-apps` are C++ and still need a full build.
 - Injection modifies an installed app bundle in place. `--restore` undoes it.
 - `enable-debug.sh --off` puts `settings.xml` back.
+- `build-app.sh` packages only; it does **not** build `core`/`sdkjs`. Run
+  `build_tools` yourself first, or point `RD_PAYLOAD` at a payload someone else
+  built.
+- `build-app.sh` is macOS/arm64 only in practice. The `ONLYOFFICE-x86_64` and
+  `ONLYOFFICE-v8` targets take `RD_CORE_PAYLOAD` too, but neither was built or
+  launched here, so treat `RD_TARGET` as untested.
+- The bundle is ad-hoc signed. Good enough to run and to load CEF; not
+  notarized, not distributable.
+- `run-editor.sh` writes `moveToApplicationsFolderAlertSuppress` into the user's
+  defaults for the app's bundle id, once. That is a real change to the user's
+  environment, not a temporary one; `defaults delete <bundle-id>
+  moveToApplicationsFolderAlertSuppress` undoes it.

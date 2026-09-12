@@ -47,9 +47,12 @@ async function waitForPage(port, match, timeoutMs) {
 			if (hit) return hit;
 			if (pages.length) last = 'pages open but none match "' + match + '": ' + pages.map((p) => p.url).join(', ');
 			else {
-				// The endpoint is up but the app has no browser yet: usually no
-				// document is open, since the start window is native rather than CEF.
-				last = 'CDP is up but reports no pages - is a document open in the editor?';
+				// The endpoint is up but no browser exists yet. The start window
+				// is itself a CEF page (login/index.html), so an empty list means
+				// the app has not finished starting - most often it is parked on
+				// PFMoveApplication's invisible modal alert. See the README.
+				last = 'CDP is up but reports no pages at all - not even the start window. ' +
+					'The app is probably blocked before it creates a browser (see README: PFMoveApplication)';
 			}
 		} catch (e) {
 			last = e.message;
