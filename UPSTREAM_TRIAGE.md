@@ -39,6 +39,8 @@ C++), `issue-2429-saveas-extension/` (real QtCore).
 | #2129 | "Install plugin manually" opened the marketplace page instead of a picker | `onlyoffice.github.io` |
 | #1482 | DATE fields never refreshed on open; auto date/time mixed local date with UTC hour | `sdkjs` |
 | #1948 | A custom theme's colours lost to the built-in palette on specificity and source order | `web-apps` |
+| #2222 | A `+` in the install path decoded to a space, so the font wasm never loaded | `desktop-sdk` |
+| #2266 | GTK dialogs were never told the app's theme, so Save As stayed light | `desktop-apps` |
 
 Two defects in our own tooling were fixed alongside: CEF remote debugging was
 pinned to a hardcoded port 8080 that could not be overridden, and CEF failures
@@ -150,6 +152,23 @@ way of saving that state: `History.Have_Changes` returns false in view mode
 (`word/Editor/History.js:898`), `_saveCheck` excludes it (`word/api.js:2842`),
 and `getFileAsFromChanges` exits and re-enters preview around serialization
 (`common/apiBase.js:4946`). Reported against 7.4.1.
+
+### #1596 - the window has no minimum size
+
+Fixed upstream by `400efc872` ("[win-linux] fix bug 58444", Nov 2024), which is
+in our tree and is later than the reporter's 8.0.1.31 - and 58444 is the
+internal number the maintainer cited on the issue.
+`desktop-apps/win-linux/src/windows/cwindowbase.h:39-40` now defines 520x480,
+applied unconditionally in the `CWindowBase` constructor
+(`cwindowbase.cpp:80`) and re-applied on DPI change (`cwindowbase.cpp:248`,
+which used to be the `setMinimumSize(0,0)` that caused the bug). Escape hatches
+were checked: nothing under `windows/platform_linux/` calls `setMinimumSize` or
+`setFixedSize`, the only reset is `platform_win/cwindowplatform.cpp:425` on
+`WM_DPICHANGED` and it is restored at `:432`, and both Linux decoration modes
+honour Qt's `WM_NORMAL_HINTS`. macOS carries its own 518x440 in
+`macos/ONLYOFFICE/Base.lproj/Main.storyboard:717`.
+If anyone still reproduces it, suspect Wayland client-side decorations: check
+`QMainWindow::minimumSize()` at runtime there and set it on the `QWindow` too.
 
 ## Deliberate behaviour - product decision, not a defect
 
@@ -290,6 +309,66 @@ remove Paste from every text field.
 **Next step:** desktop-sdk. No `CefContextMenuHandler` override exists, so
 either implement `OnBeforeContextMenu`/`RunContextMenu` to draw a Qt menu at the
 app's scale, or make the browser's device-scale-factor apply to native menus.
+
+### #2031 - the Windows installer ignores the file-association selection
+
+Root-caused in both packages; **no patch**, because neither installer language
+can be executed here (no Inno compiler, no Free Pascal, no Advanced Installer,
+no Windows, no registry) and Inno's Pascal Script dialect cannot be faithfully
+re-hosted - a harness would test a translation rather than the shipped script.
+
+**Correction to earlier notes:** these are not NSIS or WiX, and not under
+`win-linux/extras/`. The EXE is **Inno Setup** (`desktop-apps/package/inno/`,
+`common.iss` + `_code.iss`) and the MSI is an **Advanced Installer** project
+(`desktop-apps/package/advinst/DesktopEditors.aip`). `win-linux/extras/` holds
+only `projicons/` and `update-daemon/`.
+
+- **Inno, the decisive defect.** The guard is fine and exists -
+  `isAssociateExtension` at `inno/_code.iss:380-387` - but it is consulted at
+  exactly one site, `:517`. `DoPostInstall` then calls `AddContextMenuNewItems`
+  unconditionally at `:556`, and that procedure's Windows 10/11 branch
+  (`:473-477`) writes the **default ProgID** for `.docx`, `.pptx`, `.xlsx` and
+  `.pdf` with no reference to the user's choice - exactly the four the reporter
+  sees. It also lacks the existing-owner check the gated path has at `:519`,
+  which is why PDF ownership is taken from whatever held it.
+  The write is not simply deletable: Explorer only shows the New-menu entry
+  while `.docx`'s default ProgID is ours (`ShellNew` at `:465-472`), so it must
+  be **gated**, not removed. `isAssociateExtension` takes an index into
+  `AudioExts` (`:178-256`), so gating needs a small by-extension wrapper.
+- **MSI, dead gating for two independent reasons.** Per-extension checkboxes
+  bind to `REGISTER_<EXT>` (`:792-936`) feeding the Condition table
+  (`:671-732`) against feature levels (`:419-483`). But `INSTALLLEVEL` is never
+  authored anywhere, so Advanced Installer's default of 100 makes every
+  `Level=4`/`Level=1` feature install regardless; and the dialog never
+  re-costs - the Next button fires only `NewDialog` (`:977`), no
+  `SetInstallLevel`. So the UI is cosmetic. `REGISTER_*`, `REGISTER_NONE` and
+  `NOASSOCHECK` are also missing from `SecureCustomProperties` (`:53`), so they
+  do not reach a silent install's server-side sequence. Compare
+  `REGISTER_PROTOCOL` (`:412`), which is enforced as a component-level
+  `Condition` and therefore does work - that asymmetry is the whole story.
+- **`NOASSOCHECK` is unrelated to associations** in both packages: it only
+  suppresses the runtime nag (`_code.iss:984-986`; MSI component at `:414`).
+  `REGISTER_NONE` exists only in the dead MSI condition at `:673`; the Inno tree
+  has no `REGISTER_*` at all.
+- **A runtime path must be fixed alongside it.**
+  `win-linux/src/platform_win/association.cpp:159-181` seeds its extension map
+  by enumerating `HKLM\...\Capabilities\FileAssociations` - every extension,
+  regardless of what was chosen at install - then offers to claim each one
+  (`:210-232`). So even a corrected installer would re-offer everything on first
+  launch. Record the install-time selection in its own key and read that.
+- **Next steps, in order.** (1) Gate `_code.iss:473-477` and add an owner check.
+  (2) Give Inno a real `/NOASSOC`. (3) In the `.aip`, move `FA_*` gating to
+  component-level conditions as `REGISTER_PROTOCOL` already does - or author
+  `INSTALLLEVEL` *and* add `SetInstallLevel` to the dialog - plus fix
+  `SecureCustomProperties`. (4) Fix `association.cpp`. (5) Verification needs a
+  Windows VM: `iscc` plus `reg query HKLM\Software\Classes\.docx` after a
+  fresh install, and `msiexec /i ... REGISTER_NONE=1` for the MSI.
+- **Two loose ends found in passing.** `inno/help.iss:15` still includes
+  `..\..\..\win-linux\package\windows\defines.iss`, a path that no longer
+  exists. And the association page creates every checkbox unchecked
+  (`_code.iss:346`) while setting `AudioExtEnabled[i] := True` (`:347`), so
+  `ChlbAudioClickCheck` (`:265-274`) re-checks every box the first time the user
+  picks "Associate selected" - the UI can present a selection nobody made.
 
 ## Tooling limitation worth knowing
 
