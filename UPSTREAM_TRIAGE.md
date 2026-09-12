@@ -45,6 +45,7 @@ C++), `issue-2429-saveas-extension/` (real QtCore).
 | #2418 | A formula-based conditional format rule made the spreadsheet uneditable | `sdkjs` |
 | #2155 | A leaked non-Unicode charmap turned accented characters into other glyphs | `core`, native consumers only |
 | #1868 | A spreadsheet reopened at A1 instead of where the user left it (scroll only) | `core` + `sdkjs` |
+| #2400 | A defined name in a VLOOKUP dependency threw and forced the document read-only | `sdkjs` |
 
 Two defects in our own tooling were fixed alongside: CEF remote debugging was
 pinned to a hardcoded port 8080 that could not be overridden, and CEF failures
@@ -146,6 +147,63 @@ poisoning character.
 Note also that `Common/3dParty/harfbuzz/make.py` applies the patch **only on a
 fresh clone**, so an existing gitignored `harfbuzz/` checkout does not pick it
 up; the local checkout was edited to match.
+
+### #2278 - copying a sheet to a new file opens the whole original instead
+
+Root-caused; the defect is in `desktop-sdk`, not `sdkjs`.
+
+`sdkjs` is correct: `copyToNewWorkbook` (`cell/api.js:4214-4245`) marks only the
+chosen sheets `tabSelected`, writes with `writeOnlySelectedTabs`, and hands the
+base64 to `AscDesktopEditor.OpenWorkbook`. **The binary is then discarded.** In
+`desktop-sdk/.../cefwrapper/client_renderer_wrapper.cpp:4718-4744` the
+`OpenWorkbook` binding writes `EditorForAsLocal.bin` only `if
+(!sLocalDir.empty())`, where `sLocalDir = m_sCryptDocumentFolder` - and that
+member is only ever assigned (`:3180-3184`) from JS injected on
+`onload_crypt_document`, which `LocalFile_End` sends only when
+`m_bIsCloudCryptFile` (`cefview.cpp:5968-5978`). For an ordinary local xlsx it
+is empty, the write is skipped silently, and the message is sent anyway.
+`OpenCopyAsRecoverFile` (`cefview.cpp:8459-8530`) then finds no
+`EditorForAsLocal.bin`, skips the copy, and leaves the source document's own
+`Editor.bin` in place - so the new tab shows the original workbook in full.
+That also explains why the reporter's workaround (create the file first, then
+copy into it) works: it takes a different route.
+
+**Next step**, for whoever owns `desktop-sdk`: the renderer already holds the
+right path in `m_sLocalFileFolderWithoutFile`, set for every local document
+(`client_renderer_wrapper.cpp:2003-2005`). Prefer it at `:4722`, falling back to
+`m_sCryptDocumentFolder`, and make a missing directory an error rather than a
+silent skip. Do **not** work around it from `sdkjs` by setting
+`SetCryptDocumentFolder` for a non-crypt document - that member is also read by
+the crypto save, compare and media paths.
+
+### #2252 - a reference to a password-protected workbook shows #REF!
+
+It is a defect, but not fixable in `core` or `sdkjs`. Refusing to read the
+encrypted workbook is right; refusing *without ever asking for the password* is
+not - Excel prompts.
+
+`core` already has everything: x2t parses `<m_sPassword>`
+(`X2tConverter/src/cextracttools.h:796-799`), decrypts with it
+(`ASCConverters.cpp:1076-1092`), and has a distinct
+`AVS_FILEUTILS_ERROR_CONVERT_DRM`. `sdkjs` cannot act:
+`getLocalDesktopPromise` (`common/ExternalDataLoader.js:163-179`) maps any
+failure to `#REF!` because the `AscDesktopEditor.convertFile` shim takes no
+password (`client_renderer_wrapper.cpp:2682-2692`), `CConvertFileInEditor`
+(`desktop-sdk/.../fileconverter.h:1539-1560`) has no password member and never
+emits `<m_sPassword>`, and the completion message drops the error code
+(`cefview.cpp:1496-1508`) so JS cannot even tell "needs a password" from
+"missing file".
+
+**Next steps, in order:** add `m_sPassword` to `CConvertFileInEditor` and emit
+it; propagate `nError` on `on_convert_local_file` plus a
+`_convertFileSetPassword` binding that restarts the converter; only then raise
+`asc_onDocumentPassword` and retry from `ExternalDataLoader.js`.
+
+The community patch attached to the issue is the right shape but not usable:
+its braced block orphans the code after an existing `return true;`, it sends a
+new process message with no renderer-side handler so the prompt never fires, and
+it leaves a commented-out duplicate of the function body behind.
+
 
 ## Already fixed in our 9.4 baseline - no action
 
@@ -272,6 +330,31 @@ reporter could not reproduce it on demand either. Note that on macOS
 locks are advisory, so another process holding a lock does **not** refuse a
 write there - a stale `.~lock` will not reproduce it on macOS. The refused-write
 path is the Linux GIO one (`g_file_replace`).
+
+### #1894 - documents cannot be saved when saving a pptx
+
+Not a defect in our source: a corrupted installation. The reporter's console
+line `Check failed: VerifyChecksum(blob)` is V8's `CHECK` on a **startup
+snapshot blob**, which aborts the process and cannot be caught. The only place
+we hand V8 an external blob is `CJSContext::Initialize`
+(`core/DesktopEditor/doctrenderer/js_internal/v8/v8_base.cpp:191-207`), reading
+the shipped `editors/sdkjs/<app>/sdk-all.bin` via `GetSnapshotPath`
+(`doctrenderer/editors.cpp:175`). A damaged shipped file therefore aborts rather
+than degrading - and the maintainer established on the thread that the
+reporter's AppImage sha256 does not match the official 8.3.3 build. The reporter
+never confirmed a re-download.
+
+Ruled out: the #2081/#2417 family (that was a write reported as success; this is
+a process abort) and a stale V8 code cache (`sdk-all.cache` is version-checked
+and rejected gracefully, not `CHECK`ed). No patch: pre-validating the blob would
+mean reimplementing V8's private snapshot checksum.
+
+**If anyone reproduces it on a verified-good install:** find which process
+aborts, and note that an ordinary desktop bin-to-pptx save is native C++ -
+doctrenderer/V8 enters the presentation path only via `apply_changes`
+(`core/X2tConverter/src/ASCConverters.cpp:1397`), so V8 aborting during a plain
+local save is itself the anomaly.
+
 
 ### #1436 - files not saving on a Synology NAS
 Same family as #2081/#2417 and plausibly the same mechanism, but never verified
