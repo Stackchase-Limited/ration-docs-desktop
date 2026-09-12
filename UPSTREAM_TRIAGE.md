@@ -22,25 +22,55 @@ should wait until the localization diff below is settled. So the next round star
 with fresh triage from the upstream tracker; prefer crashes and data loss, and
 prefer what can be tested without a compiler.
 
-**Compiler status.** An earlier note here claimed the `desktop-sdk` C++ could not
-be compiled because CEF headers were not set up. That was wrong: the CEF
+**Build status: everything here compiles and links.** A full
+`build_tools/make.py` build was run on 2026-09-12 with all of this session's work
+in the tree. Exit 0, 114,388 log lines, zero errors. Four objects rebuilt -
+`cefview.o` and `client_renderer_wrapper.o` (the files #2278 and #2252 changed),
+plus `filelocker.o` and `spellchecker.o`, which include the headers touched. The
+changes are confirmed present in the shipped artifacts, not merely compiled:
+`strings` finds the new `convertFile(path, format, callback, password)` shim and
+the `on_convert_file_callback(folder, error)` signature in
+`ascdocumentscore.framework`, `checkKeyboardLanguageId` is in all four
+`sdk-all-min.js` bundles, and `isPasswordConvertError` in cell, word and slide.
+
+Two earlier claims in this file were wrong and are retracted. The first said
+`desktop-sdk` could not be compiled because CEF headers were not set up: the CEF
 distribution ships in the tree at
 `desktop-sdk/ChromiumBasedEditors/lib/src/cef/mac`, and
-`../fork-fix-tests/syntax-check-desktop-sdk.sh` type-checks every file we patch
-against it in about four seconds, no CEF binaries, Qt or link step required.
-`cefview.cpp` and `client_renderer_wrapper.cpp` both pass, which covers #2278 and
-the #2252 plumbing, and `fileconverter.h` transitively. What is still true is that
-nothing has been *linked or run*: no full build, no binary, no human at the app.
+`../fork-fix-tests/syntax-check-desktop-sdk.sh` type-checks any file we patch
+against it in about four seconds, with no CEF binaries, Qt or link step - useful
+while iterating, since it is seconds against a full build's minutes. The second is
+below, about the wasm smoke test.
+
+What remains true, and is the only honest caveat left: **no human has used the
+result.** A build that links and a binary that runs correctly are different
+claims, and nothing here has been exercised in a running editor.
 
 **Owed before shipping:** integration smoke testing of the rebuilt
-`fonts.wasm`, which no test in `../fork-fix-tests/` can do. The list is at the
-end of the #2155 entry. This one needs a human at a real build.
+`fonts.wasm`. The list is at the end of the #2155 entry. An earlier note said this
+needs a human; that was wrong. `../../harness/` packages a launchable `.app` and
+drives the real editor over the Chrome DevTools Protocol - `run-editor.sh` to
+launch and send a document, `editor-eval.js` to evaluate inside the editor iframe
+- which is how the #2418 stack trace was obtained. Shaping a string through the
+rebuilt wasm in the running editor and comparing glyph indices against the values
+recorded in the #2155 commit (`Begrüßung` -> 129/137 correct, 220/192 poisoned) is
+scriptable. Note the README's warning: packaging reads `build_tools/out` directly,
+so take an APFS clone (`cp -Rc`) if a build may run concurrently.
 
-**Loose end that is nobody's yet:** `web-apps` has 158 modified tracked files,
-~170k insertions - a generated localization sync appending English fallback
-strings into every locale file, including `ar.json`. Not produced by any fix
-here. It needs a decision: commit, discard, or regenerate. Left untouched so it
-is not lost by accident.
+**Loose end, now identified and preserved:** the 158-file, ~170k-insertion
+`web-apps` diff is **build output**. `build_tools/make.py` writes those locale
+files back into the source tree on every run - the build log says so per locale
+(`ar.json done, lost 0 from 482`). Running a full build over the existing output
+reproduced it byte-identically apart from incrementing `build` counters, so
+nothing was ever at risk. It is committed on the `web-apps` branch
+`ration/l10n-build-output` (4372964e93), deliberately not on
+`ration/9.4-stability`; the superproject still points at 58d1593b86.
+
+The decision it still needs is not "keep or discard" but **tracked or ignored**:
+these files are tracked *and* rewritten by the build, which is why the diff keeps
+reappearing. Either regenerate and commit them deliberately, or `.gitignore` them.
+Worth weighing separately that the sync puts English text into every RTL locale
+(`ar`, `fa`, `he`) - better than a raw key id, but a product call.
 
 ## The verification standard
 
