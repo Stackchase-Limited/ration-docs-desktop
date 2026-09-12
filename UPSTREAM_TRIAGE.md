@@ -363,6 +363,54 @@ repair glyph indices already returned. And note the rebuild is reproducible but
 rather than a like-for-like swap - it deserves a wider render smoke test than
 this issue alone.
 
+### #2430 - a Form Control checkbox is destroyed by opening the file, not by saving it
+
+Reported as "fails to save/convert XLSM containing Form Control Checkboxes", with x2t
+dying on Windows at `0xC0000409` (STATUS_STACK_BUFFER_OVERRUN). **Reproduced here on
+macOS with the reporter's own attachment**, where it does not crash - it silently
+destroys the control instead, which is worse, because the save reports success.
+
+Run against the shipped converter, no editor and no Windows needed:
+
+```sh
+# the reporter's file, from the issue
+curl -sLO https://github.com/user-attachments/files/31384021/example.xlsm
+
+harness/bin/x2t.sh example.xlsm out.xlsx          # direct convert
+harness/bin/x2t.sh example.xlsm bin/Editor.bin 8194   # what opening it does
+# then bin -> xlsx with <m_bFromChanges>true</m_bFromChanges>, which is what saving does
+```
+
+| part | in the file | direct xlsm -> xlsx | after a round trip through the editor's bin |
+|---|---|---|---|
+| `xl/drawings/vmlDrawing1.vml` | yes | **kept** | gone |
+| `xl/ctrlProps/ctrlProps2.xml` | yes | **kept** | gone |
+| `<legacyDrawing>`, `<controls>` in `sheet1.xml` | yes | kept | gone |
+
+**The loss is at open.** `Editor.bin` contains no trace of the control - not the VML,
+not the `ClientData`, not even the checkbox's label text (`strings` finds zero matches
+for `Checkbox`, `ClientData`, `vmlDrawing`, `ctrlProp` and the label). So the editor
+never knows the control existed, and any save writes a file without it. The subsequent
+save cannot be at fault; there is nothing left to serialise by then.
+
+**This is a gap in the binary format, not a missing feature in the converter.** The
+direct `xlsm -> xlsx` path preserves all three parts byte-for-byte, so `core` can
+already carry them across a conversion; it is the editor's bin that has no
+representation for them. That asymmetry is what makes this a defect rather than an
+unsupported-format decision.
+
+**Not established:** why Windows crashes where macOS silently succeeds. `0xC0000409`
+is a stack-cookie or `__fastfail` abort, so plausibly a genuine overrun that macOS
+tolerates - but that is a guess, and the change set here does not include one. An
+empty change set reproduces neither symptom, so anyone chasing the crash needs a real
+`changes0.json` from a live edit; the `harness/` CDP route can produce one.
+
+**Fixing it properly is not small:** it means representing form controls in the bin
+format on both sides, `core`'s serializer and `sdkjs`'s reader. Worth weighing against
+a narrower alternative - carrying unknown-but-present parts through the round trip the
+way Excel and LibreOffice do - which would fix a whole class of silent loss rather
+than this one control type.
+
 ### #2148 - PDF print: chain traced end to end, symptom not reproduced
 
 The reporter has Expected and Actual swapped in the issue form; the title is the
