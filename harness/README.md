@@ -35,8 +35,29 @@ listening.
 
 CEF starts that server from `CefSettings.remote_debugging_port`, which the app
 never set. Our `desktop-sdk` now reads the port from the command line in
-`Init_CEF` and sets it, so `--remote-debugging-port` works. **That needs a build
-from this tree**; until then, use F1.
+`Init_CEF` and sets it.
+
+**That is necessary but not yet sufficient on macOS.** Built from this tree and
+tested on 2026-09-12, still nothing binds the port. Established, so nobody has
+to redo it:
+
+- the fix is in the loaded binary (the new `--remote-debugging-port=` literal is
+  present in `ascdocumentscore.framework`, absent from the previous build)
+- macOS does reach it: `mac_application.mm` `Start:argv:` passes argc/argv to
+  `Init_CEF`, and the process command line carries the port
+- `settings.remote_debugging_port` is assigned before
+  `MainContextImpl::Initialize`, which forwards the settings straight to
+  `CefInitialize`, and nothing reassigns it in between
+- the bundled CEF does contain the DevTools server (`/json/version`,
+  `devtools_remote`)
+
+So something after `CefInitialize` declines to start the server, and the cause
+is not yet known. `settings.log_severity = LOGSEVERITY_DISABLE` in `Init_CEF`
+means CEF logs nothing, so raising that temporarily is the obvious next probe.
+
+**Until this is closed out, scripted CDP does not work on macOS.** Use F1 for
+interactive debugging, and `bin/x2t.sh` for anything that can be expressed as a
+conversion - that path is fully working.
 
 ## Setup
 
@@ -114,7 +135,8 @@ path directly, so the failure is attributable rather than just observable.
 
 ## Limits
 
-- Scripted CDP needs a build from this tree. On the shipped build, F1.
+- Scripted CDP does not work on macOS yet (see above) - `editor-eval.js` and
+  `repros/` are written and ready, but blocked. F1 works; so does `x2t.sh`.
 - Needs a document open and editable; the scripts say so rather than guessing.
 - Only exercises `sdkjs` / `web-apps`. Changes to `core`, `desktop-sdk` or
   `desktop-apps` are C++ and still need a full build.
