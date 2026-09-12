@@ -22,11 +22,15 @@ should wait until the localization diff below is settled. So the next round star
 with fresh triage from the upstream tracker; prefer crashes and data loss, and
 prefer what can be tested without a compiler.
 
-**Unverified by a compiler:** #2278 and the #2252 plumbing both touch
-`desktop-sdk` C++ that cannot be built here - CEF headers are not set up. The
-extracted blocks compile and run under `clang++`, the signatures they depend on
-were checked by hand, and the JS shim embedded in `client_renderer_wrapper.cpp` was
-extracted and passed through `node --check`. No full build has seen any of it.
+**Compiler status.** An earlier note here claimed the `desktop-sdk` C++ could not
+be compiled because CEF headers were not set up. That was wrong: the CEF
+distribution ships in the tree at
+`desktop-sdk/ChromiumBasedEditors/lib/src/cef/mac`, and
+`../fork-fix-tests/syntax-check-desktop-sdk.sh` type-checks every file we patch
+against it in about four seconds, no CEF binaries, Qt or link step required.
+`cefview.cpp` and `client_renderer_wrapper.cpp` both pass, which covers #2278 and
+the #2252 plumbing, and `fileconverter.h` transitively. What is still true is that
+nothing has been *linked or run*: no full build, no binary, no human at the app.
 
 **Owed before shipping:** integration smoke testing of the rebuilt
 `fonts.wasm`, which no test in `../fork-fix-tests/` can do. The list is at the
@@ -49,6 +53,12 @@ bug*:
 2. Run the same test against the unpatched baseline (`git show HEAD:<path>`)
    and confirm it **fails** there. A test that passes before and after proves
    nothing.
+3. For `desktop-sdk`, also type-check the file in place with
+   `../fork-fix-tests/syntax-check-desktop-sdk.sh`. Extracting a block into a
+   harness proves its logic but stubs away its types, so a wrong signature or a
+   misspelled member survives; that script compiles the real translation unit
+   against the real CEF headers. Confirm it has teeth the same way as a baseline
+   run - break the new line on purpose once and watch it fail.
 
 Tests live in `../fork-fix-tests/`. Worked examples:
 `issue-2398-ctrl-home-frozen-test.js` (JS), `issue-2081-2417-save-path/` (plain
