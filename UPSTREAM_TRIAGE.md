@@ -46,6 +46,8 @@ C++), `issue-2429-saveas-extension/` (real QtCore).
 | #2155 | A leaked non-Unicode charmap turned accented characters into other glyphs | `core`, native consumers only |
 | #1868 | A spreadsheet reopened at A1 instead of where the user left it (scroll only) | `core` + `sdkjs` |
 | #2400 | A defined name in a VLOOKUP dependency threw and forced the document read-only | `sdkjs` |
+| #2383 | No `.~lock` marker on network shares, so a second user got no warning | `desktop-sdk` |
+| #2018 | A synthetic resize event per intermediate size, flashing the grid | `desktop-sdk` |
 
 Two defects in our own tooling were fixed alongside: CEF remote debugging was
 pinned to a hardcoded port 8080 that could not be overridden, and CEF failures
@@ -247,6 +249,37 @@ way of saving that state: `History.Have_Changes` returns false in view mode
 and `getFileAsFromChanges` exits and re-enters preview around serialization
 (`common/apiBase.js:4946`). Reported against 7.4.1.
 
+### #1837 - inactive main tab wrong in the light theme
+
+Fixed upstream by `54614981a` "[macos] fix titlebar appearance on macOS 10.14+"
+(Feb 2026), in our tree and later than the reporter's 8.3.2. It added
+`ASCThemesController.isDarkWindowAppearance`
+(`desktop-apps/macos/ONLYOFFICE/Code/Controllers/Common/ASCThemesController.m:201-210`)
+and replaced `[NSApplication isSystemDarkMode]` at every site driving the
+inactive portal tab (`ASCTitleBarController.mm:426, 452, 457, 549`,
+`ASCTabs/ASCTabView.m:105`, `ASCTabs/ASCTabViewCell.m:70, 207`). Before it, the
+*inactive* tab picked its logo from the **system** appearance while the *active*
+one used the **app theme**, so with the system dark and the app forced light it
+drew the light logo on a light tab - the reported screenshot. The two remaining
+`isSystemDarkMode` calls (`ASCTitleBarController.mm:418, 446`) are legitimate:
+they resolve `theme-system` to a default.
+
+Proven rather than asserted: `fork-fix-tests/issue-1837-inactive-main-tab/`
+compiles the real methods against real Foundation/AppKit, reads the theme from
+real `NSUserDefaults` and the chosen logo back off a real `NSButton`. At
+`54614981a^` it is 2 passed / 9 failed; on the current tree 11 / 0. It also
+shows the pre-fix code was wrong in both directions.
+
+**Residual divergence, by inspection, not patched:** the asset-catalog tab
+colours (`ASCTitleBarController.mm:231-232`, `ASCTabViewCell.m:162-163`) resolve
+through `NSAppearance`, and the app never calls `setAppearance:`, so for a user
+who does not set `NSRequiresAquaSystemAppearance` the tab *backgrounds* still
+follow the system while the logo follows the theme. Not the reported symptom.
+Next step if it ever is: route them through
+`ASCThemesController currentThemeColor:`, or set an explicit `NSAppearance` from
+the theme.
+
+
 ### #1596 - the window has no minimum size
 
 Fixed upstream by `400efc872` ("[win-linux] fix bug 58444", Nov 2024), which is
@@ -378,6 +411,55 @@ doctrenderer/V8 enters the presentation path only via `apply_changes`
 local save is itself the anomaly.
 
 
+### #2136 - crash opening a folder containing an emoji (Linux)
+
+Root-caused, with a runnable demonstration; the fix belongs in `core`.
+
+Not really about the Downloads folder: per the thread it needs a folder whose
+name is an emoji plus the `segoe-ui-linux` font installed, and the maintainer
+reproduced it only after installing that font. It segfaults inside
+`libgraphics.so` while the GTK file chooser paints the name.
+
+**Mechanism.** `core/DesktopEditor/graphics/pro/freetype.pri` pins FreeType
+2.10.4 and compiles it straight into `libgraphics.so`, and there is **no
+`-fvisibility=hidden`, no version script and no `--exclude-libs` anywhere in the
+tree**, so every `FT_*` symbol is exported with default visibility (harfbuzz
+likewise, and ours is locally patched - see #2155). `desktop-apps` links
+`-lgraphics` before the GTK stack, and ELF resolves through one process-wide
+scope in load order, so cairo/pango's `FT_*` calls bind to libgraphics' 2.10.4
+copy. The overlap is *partial*: the COLRv1 colour-glyph API arrived in FreeType
+2.11 and is absent from the bundled tree, so an emoji's colour path falls
+through to the system FreeType 2.13, which then reads a face laid out by 2.10.4.
+Emoji only, and font-dependent - which is exactly why a clean VM was fine and
+the reporter's host was not.
+
+**Demonstrated**, not just argued: `fork-fix-tests/issue-2136-emoji-folder-crash/`
+builds a system-FreeType stub with the new layout and COLRv1, a libgraphics stub
+with the 2.10.4 layout and no colour API, and a cairo stub, linked flat to get
+ELF's rules. As shipped, a plain name exits 0 and an emoji name dies with
+**SIGSEGV (139)**; with `FT_*` hidden inside libgraphics both exit 0.
+
+**Ruled out.** Our own GTK code is not on the stack - the crash is inside
+`gtk_dialog_run` while GTK lists the folder, and
+`platform_linux/gtkfilechooser.cpp:217-244` marshals names with no fixed buffers
+or dangling temporaries; a marshalling bug could not depend on an installed
+font. Reordering the link line is **not** an alternative: it would make
+libgraphics' own engine bind to the system FreeType 2.13 while compiled against
+2.10.4 headers - the same fault in the other direction. `--xdg-desktop-portal`
+avoids the in-process dialog but is a workaround, and does nothing for other
+in-process GTK rendering.
+
+**Next step, owner `core`:** build `libgraphics.so` with `-fvisibility=hidden`
+for the bundled FreeType/harfbuzz translation units, or add a version script to
+`graphics/pro/graphics.pro` exporting only the `NSFonts`/`Aggplus`/`asc*` API
+and localising `FT_*`/`hb_*`. Verify with
+`nm -D --defined-only libgraphics.so | grep -c ' T FT_'` (must be 0), then the
+reporter's repro. Also revisit
+`desktop-apps/win-linux/defaults.pri:194`'s
+`-Wl,-unresolved-symbols=ignore-in-shared-libs`, which is what lets seams like
+this pass unnoticed at link time.
+
+
 ### #1436 - files not saving on a Synology NAS
 Same family as #2081/#2417 and plausibly the same mechanism, but never verified
 against this report specifically. Do not claim it as fixed.
@@ -488,6 +570,31 @@ only `projicons/` and `update-daemon/`.
   (`_code.iss:346`) while setting `AudioExtEnabled[i] := True` (`:347`), so
   `ChlbAudioClickCheck` (`:265-274`) re-checks every box the first time the user
   picks "Associate selected" - the UI can present a selection nobody made.
+
+## Latent problems found in passing, not yet fixed
+
+Not reported upstream; found while working on something else, and cheap to lose.
+
+- **`CLocalFileLocker` can call through an uninitialised pointer.** Its
+  constructor returns early for an empty path
+  (`desktop-sdk/.../applicationmanager_p.h:596-597`) leaving `m_pLocker`
+  unassigned (declared `:591`, assigned only `:600`); the destructor then calls
+  `Unlock()` -> `m_pLocker->Unlock()` on garbage (`:623`). Reachable via the
+  `rec.lock` path at `cefview.cpp:1243`. Two lines to fix; no repro to hand.
+- **A window *move* dispatches a synthetic resize.** `CCefView::moveEvent()`
+  funnels into the same `UpdateSize` as a resize. Splitting them needs care -
+  `applicationmanager.cpp:234` deliberately uses `moveEvent()` to re-apply
+  `force-scale`, which does need the page notified. Harmless now that the
+  injection is debounced (#2018).
+- **`fonts_ie.js` will go stale.** It is the asm.js twin of `fonts.wasm`
+  (`-s WASM=0`), reached only when `WebAssembly` is absent
+  (`sdkjs/common/libfont/loader.js:100-107`), which never happens in CEF. Any
+  `fonts.wasm` rebuild should rebuild it in the same pass so the two cannot
+  diverge.
+- **`-Wl,-unresolved-symbols=ignore-in-shared-libs`**
+  (`desktop-apps/win-linux/defaults.pri:194`) suppresses exactly the link-time
+  errors that would have surfaced the #2136 symbol collision.
+
 
 ## Driving the editor - now working
 
