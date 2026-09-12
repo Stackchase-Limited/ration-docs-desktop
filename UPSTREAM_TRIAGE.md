@@ -107,6 +107,44 @@ reappearing. Either regenerate and commit them deliberately, or `.gitignore` the
 Worth weighing separately that the sync puts English text into every RTL locale
 (`ar`, `fa`, `he`) - better than a raw key id, but a product call.
 
+## Where this work lives, and what is not on lab02
+
+Pushed to lab02 on 2026-09-13, each as a **new** branch (nothing existing was moved):
+
+| repo | branch |
+|---|---|
+| `ration/ration-docs-desktop` (superproject) | `ration/9.4-stability` |
+| `ration/ration-docs-desktop-apps` | `ration/9.4-stability` |
+| `ration/ration-docs-dictionaries` | `ration/iconv-fix` |
+
+**Four submodules could not be pushed, and most of the work is in them.** `core`,
+`sdkjs`, `web-apps` and `desktop-sdk` still have exactly one remote each, and it is
+ONLYOFFICE's own GitHub repository:
+
+```
+core        -> github.com/ONLYOFFICE/core.git
+sdkjs       -> github.com/ONLYOFFICE/sdkjs.git
+web-apps    -> github.com/ONLYOFFICE/web-apps-pro.git
+desktop-sdk -> github.com/ONLYOFFICE/desktop-sdk.git
+```
+
+Pushing there is the one thing this fork has decided never to do, and lab02 has no
+repository for any of them (`ration-docs-sdkjs` and the obvious variants all return
+"project not found"). So those commits exist **only on this machine**, with no second
+copy anywhere.
+
+Two consequences worth being blunt about:
+
+1. The superproject branch now on lab02 records submodule SHAs that resolve nowhere.
+   A fresh clone will check out the superproject and then fail `git submodule update`
+   for four of six. The branch is real but it does not build for anyone else yet.
+2. Everything in `sdkjs`, `desktop-sdk` and `core` - which is most of the fixes - is one
+   disk failure from gone.
+
+**What is needed:** four repositories on lab02 and the submodule remotes repointed at
+them, the way `desktop-apps` and `dictionaries` already are. Until then "pushed" means
+the superproject, the Qt shell and the dictionaries, and nothing else.
+
 ## The verification standard
 
 A fix is not considered done until a test proves it, and proves it *detects the
