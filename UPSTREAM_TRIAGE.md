@@ -44,6 +44,7 @@ C++), `issue-2429-saveas-extension/` (real QtCore).
 | #1839 | Exporting the focused sheet to CSV exported whatever sheet was active at open | `core` + `sdkjs` |
 | #2418 | A formula-based conditional format rule made the spreadsheet uneditable | `sdkjs` |
 | #2155 | A leaked non-Unicode charmap turned accented characters into other glyphs | `core`, native consumers only |
+| #1868 | A spreadsheet reopened at A1 instead of where the user left it (scroll only) | `core` + `sdkjs` |
 
 Two defects in our own tooling were fixed alongside: CEF remote debugging was
 pinned to a hardcoded port 8080 that could not be overridden, and CEF failures
@@ -51,30 +52,37 @@ were silenced by `LOGSEVERITY_DISABLE` (both `desktop-sdk`).
 
 ## Root-caused, not fixed
 
-### #1868 - the cursor does not return to the cell you left it on
+### #1868 - scroll position fixed; the caret still needs a format change
 
-**Correction.** An earlier version of this file claimed #1868 shared #1839's
-cause and would be fixed along with it. That is wrong. #1839 is about which
-*sheet* is active; #1868 is about the scroll and caret position *within* a
-sheet, and the #1839 fix does not touch it. Same family - view state never
-reaching the file - different piece of state.
+The scroll half is fixed, through the same save-parameter channel #1839 built:
+`getAdditionalSaveParams()` ships each sheet's live top-left visible cell as
+`topLeftCells` (`"<sheet index>:<A1-ref>"` pairs), x2t lifts it out of
+`<m_sJsonParams>` into `fileOptions/@topLeftCells`, and it is applied to each
+worksheet's `sheetViews` as `BinaryWorksheetsTableReader::ReadWorksheet` writes
+it out. No new bin record, no `Serialize.js` change - the override mutates the
+already-parsed in-memory `CSheetView` between reading the bin and writing the
+XML, so the **binary format is unchanged**.
 
-- Scrolling never writes `Worksheet.sheetViews[0].topLeftCell`. The only writers
-  are `sdkjs/cell/model/Workbook.js:13562`, undo/redo, and
-  `WorkbookView.executeWithCurrentTopLeftCell`
-  (`cell/view/WorkbookView.js:5335`), which copies `getCurrentTopLeftCell()`
-  into the model only around the full-binary write at `cell/api.js:1594` - a
-  path the desktop's changes-based save never takes.
-- The caret is worse: `asc_CSheetViewSettings` has no selection or active-cell
-  field at all. `WriteSheetView` (`cell/model/Serialize.js:5917`) writes
-  `topLeftCell`, `pane`, zoom and flags and nothing else, so the active cell is
-  never round-tripped through the bin on any path.
-- **Next step.** The scroll half is now cheap: extend the save-parameter channel
-  the #1839 fix introduced with a per-sheet `topLeftCell`, and apply it in
-  `BinaryReaderS::ReadWorksheet` (around `:4448-4460`). That alone answers the
-  reporter's "I have to scroll down". The caret additionally needs a new
-  selection field in the bin format, with serializer and reader changes on both
-  sides.
+Observed end to end: the reporter's case, nothing stored and the user at A1000,
+went from `<sheetView workbookViewId="0"/>` to
+`<sheetView topLeftCell="A1000" workbookViewId="0"/>`. A stale stored A1000/C50
+with the user at A500/B7 now writes A500/B7, and scrolling back to the top
+clears the attribute, which is how OOXML spells A1.
+
+**Still open: the caret.** `asc_CSheetViewSettings` has no selection or
+active-cell field, and `WriteSheetView` (`sdkjs/cell/model/Serialize.js:5917`)
+writes `topLeftCell`, `pane`, zoom and flags only, so the active cell cannot
+round-trip without a new field in the bin format plus serializer and reader
+changes on both sides. That was deliberately left out of scope.
+
+**Refinement to an earlier claim here.** This file said the only writers of the
+model's `topLeftCell` were `Workbook.js:13562`, undo/redo and
+`executeWithCurrentTopLeftCell`. That understates it by one caller:
+`CHistory.EndTransaction` (`sdkjs/cell/model/History.js:1425`) calls
+`wsView.updateTopLeftCell()` with history, so a scroll position *can* reach the
+change stream - but only for whichever sheet is active when an edit transaction
+ends. A pure scroll with no edit, and any sheet the user merely scrolled, still
+recorded nothing, so the conclusion and the fix were unaffected.
 
 ### #2418 - resolved, plus a correction about the containment
 
