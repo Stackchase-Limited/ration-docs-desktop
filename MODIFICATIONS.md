@@ -84,6 +84,18 @@ prompted by a public ONLYOFFICE report, but the code is ours.
   discarded the poster frame's real dimensions and hardcoded 50x50 pixels, so
   every video and audio insert became a 50x50 box. Upstream: #2310, #1509.
 
+- **Copying a sheet to a new file copies that sheet, not the whole workbook**
+  (`desktop-sdk`). The selected-sheets binary `sdkjs` hands to
+  `AscDesktopEditor.OpenWorkbook` was written to disk only when
+  `m_sCryptDocumentFolder` was set, which happens only for a cloud-crypto
+  document. For an ordinary local file the write was skipped in silence and the
+  new tab opened the source document's own `Editor.bin` - the entire original
+  workbook. The binding now falls back to `m_sLocalFileFolderWithoutFile`, the
+  same recovery directory the browser side copies, and refuses to ask for the new
+  tab at all if it has nowhere to write. `OpenCopyAsRecoverFile` no longer falls
+  through to that binary during a compare or merge, so a leftover from an earlier
+  copy cannot be compared against by mistake. Upstream: #2278.
+
 - **The keyboard layout's LANGID is validated before it becomes the text
   language** (`sdkjs`). The desktop shell reports the OS keyboard layout's LANGID
   and the editors adopted it verbatim, so a custom MSKLC layout - or one like
@@ -117,3 +129,5 @@ prompted by a public ONLYOFFICE report, but the code is ours.
   Control+click. 8 upstream issues from 5 fixes; see `UPSTREAM_TRIAGE.md`.
 - 2026-09-12: Keyboard-layout LANGID validated before it is adopted as the text
   language (#1179, #402).
+- 2026-09-12: Copy-sheet-to-new-file writes its binary for local documents, not
+  only cloud-crypto ones (#2278).

@@ -15,12 +15,17 @@ Branch `ration/9.4-stability` in the superproject and in every submodule it
 bumps. Everything described in this file is committed; nothing is pushed, and no
 human has run a build with any of it.
 
-**Next task, already traced:** #2278 - copying a sheet to a new file opens the
-whole original workbook instead. The defect is in `desktop-sdk`, not `sdkjs`;
-see that entry below, which names the member to prefer and the line to change.
-The two other traced-but-unfixed items are #2252 (a password prompt has to be
-plumbed through four layers before `sdkjs` can act) and the caret half of #1868
-(blocked on a format change).
+**Next task, already traced:** #2252 - a reference to a password-protected
+workbook shows `#REF!` because nothing ever asks for the password. See that entry
+below; it is the largest of the remaining items, four layers of plumbing across
+`desktop-sdk` and `core` before `sdkjs` can act, and the next steps are listed in
+order. The other traced-but-unfixed item is the caret half of #1868, which is
+blocked on a format change.
+
+**Unverified by a compiler:** the #2278 fix touches `desktop-sdk` C++ that cannot
+be built here - CEF headers are not set up. The extracted blocks compile and run,
+and the signatures they depend on were checked by hand, but no full build has
+seen them.
 
 **Owed before shipping:** integration smoke testing of the rebuilt
 `fonts.wasm`, which no test in `../fork-fix-tests/` can do. The list is at the
@@ -77,6 +82,7 @@ C++), `issue-2429-saveas-extension/` (real QtCore).
 | #459 | Spanish spell-check worked only for es-ES; 20 other locales were unmapped | `sdkjs` + `dictionaries` |
 | #2262 | macOS Control+click opened no context menu in any editor | `sdkjs` |
 | #1179, #402 | A keyboard layout's LANGID became the text language unvalidated; a custom or neutral layout set it to 8192 and spell check stopped | `sdkjs` |
+| #2278 | Copying a sheet to a new file opened the whole original workbook; the selected-sheets binary was written only for cloud-crypto documents | `desktop-sdk` |
 
 Two defects in our own tooling were fixed alongside: CEF remote debugging was
 pinned to a hardcoded port 8080 that could not be overridden, and CEF failures
@@ -275,34 +281,6 @@ repair glyph indices already returned. And note the rebuild is reproducible but
 **not bit-identical**, so the first ship is a real change to the font engine
 rather than a like-for-like swap - it deserves a wider render smoke test than
 this issue alone.
-
-### #2278 - copying a sheet to a new file opens the whole original instead
-
-Root-caused; the defect is in `desktop-sdk`, not `sdkjs`.
-
-`sdkjs` is correct: `copyToNewWorkbook` (`cell/api.js:4214-4245`) marks only the
-chosen sheets `tabSelected`, writes with `writeOnlySelectedTabs`, and hands the
-base64 to `AscDesktopEditor.OpenWorkbook`. **The binary is then discarded.** In
-`desktop-sdk/.../cefwrapper/client_renderer_wrapper.cpp:4718-4744` the
-`OpenWorkbook` binding writes `EditorForAsLocal.bin` only `if
-(!sLocalDir.empty())`, where `sLocalDir = m_sCryptDocumentFolder` - and that
-member is only ever assigned (`:3180-3184`) from JS injected on
-`onload_crypt_document`, which `LocalFile_End` sends only when
-`m_bIsCloudCryptFile` (`cefview.cpp:5968-5978`). For an ordinary local xlsx it
-is empty, the write is skipped silently, and the message is sent anyway.
-`OpenCopyAsRecoverFile` (`cefview.cpp:8459-8530`) then finds no
-`EditorForAsLocal.bin`, skips the copy, and leaves the source document's own
-`Editor.bin` in place - so the new tab shows the original workbook in full.
-That also explains why the reporter's workaround (create the file first, then
-copy into it) works: it takes a different route.
-
-**Next step**, for whoever owns `desktop-sdk`: the renderer already holds the
-right path in `m_sLocalFileFolderWithoutFile`, set for every local document
-(`client_renderer_wrapper.cpp:2003-2005`). Prefer it at `:4722`, falling back to
-`m_sCryptDocumentFolder`, and make a missing directory an error rather than a
-silent skip. Do **not** work around it from `sdkjs` by setting
-`SetCryptDocumentFolder` for a non-crypt document - that member is also read by
-the crypto save, compare and media paths.
 
 ### #2252 - a reference to a password-protected workbook shows #REF!
 
