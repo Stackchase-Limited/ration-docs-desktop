@@ -164,6 +164,7 @@ C++), `issue-2429-saveas-extension/` (real QtCore).
 | #2442 | *Feature.* The default AutoFit for a new text box is now a setting, so a box keeps the size it was drawn at | `sdkjs` + `web-apps` |
 | #2136 | A folder named with an emoji segfaulted the GTK file chooser: libgraphics exported its bundled FreeType 2.10.4 and cairo bound to it | `core` |
 | #2312 | The GUI waited on a CUPS connect timeout before appearing, for a printer name nothing reads | `desktop-apps` |
+| #2056 | A save reported success before the bytes reached the disk, so a power cut lost the document | `desktop-sdk` |
 
 Two defects in our own tooling were fixed alongside: CEF remote debugging was
 pinned to a hardcoded port 8080 that could not be overridden, and CEF failures
@@ -362,6 +363,31 @@ repair glyph indices already returned. And note the rebuild is reproducible but
 **not bit-identical**, so the first ship is a real change to the font engine
 rather than a like-for-like swap - it deserves a wider render smoke test than
 this issue alone.
+
+### #2011, #2145 - swept this round, neither actionable yet
+
+**#2011 (freeze copying all cells).** Not found by reading, and the obvious explanation
+is wrong. Every path that builds clipboard content for a whole-sheet selection already
+clamps to the used range through `_getRangeMaxRowCol`
+(`sdkjs/cell/model/clipboard.js:925`), the HTML and text generators both apply it
+(`:1242`, `:1444`), and `_foreachNoEmpty` (`cell/model/Workbook.js:18707`) bounds its own
+row loop with `Math.min(worksheet.rowsData.getMaxIndex(), bbox.r2)`. On an empty sheet
+all of those collapse to a single row. `git log -S` dates the clamping to 2017-2020,
+well before the reporter's 9.0.3, so "the clamp was added later" does not explain it
+either.
+
+The reporter's asymmetry is the thing to chase: a whole *column* freezes briefly and a
+whole *row* does not. A column is 1,048,576 cells against a row's 16,384, so something
+is still O(rows) on a path none of the above covers. **Reproduce it before reading any
+further** - `harness/` can drive the real editor over CDP and time
+`asc_Copy` on a select-all, which would show where the time goes instead of guessing.
+
+**#2145 (crash in `libascdocumentscore.so` on Fedora 42).** Not actionable as filed: one
+unsymbolised frame (`libascdocumentscore.so + 0x2f056f`), no reproduction beyond "just
+use the editor". Worth re-testing after a Linux build with the #2136 fix in it - a
+Flatpak on Fedora crashing during general use inside that library is the same shape as
+the FreeType symbol collision, and may already be fixed. If it still crashes, the report
+needs symbols before anyone can act.
 
 ### #2430 - a Form Control checkbox is destroyed by opening the file, not by saving it
 

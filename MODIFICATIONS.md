@@ -84,6 +84,16 @@ prompted by a public ONLYOFFICE report, but the code is ours.
   discarded the poster frame's real dimensions and hardcoded 50x50 pixels, so
   every video and audio insert became a 50x50 box. Upstream: #2310, #1509.
 
+- **A saved document reaches the disk before the save is called a success**
+  (`desktop-sdk`). There was no durability barrier anywhere in the save path - no
+  `fsync`, `fdatasync` or `FlushFileBuffers` in `core/DesktopEditor` or `desktop-sdk`,
+  and `CloseFile` is an `fclose` and no more. The bytes went to the operating system's
+  cache and the editor reported the document saved, so a power cut between the save and
+  the kernel's own flush took the work. `CFileLocker::Flush()` now forces them out -
+  `FlushFileBuffers` on Windows, `F_FULLFSYNC` on macOS falling back to `fsync`, and the
+  descriptor under the GIO stream on Linux - and a flush that reports the data did not
+  land fails the save instead of being swallowed. Upstream: #2056.
+
 - **The window no longer waits on CUPS before it appears** (`desktop-apps`). Startup
   set a `defaultPrinterName` JS variable from `QPrinterInfo::defaultPrinterName()`
   before the main window was created. With no CUPS installed the client falls back to
@@ -190,3 +200,5 @@ prompted by a public ONLYOFFICE report, but the code is ours.
 - 2026-09-12: Bundled FreeType/harfbuzz/brotli symbols hidden inside `libgraphics`,
   fixing the emoji file-name crash (#2136).
 - 2026-09-12: CUPS printer lookup moved off the startup path (#2312).
+- 2026-09-12: Saves are flushed to stable storage before being reported successful
+  (#2056).
