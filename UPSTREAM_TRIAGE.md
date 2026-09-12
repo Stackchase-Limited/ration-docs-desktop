@@ -15,24 +15,10 @@ Branch `ration/9.4-stability` in the superproject and in every submodule it
 bumps. Everything described in this file is committed; nothing is pushed, and no
 human has run a build with any of it.
 
-**Next task:** continue the crash and data-loss sweep. Triage of the open
-`confirmed-bug` list (via `gh issue list --repo ONLYOFFICE/DesktopEditors --label
-confirmed-bug --state open`) leaves these worth taking next, in order:
-
-- **#2110** slide PDF export crops the right side, and **#2208** the PDF editor
-  replaces barcodes with numbers or a black box. Both are export corruption - what
-  leaves the app does not match the document - so both are data loss in the sense
-  that matters.
-- **#2148** newly added PDF objects are not printed. Same family.
-- **#2337** the spell-check language changes on every keystroke. Adjacent to the
-  #1179/#402 fix but **not** covered by it: that fix rejects a LANGID no authority
-  knows, and a valid-but-unwanted LANGID still retags the run. The Linux
-  `KeyboardLayout::GetKeyboardLayout()` mapping is where to start.
-
-Ruled out while triaging: **#2135** (two instances of one document) is a feature
-request, not a defect; **#2000** (network shares absent from the dialog) is a
-Flatpak portal sandbox question rather than our code; **#2105** (Wayland) is a
-port, not a fix.
+**Next task:** #2110, #2208 and #2148 are all traced below but **none is fixed**,
+and none should be attempted without being able to run the app. Each needs an
+observation this tree cannot produce by reading. The harness in `../../harness/`
+can now launch a real build and drive the editor over CDP, so that is the way in.
 
 The two items left from earlier rounds are both blocked rather than untouched - the
 caret half of #1868 needs a format change, and the password *prompt* for #2252
@@ -341,6 +327,69 @@ repair glyph indices already returned. And note the rebuild is reproducible but
 **not bit-identical**, so the first ship is a real change to the font engine
 rather than a like-for-like swap - it deserves a wider render smoke test than
 this issue alone.
+
+### #2148 - PDF print: chain traced end to end, symptom not reproduced
+
+The reporter has Expected and Actual swapped in the issue form; the title is the
+claim: objects added in the PDF editor are not printed.
+
+**The changes do reach the printer.** `PDFEditorApi._printDesktop`
+(`sdkjs/pdf/api.js:4955`) calls `viewer.Save()` and passes the binary as the third
+argument of `AscDesktopEditor.Print`. The renderer binding
+(`client_renderer_wrapper.cpp:1836`) writes it to a temp file and puts the path on
+the `print` message; `cefview.cpp:2977` stores it as `m_sNativePrintChangesFile`;
+`:7364` hands it to `CAscNativePrintDocument::Open`, which calls `EditPdf()` to
+build `<recoveryDir>/PdfFileWithChanges.bin`, replays the changes with
+`AddToPdfFromBinary()`, and reopens that file to print. So the plumbing is intact
+and the obvious hypothesis - "print ignores the edits" - is wrong.
+
+**What is actually wrong there, and is fixed:** `m_sFileWithChanges` was never
+assigned, so the destructor's cleanup was unreachable and every such print left a
+full copy of the edited document in the recovery directory. Fixed; it is not the
+reported symptom.
+
+**Where to look next, in order:**
+
+1. `EditPdf()` failing. The `if (EditPdf(sTempFile))` block is skipped **in
+   silence** on failure, and the print then proceeds from the unedited PDF - which
+   is exactly the reported symptom. Same silent-skip shape as #2278. Instrument
+   that branch first.
+2. `bIsNativePrint`. The switch at `cefview.cpp:7322` creates the native printer for
+   PDF, PDFA, XPS and DJVU only. `AVS_OFFICESTUDIO_FILE_DOCUMENT_OFORM_PDF` is not
+   in it, and the `m_sOriginalFileNameCrossPlatform` override just above replaces
+   `sLocalFileSrc` without updating `nLocalFileSrcFormat`. Either could route a
+   session down the non-native path at `:7370`.
+3. Only then look at the renderer fallback.
+
+`GetPrintPage` is a red herring: it is the print *preview* path
+(`word/Drawing/printpreview.js:192`), not printing.
+
+### #2110 - slide PDF export crops the right side
+
+`CPrintData::FitToPage` (`desktop-sdk/.../fileprinter.cpp:499`) is correct - a plain
+aspect-preserving fit with centring. Presentations force `pmFit` with
+`ZoomEnable` at `:527`, so the suspect is the rotate branch at `:648-677`: when the
+slide and the paper disagree on orientation it swaps `fPrintWidthMM` and
+`fPrintHeightMM`, calls `FitToPage` in that rotated space, then converts with
+`dWidthPix = nPrintDpiX * fFitWidth`, mixing the rotated extent with the unrotated
+axis's DPI, and centres against `nPrintWidthPix`/`nPrintHeightPix`, which are also
+unrotated. That is consistent with content overflowing one edge. **Not confirmed:**
+it needs the reporter's actual slide and paper dimensions run through the function.
+Extract `FitToPage` and that branch and drive them with 16:9 against A4 and Letter,
+portrait and landscape; a test that fails only for the landscape-into-portrait case
+would settle it.
+
+### #2208 - PDF editor replaces barcodes with their value or a black box
+
+Not started beyond reading the report, and it is the least tractable of the three.
+The `*VALUE*` with asterisks that the reporter sees is the Code 39 convention: the
+barcode is text drawn in a barcode font, and the asterisks are its start/stop
+delimiters. So the symptom is font substitution - the embedded barcode font is lost
+when the page is converted for editing and a normal face is put in its place, which
+makes the digits legible and the barcode meaningless. The black-box case is the same
+failure with a font that renders as solid glyphs. This lives in `core` PDF font
+handling, not in `sdkjs`. Worth pairing with #2155 and #2406, which are also font
+and glyph problems.
 
 ### #2252 - plumbing done; an interactive prompt still has no home
 
