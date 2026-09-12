@@ -204,6 +204,8 @@ C++), `issue-2429-saveas-extension/` (real QtCore).
 | #2312 | The GUI waited on a CUPS connect timeout before appearing, for a printer name nothing reads | `desktop-apps` |
 | #2056 | A save reported success before the bytes reached the disk, so a power cut lost the document | `desktop-sdk` |
 | #2168 | The file dialog froze on Wayland: an in-process GTK chooser inside an XWayland Qt app | `desktop-apps` |
+| #1748 | The executable exported its statically linked libstdc++, so the system one bound to it and aborted before `main` | `desktop-apps` |
+| #2444 | A failed connection was reported as "Invalid URL", sending users to correct an address that was already right | `desktop-sdk` |
 
 Two defects in our own tooling were fixed alongside: CEF remote debugging was
 pinned to a hardcoded port 8080 that could not be overridden, and CEF failures
@@ -402,6 +404,58 @@ repair glyph indices already returned. And note the rebuild is reproducible but
 **not bit-identical**, so the first ship is a real change to the font engine
 rather than a like-for-like swap - it deserves a wider render smoke test than
 this issue alone.
+
+### A batch of twenty, 2026-09-13
+
+Swept the 193 open issues not yet in this file and took the twenty most stability- and
+correctness-shaped. Three produced fixes, one turned out already fixed, and the rest are
+recorded so nobody re-derives them.
+
+**Fixed: #1748.** The most valuable of the batch, and it did not look it - a graduate
+student's RISC-V port, easy to dismiss as not our platform. The backtrace says otherwise:
+frames #8-#11 are `std::locale` and `std::ios_base` **in the executable**, called from
+frame #12 in the *system* `libstdc++.so.6` during `call_init`. `-static-libstdc++` put a
+whole copy of the C++ runtime in the binary and nothing hid it, so the linker published it
+into the global scope and the system library bound to ours. Not RISC-V specific: that
+platform's libstdc++ differs enough to expose what x86_64 survives by luck. Second member
+of the #2136 family - a bundled library exported anyway.
+
+**Fixed: #2444.** No URL was ever rejected. `getErrorCode()` mapped the client's
+"Connection error." to 404 and `checkProvider()` maps 404 to `invalidUrl()`, so every DNS
+failure, refused connection and sandbox block arrived as "your address is wrong".
+
+**Already fixed in our baseline: #2068** (INDIRECT across sheets reported as circular). The
+current cycle check compares the worksheet as well as the coordinates - added 2025-09-03
+in sdkjs `229e86604b`, after the reporter's 9.0.0. Proved rather than assumed:
+`../fork-fix-tests/issue-2068-indirect-crosssheet/` runs the real
+`Cell.prototype.recheckCellForCycle` for the reporter's arrangement, and deleting the
+worksheet comparison makes it fail. Kept as a regression test.
+
+**#2367 - narrowed, and it affects us.** Labelled `fixed-release` upstream, but the
+maintainer says the fix "will be available in one of the upcoming releases" and the report
+covers 9.3.1 *and 9.4.0*, so our tree has it. The file is public
+(`brunwater.com/s/BrunWater125.xlsx`) and **x2t converts it cleanly here**, xlsx to bin,
+exit 0 - so the failure is not conversion but `sdkjs` reading the bin afterwards. Six
+sheets, defined names, data validation, conditional formatting, drawings; nothing exotic.
+Next step is the `harness/` CDP route to capture the actual error.
+
+**Not actionable as filed:** #2409 (maintainer could not reproduce, no file, still
+`waiting feedback`), #2189 and #2145 (no error, log or dump).
+
+**Environment rather than defect, on current reading:** #2405 (Times New Roman is a
+Microsoft font, absent from a Flatpak Linux host; the real complaint is that the
+substitution is silent), #2396 (GStreamer codecs absent from the sandbox), #1832 (video
+crash under Flatpak, with GBM driver errors logged before anything of ours runs), #2411
+(fcitx5 positioning under Wayland at 200% scale).
+
+**Font and glyph cluster, unexamined:** #2199, #2433, #2437, #2020, #2327. Worth taking
+together and after #2136's version script is validated on Linux, since three are glyph
+selection and that is where the FreeType collision was doing damage.
+
+**Formula engine, worth its own session:** #2426 (FILTER not recalculated when a condition
+goes from no-match to match). Testable the way #2068 was.
+
+**Feature requests, not defects:** #1876, #1687.
 
 ### #2421, #2189, #2347 - swept, and where each one stands
 

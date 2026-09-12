@@ -84,6 +84,18 @@ prompted by a public ONLYOFFICE report, but the code is ours.
   discarded the poster frame's real dimensions and hardcoded 50x50 pixels, so
   every video and audio insert became a 50x50 box. Upstream: #2310, #1509.
 
+- **The editor no longer aborts before `main` on a mismatched system libstdc++**
+  (`desktop-apps`). `-static-libstdc++` links a whole copy of the C++ runtime into the
+  executable, and nothing hid it, so the linker published it into the global symbol scope
+  and the *system* `libstdc++.so.6` bound its own initialiser to our copy - then freed a
+  pointer the other implementation had laid out. `--exclude-libs` now hides the statically
+  linked runtime. Upstream: #1748.
+
+- **The AI plugin says what actually went wrong** (`desktop-sdk`). A request that never
+  reached a server was reported as "Invalid URL", because a connection error was mapped to
+  404 and 404 means a bad address. Correct addresses on a LAN or VPN looked rejected. It
+  now reports a connection failure as one. Upstream: #2444.
+
 - **The file dialog works on Wayland** (`desktop-apps`). `useGtkDialog()` returned true
   for every Linux session, so the default everywhere was a GTK file chooser running
   inside this process - a Qt application on XWayland. Under a Wayland compositor that
@@ -210,3 +222,5 @@ prompted by a public ONLYOFFICE report, but the code is ours.
 - 2026-09-12: Saves are flushed to stable storage before being reported successful
   (#2056).
 - 2026-09-13: Wayland sessions use the desktop portal for file dialogs (#2168).
+- 2026-09-13: Statically linked libstdc++ hidden in the app binary (#1748); AI plugin
+  distinguishes a connection failure from a bad URL (#2444).
