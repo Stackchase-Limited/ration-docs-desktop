@@ -19,8 +19,10 @@ FMT="${3:-}"
 [ -n "$IN" ] && [ -n "$OUT" ] || { echo "usage: x2t.sh <in> <out> [formatId]" >&2; exit 2; }
 [ -f "$IN" ] || { echo "x2t.sh: no such file: $IN" >&2; exit 1; }
 
-CONV="$RD_APP/Contents/Resources/converter"
-[ -x "$CONV/x2t" ] || { echo "x2t.sh: no x2t in $CONV" >&2; exit 1; }
+X2T="$(rd_x2t)"
+[ -n "$X2T" ] || { echo "x2t.sh: no x2t found (build the app, or install an editor)" >&2; exit 1; }
+# Run it from its own directory so the sibling frameworks resolve.
+CONV="$(dirname "$X2T")"
 
 # AVS_OFFICESTUDIO_FILE_* from core/Common/OfficeFileFormats.h
 if [ -z "$FMT" ]; then
@@ -52,7 +54,7 @@ cat > "$PARAMS" <<XML
 XML
 
 set +e
-( cd "$CONV" && DYLD_LIBRARY_PATH="$CONV" LD_LIBRARY_PATH="$CONV" ./x2t "$PARAMS" )
+( cd "$CONV" && DYLD_LIBRARY_PATH="$CONV" LD_LIBRARY_PATH="$CONV" "./$(basename "$X2T")" "$PARAMS" )
 rc=$?
 set -e
 rm -f "$PARAMS"

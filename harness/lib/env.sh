@@ -2,8 +2,13 @@
 # Override anything by exporting it first.
 
 # Which .app to drive. Prefer our own build, fall back to an installed ONLYOFFICE.
+# Prefer our own in-tree build: that is the one carrying our fixes. Fall back to
+# an installed Ration Docs, then to a stock ONLYOFFICE (useful for comparing
+# behaviour against upstream, but it does not contain our changes).
+RD_ROOT="${RD_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
 if [ -z "${RD_APP:-}" ]; then
 	for candidate in \
+		"$RD_ROOT/desktop-apps/build/Ration Docs.app" \
 		"/Applications/Ration Docs.app" \
 		"$HOME/Applications/Ration Docs.app" \
 		"/Applications/ONLYOFFICE.app" \
@@ -12,6 +17,19 @@ if [ -z "${RD_APP:-}" ]; then
 		if [ -d "$candidate" ]; then RD_APP="$candidate"; break; fi
 	done
 fi
+
+# x2t from our own build, preferring the copy inside the app bundle: that one is
+# self-contained, while core/build/bin/x2t needs the bundle's @rpath framework
+# layout and aborts on its own.
+rd_x2t() {
+	for candidate in \
+		"$RD_ROOT/desktop-apps/build/Ration Docs.app/Contents/Resources/converter/x2t" \
+		"$RD_APP/Contents/Resources/converter/x2t" \
+		"$RD_ROOT/build_tools/out/mac_arm64/onlyoffice/desktopeditors/converter/x2t"
+	do
+		if [ -x "$candidate" ]; then echo "$candidate"; return; fi
+	done
+}
 
 # 8080 is the app's built-in default but collides with common dev servers,
 # so the harness asks for 9222 explicitly. Override with RD_PORT.
