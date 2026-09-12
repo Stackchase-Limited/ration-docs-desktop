@@ -9,6 +9,27 @@ used as a bug source for this fork. See `UPSTREAM.md` for provenance and
 not fixed records what was already examined, what was ruled out, and the next
 concrete step, so nobody re-derives it from scratch.
 
+## Where to resume
+
+Branch `ration/9.4-stability` in the superproject and in every submodule it
+bumps. Everything described in this file is committed; nothing is pushed, and no
+human has run a build with any of it.
+
+**Next task, already traced:** #1179 and #402 - validate the keyboard layout's
+LANGID in `asc_getKeyboardLanguage` rather than deeper in the C++. See that
+entry below; the chain is mapped end to end and the fix point named. Two issues,
+one accessor shared by all three editors.
+
+**Owed before shipping:** integration smoke testing of the rebuilt
+`fonts.wasm`, which no test in `../fork-fix-tests/` can do. The list is at the
+end of the #2155 entry.
+
+**Loose end that is nobody's yet:** `web-apps` has 166 uncommitted files,
+~170k insertions - a generated localization sync appending English fallback
+strings into every locale file, including `ar.json`. Not produced by any fix
+here. It needs a decision: commit, discard, or regenerate. Left untouched so it
+is not lost by accident.
+
 ## The verification standard
 
 A fix is not considered done until a test proves it, and proves it *detects the
