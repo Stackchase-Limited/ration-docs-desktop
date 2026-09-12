@@ -84,6 +84,15 @@ prompted by a public ONLYOFFICE report, but the code is ours.
   discarded the poster frame's real dimensions and hardcoded 50x50 pixels, so
   every video and audio insert became a 50x50 box. Upstream: #2310, #1509.
 
+- **A folder named with an emoji no longer crashes the file dialog** (`core`).
+  `libgraphics` compiles FreeType 2.10.4 into itself and exported every `FT_*` symbol,
+  so on Linux - where ELF resolves through one process-wide scope in load order -
+  cairo and pango bound their `FT_*` calls to our copy while painting file names. The
+  COLRv1 colour-glyph API is absent from 2.10.4, so an emoji fell through to the
+  system FreeType 2.13, which then read a face laid out by 2.10.4 and segfaulted. A
+  version script now keeps the bundled FreeType, harfbuzz and brotli symbols inside
+  the library. Upstream: #2136.
+
 - **The default AutoFit for new text boxes can be chosen** (`sdkjs` + `web-apps`).
   Dragging out a text box in the Presentation Editor stated a size that the editor
   then discarded: the box was created with "resize shape to fit text", and the
@@ -170,3 +179,5 @@ prompted by a public ONLYOFFICE report, but the code is ours.
   1.8G -> 1.5G.
 - 2026-09-12: Default AutoFit for new presentation text boxes is now configurable
   (#2442). First feature built on the fork rather than a bug fix.
+- 2026-09-12: Bundled FreeType/harfbuzz/brotli symbols hidden inside `libgraphics`,
+  fixing the emoji file-name crash (#2136).

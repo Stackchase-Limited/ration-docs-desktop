@@ -130,6 +130,7 @@ C++), `issue-2429-saveas-extension/` (real QtCore).
 | #2252 | A reference to a password-protected workbook showed `#REF!`; no password could be supplied and the failure reason never reached JS | `desktop-sdk` + `sdkjs`, partial |
 | #2243 | An unmapped format id made a nameless filter, and the portal then refused the whole Save As dialog - the document could not be saved | `desktop-apps` |
 | #2442 | *Feature.* The default AutoFit for a new text box is now a setting, so a box keeps the size it was drawn at | `sdkjs` + `web-apps` |
+| #2136 | A folder named with an emoji segfaulted the GTK file chooser: libgraphics exported its bundled FreeType 2.10.4 and cairo bound to it | `core` |
 
 Two defects in our own tooling were fixed alongside: CEF remote debugging was
 pinned to a hardcoded port 8080 that could not be overridden, and CEF failures
@@ -668,15 +669,21 @@ libgraphics' own engine bind to the system FreeType 2.13 while compiled against
 avoids the in-process dialog but is a workaround, and does nothing for other
 in-process GTK rendering.
 
-**Next step, owner `core`:** build `libgraphics.so` with `-fvisibility=hidden`
-for the bundled FreeType/harfbuzz translation units, or add a version script to
-`graphics/pro/graphics.pro` exporting only the `NSFonts`/`Aggplus`/`asc*` API
-and localising `FT_*`/`hb_*`. Verify with
-`nm -D --defined-only libgraphics.so | grep -c ' T FT_'` (must be 0), then the
-reporter's repro. Also revisit
-`desktop-apps/win-linux/defaults.pri:194`'s
-`-Wl,-unresolved-symbols=ignore-in-shared-libs`, which is what lets seams like
-this pass unnoticed at link time.
+**Fixed** in `core` 382bf81452: `graphics/pro/graphics.version` localises `FT_*`,
+`ft_*`, `hb_*`, `_hb_*` and `Brotli*`, applied on Linux for the shared build. A hide
+list rather than an export whitelist, deliberately: the public surface is large and
+enumerating it risks hiding something a caller needs, whereas missing a prefix here
+only leaves it as exposed as it already was. `run.sh` now builds its third variant
+from that file rather than a hand-written list, so the demonstration exercises the
+artifact: as shipped the emoji name dies with SIGSEGV, with the hide list it exits 0.
+
+**Still owed on a Linux box, and not done here:** no ELF linker is available in this
+environment, so `-Wl,--version-script` has never been exercised and the script's GNU
+syntax is unvalidated. Build it and run
+`nm -D --defined-only libgraphics.so | grep -c ' T FT_'` - it must print 0 - then the
+reporter's repro. Also still open: `desktop-apps/win-linux/defaults.pri:194`'s
+`-Wl,-unresolved-symbols=ignore-in-shared-libs`, which is what lets seams like this
+pass unnoticed at link time.
 
 
 ### #1436 - files not saving on a Synology NAS
