@@ -373,11 +373,25 @@ slide and the paper disagree on orientation it swaps `fPrintWidthMM` and
 `fPrintHeightMM`, calls `FitToPage` in that rotated space, then converts with
 `dWidthPix = nPrintDpiX * fFitWidth`, mixing the rotated extent with the unrotated
 axis's DPI, and centres against `nPrintWidthPix`/`nPrintHeightPix`, which are also
-unrotated. That is consistent with content overflowing one edge. **Not confirmed:**
-it needs the reporter's actual slide and paper dimensions run through the function.
-Extract `FitToPage` and that branch and drive them with 16:9 against A4 and Letter,
-portrait and landscape; a test that fails only for the landscape-into-portrait case
-would settle it.
+unrotated. That is consistent with content overflowing one edge.
+
+**Tested by hand, 2026-09-12, and it mostly does not reproduce.** Ademola ran the
+export and could not see a problem *except when the content is almost bleeding off
+the edge of the slide*. That reframes the issue and lowers its priority:
+
+- `FitToPage` is given the **slide** dimensions (`fPageWidth`/`fPageHeight`), not the
+  bounding box of the content. Anything a user has dragged past the slide edge is
+  outside the page by definition, and cropping it is what PowerPoint does too. For
+  that case this is correct behaviour, not a defect.
+- What is left to explain is only the margin: content that sits *just inside* the
+  edge and still loses a sliver. That would be a rounding or half-pixel error in the
+  mm-to-pixel conversion (`nPrintDpiX * fFitWidth / (10 * ONE_INCH)`, truncating
+  toward zero), not the rotate-branch theory above - which remains unproven and is
+  now the less likely of the two.
+
+**Before spending more on this, get a file that reproduces it.** Without one, the
+honest reading is that #2110 is a near-edge rounding question at worst, and the
+rotate branch should not be touched on suspicion alone.
 
 ### #2208 - PDF editor replaces barcodes with their value or a black box
 
