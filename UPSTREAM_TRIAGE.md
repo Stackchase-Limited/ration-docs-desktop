@@ -41,6 +41,9 @@ C++), `issue-2429-saveas-extension/` (real QtCore).
 | #1948 | A custom theme's colours lost to the built-in palette on specificity and source order | `web-apps` |
 | #2222 | A `+` in the install path decoded to a space, so the font wasm never loaded | `desktop-sdk` |
 | #2266 | GTK dialogs were never told the app's theme, so Save As stayed light | `desktop-apps` |
+| #1839 | Exporting the focused sheet to CSV exported whatever sheet was active at open | `core` + `sdkjs` |
+| #2418 | A formula-based conditional format rule made the spreadsheet uneditable | `sdkjs` |
+| #2155 | A leaked non-Unicode charmap turned accented characters into other glyphs | `core`, native consumers only |
 
 Two defects in our own tooling were fixed alongside: CEF remote debugging was
 pinned to a hardcoded port 8080 that could not be overridden, and CEF failures
@@ -48,90 +51,93 @@ were silenced by `LOGSEVERITY_DISABLE` (both `desktop-sdk`).
 
 ## Root-caused, not fixed
 
-### #1839 - exporting the focused sheet to CSV exports a different sheet
-
-Data loss in the sense that the user gets the wrong data with no warning.
-
-- **Mechanism.** `Workbook.prototype.setActive` (`sdkjs/cell/model/Workbook.js:3859`)
-  assigns `nActive` with no History entry, so switching sheet is pure view
-  state and never enters the change stream. The desktop save sends *changes*,
-  which x2t applies to the `Editor.bin` written at open time, so the stored
-  `activeTab` stays stale. `core/OOXML/Binary/Sheets/Writer/CSVWriter.cpp:143`
-  picks the sheet with `GetActiveSheetIndex()`.
-- **Proven empirically.** Built two-sheet workbooks differing only in
-  `<workbookView activeTab=...>` and converted them with our own x2t:
-  `activeTab=0` exported sheet a, `activeTab=1` exported sheet b. So x2t honours
-  the flag and the flag is what is stale.
-- `ActiveTab` *is* serialised, in `cell/model/Serialize.js:3972`
-  (`WriteWorkbookView`), but only when a full binary is produced.
-- **Next step.** Either carry the active sheet in the save parameters -
-  `sdkjs/cell/Local/api.js` `getAdditionalSaveParams()` already ships
-  `adjustOptions.activeSheetsArray` for PDF printing - and honour it in
-  `CSVWriter`, or refresh the bin on save. Needs a `core` change plus an x2t
-  rebuild to verify, which is why it was left.
-- Do **not** "fix" this by recording sheet activation in History: that would
-  make switching sheets an undoable action.
-
 ### #1868 - the cursor does not return to the cell you left it on
 
-Same root cause as #1839: selection and active cell are view state that never
-reaches the saved file. Fixing #1839 properly should fix this too. No separate
-investigation needed beyond the above.
+**Correction.** An earlier version of this file claimed #1868 shared #1839's
+cause and would be fixed along with it. That is wrong. #1839 is about which
+*sheet* is active; #1868 is about the scroll and caret position *within* a
+sheet, and the #1839 fix does not touch it. Same family - view state never
+reaching the file - different piece of state.
 
-### #2418 - formula-based conditional formatting makes the document uneditable
+- Scrolling never writes `Worksheet.sheetViews[0].topLeftCell`. The only writers
+  are `sdkjs/cell/model/Workbook.js:13562`, undo/redo, and
+  `WorkbookView.executeWithCurrentTopLeftCell`
+  (`cell/view/WorkbookView.js:5335`), which copies `getCurrentTopLeftCell()`
+  into the model only around the full-binary write at `cell/api.js:1594` - a
+  path the desktop's changes-based save never takes.
+- The caret is worse: `asc_CSheetViewSettings` has no selection or active-cell
+  field at all. `WriteSheetView` (`cell/model/Serialize.js:5917`) writes
+  `topLeftCell`, `pane`, zoom and flags and nothing else, so the active cell is
+  never round-tripped through the bin on any path.
+- **Next step.** The scroll half is now cheap: extend the save-parameter channel
+  the #1839 fix introduced with a per-sheet `topLeftCell`, and apply it in
+  `BinaryReaderS::ReadWorksheet` (around `:4448-4460`). That alone answers the
+  reporter's "I have to scroll down". The caret additionally needs a new
+  selection field in the bin format, with serializer and reader changes on both
+  sides.
 
-**Contained, not cured.** A throwing rule no longer disables editing
-(`sdkjs/cell/model/Workbook.js`, `getSafeCompareFunction` next to
-`getCacheFunction`), but the exception itself is unidentified.
+### #2418 - resolved, plus a correction about the containment
 
-- The reported "An error occurred during the work with the document" is
-  `Asc.c_oAscError.ID.EditingError`, raised **only** from the global handler in
-  `sdkjs/common/apiBase.js:374`, i.e. it is an uncaught JS exception. That
-  handler then calls `asc_setViewMode(true)`, which is why the document goes
-  read-only.
-- Evaluation path examined: `Worksheet.prototype._updateConditionalFormatting`
-  (`cell/model/Workbook.js:7531`), `doExpression` (:7713), `getCacheFunction`
-  (:7548), `CFormulaCF.getValue`
-  (`cell/model/ConditionalFormatting.js:2199`), and consumption in
-  `SheetMergedStyles.getStyle` (`cell/model/WorkbookElems.js:5910`).
-- Ruled out: `doExpression` returning a boolean rather than a dxf is *correct* -
-  `getCacheFunction` maps it via `setFunc(row, col) ? rule.dxf : null`.
-- **Next step.** Run the ready-made repro at
-  `harness/repros/2418-conditional-formatting.js` against a properly packaged
-  build with CDP attached, and read the stack. See the harness limitation below.
+Fixed. `Workbook.js` is `"use strict"`, and the `Asc.ECfType.expression` branch
+of `_updateConditionalFormatting` built its
+`CConditionalFormattingFormulaParent` inside a nested `doExpression` invoked
+bare, so `this` was `undefined` and the parent carried no worksheet. Editing a
+referenced cell then reached `onFormulaEvent`, whose `Change` case calls
+`this.ws.setDirtyConditionalFormatting(...)`, and threw. Uncaught that becomes
+`EditingError`, and the global handler calls `asc_setViewMode(true)` - the
+document going read-only. Every sibling branch builds the same parent from the
+method body where `this` is the worksheet, which is why only formula-based rules
+broke.
 
-### #2155 - accented characters change in a cell after collapsing a group
+**Correction.** This file previously said the `getSafeCompareFunction` wrapper
+meant a throwing rule could no longer disable editing. That was wrong for this
+issue: the wrapper guards the style-evaluation path handed to
+`setConditionalStyle`, while this exception is raised on the dependency-graph
+notify path inside `calcTree`, entirely outside it. The containment never
+intercepted this bug. It still guards its own path and was kept.
 
-Not fixable in `sdkjs`; the cause is in the font engine.
+The stack came from driving a packaged app over CDP with
+`harness/repros/2418-conditional-formatting.js` - the first thing that route
+has paid for.
 
-- **Mechanism.** The corrupted cell reads `Begr¸fl ung` where it should read
-  `Begrüßung`: `ü` (U+00FC) renders as `¸`, which is **MacRoman 0xFC**, and
-  `ß` (U+00DF) renders as the `fl` ligature, **MacRoman 0xDF**. So code points
-  are being resolved through the font's TrueType `(1,0)` Macintosh cmap instead
-  of the `(3,1)` Windows Unicode cmap. ASCII is unaffected because MacRoman
-  agrees with Latin-1 below 0x80 - which is exactly why only the accented
-  characters break, and why the formula bar and filter menu (DOM text, browser
-  fonts) stay correct while the canvas cell does not. Faces are cached for the
-  process lifetime, which is why it "persists until I restart".
-- **Ruled out.** The workbook itself (`sharedStrings.xml` holds precomposed
-  U+00FC/U+00DF, all runs are Arial, so not normalization and not font
-  substitution); the per-view text caches
-  (`cell/view/WorksheetView.js:9297, 9419, 9450` - per-WorksheetView and cleared
-  on redraw, so they cannot survive to a restart); `SetStringGID` toggling
-  (every site restores it); the group-drawing path, which only paints lines and
-  level digits.
-- **Where it actually lives.** Charmap selection happens inside the wasm export
-  `AscFonts.FT_SetCMapForCharCode` (`common/libfont/engine/fonts.js:111-130`),
-  called from `CFontFile.CacheGlyph` (`common/libfont/file.js:995, 1077`). The
-  core C++ `SetCMapForCharCode` iterates the face's charmaps and leaves the last
-  one selected; JS never re-selects. Tellingly, the code that would restore the
-  intended charmap per glyph is **commented out** at
-  `common/libfont/file.js:1323-1335` and `:1414-1425`, and the wrappers it needs
-  (`FT_Get_Charmap_Index`, `FT_Set_Charmap`) are not exported at all.
-- **Next step.** Fix `CFontFile::SetCMapForCharCode` in `core` to restore the
-  previously selected charmap, or to prefer the Unicode charmap for
-  non-symbolic faces (`m_nSymbolic == -1`, see `common/libfont/file.js:778`).
-  Optionally re-export the two FreeType wrappers and un-comment the JS guard.
+### #2155 - fixed for native consumers, still open on the editor canvas
+
+The symptom reading was right - `ü` renders as `¸` (MacRoman 0xFC) and `ß` as the
+`fl` ligature (MacRoman 0xDF), so glyphs resolve through a non-Unicode charmap -
+but **an earlier version of this file named the wrong function.**
+
+- `CFontFile::SetCMapForCharCode` is benign for Arial, whose charmaps are
+  `(0,3) (1,0) (3,1)`, so its loop ends on a Unicode one.
+- The real leak is our own harfbuzz patch,
+  `core/Common/3dParty/harfbuzz/patch/hb-ft.cc.patch`:
+  `hb_ft_get_index_by_unicode` restores the entry charmap only on failure and
+  returns without restoring on success. `hb_ft_get_nominal_glyph` resolves code
+  points against whichever charmap is selected and only falls back when it
+  misses - and **a tab or a newline is enough**, because Arial maps neither in
+  its Unicode cmaps but does in `(1,0)`. One tab poisons the cached face for the
+  rest of the process: hence "persists until I restart", and hence intermittent.
+- Measured against real Arial with real FreeType: `U+00FC` is Unicode GID 129
+  but MacRoman GID 220, and `U+00B8` is also 220; `U+00DF` is 137 versus 192,
+  and `U+FB02` is 192. After one tab lookup `Begrüßung` shapes to
+  `Begr¸ﬂung`, character for character as reported.
+- Fixed at all three leaking sites: the harfbuzz patch,
+  `DesktopEditor/fontengine/TextShaper.cpp` and
+  `DesktopEditor/fontengine/FontFile.cpp` (the latter two do leak for fonts
+  listing a non-Unicode cmap last, e.g. `core-fonts/fonts-beng-extra/ani.ttf`).
+
+**Still outstanding.** The editor is a CEF page and loads the font engine as a
+**prebuilt `sdkjs/common/libfont/engine/fonts.wasm` checked into `sdkjs`**.
+There is no emscripten here and no wasm recipe anywhere in `build_tools`. So
+x2t, doctrenderer, PDF and image export and thumbnails are fixed, and **the
+editor's own canvas still has this bug until that wasm is rebuilt from these
+sources.** Establishing a `fonts.wasm` build is the next step. A JS-only
+mitigation (re-probing a Unicode charmap after each shape) was considered and
+not shipped: it cannot repair corruption inside a string that contains the
+poisoning character.
+
+Note also that `Common/3dParty/harfbuzz/make.py` applies the patch **only on a
+fresh clone**, so an existing gitignored `harfbuzz/` checkout does not pick it
+up; the local checkout was edited to match.
 
 ## Already fixed in our 9.4 baseline - no action
 
@@ -370,13 +376,27 @@ only `projicons/` and `update-daemon/`.
   `ChlbAudioClickCheck` (`:265-274`) re-checks every box the first time the user
   picks "Associate selected" - the UI can present a selection nobody made.
 
-## Tooling limitation worth knowing
+## Driving the editor - now working
 
-The harness in `harness/` can attach to the desktop app over CDP and evaluate
-JS in the editor, which is what the #2418 repro needs. Remote debugging works,
-but `/json` reports **no page targets**: a CEF browser only exists once a
-document is open, and swapping a freshly built framework into an existing app
-bundle produces an app that launches with no window at all. Closing this needs
-a properly packaged build from `desktop-apps/macos`. Until then, F1 opens
-DevTools interactively, and `harness/bin/x2t.sh` converts documents headlessly -
-which is how #1839 was proven.
+The harness can drive a packaged app over CDP. Three things that were
+misdiagnosed for a while:
+
+- **"The app launches with no window" was never a framework mismatch.**
+  `AppDelegate.mm` calls `PFMoveToApplicationsFolderIfNecessary`, which raises a
+  **modal** "Move to Applications folder?" alert for any bundle outside an
+  Applications folder. On a terminal launch it is never drawn, so the process
+  sits alive, foreground and windowless with no CEF browser - `sample <pid>`
+  shows it parked in `-[NSAlert runModal]`. Suppress with `defaults write
+  com.stackchase.rationdocs moveToApplicationsFolderAlertSuppress -bool YES`.
+- **The start window is CEF, not native.** `/json` lists `login/index.html`
+  before any document exists, so an empty `/json` means the app has not finished
+  starting.
+- **A document opens only via `open -a <app> <file>`**; a path on argv does
+  nothing. And the editor lives in a **child iframe** CEF does not expose as a
+  target, so `editor-eval.js` walks the iframes for the one holding
+  `Asc.editor`.
+
+`harness/bin/build-app.sh` packages an app from a payload snapshot - take the
+snapshot *before* starting any `build_tools` build, which rewrites
+`build_tools/out` underneath you. `harness/README.md` has the procedure and its
+limits.

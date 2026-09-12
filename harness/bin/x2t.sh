@@ -37,7 +37,10 @@ if [ -z "$FMT" ]; then
 		ods)  FMT=259  ;;
 		csv)  FMT=260  ;;
 		pdf)  FMT=513  ;;  # CROSSPLATFORM + 0x01
-		bin)  FMT=8193 ;;  # CANVAS + 0x01 (the editors' internal format)
+		# .bin is the editors' internal format and the extension does not say which
+		# editor, so refuse rather than guess - picking Word for a spreadsheet bin
+		# fails inside x2t with the opaque error 88 (CONVERT_PARAMS).
+		bin)  echo "x2t.sh: .bin is ambiguous - pass a format id: 8193 word, 8194 spreadsheet, 8195 presentation, 8196 pdf, 8197 draw" >&2; exit 2 ;;
 		*) echo "x2t.sh: unknown output type '${OUT##*.}' - pass a format id" >&2; exit 2 ;;
 	esac
 fi
