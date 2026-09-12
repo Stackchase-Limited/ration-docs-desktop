@@ -109,44 +109,66 @@ The stack came from driving a packaged app over CDP with
 `harness/repros/2418-conditional-formatting.js` - the first thing that route
 has paid for.
 
-### #2155 - fixed for native consumers, still open on the editor canvas
+### #2155 - native consumers fixed; the canvas needs a wasm rebuild, which is now possible
 
-The symptom reading was right - `ü` renders as `¸` (MacRoman 0xFC) and `ß` as the
-`fl` ligature (MacRoman 0xDF), so glyphs resolve through a non-Unicode charmap -
-but **an earlier version of this file named the wrong function.**
+The charmap leak is fixed in `core` (`a980108812`) and proven against real
+FreeType: `ü` was resolving through a font's Macintosh cmap to MacRoman 0xFC
+and `ß` to the `fl` ligature, because our harfbuzz patch's
+`hb_ft_get_index_by_unicode` restores the entry charmap only on failure, and a
+single tab or newline is enough to poison a cached face. x2t, doctrenderer, PDF
+and image export and thumbnails are correct.
 
-- `CFontFile::SetCMapForCharCode` is benign for Arial, whose charmaps are
-  `(0,3) (1,0) (3,1)`, so its loop ends on a Unicode one.
-- The real leak is our own harfbuzz patch,
-  `core/Common/3dParty/harfbuzz/patch/hb-ft.cc.patch`:
-  `hb_ft_get_index_by_unicode` restores the entry charmap only on failure and
-  returns without restoring on success. `hb_ft_get_nominal_glyph` resolves code
-  points against whichever charmap is selected and only falls back when it
-  misses - and **a tab or a newline is enough**, because Arial maps neither in
-  its Unicode cmaps but does in `(1,0)`. One tab poisons the cached face for the
-  rest of the process: hence "persists until I restart", and hence intermittent.
-- Measured against real Arial with real FreeType: `U+00FC` is Unicode GID 129
-  but MacRoman GID 220, and `U+00B8` is also 220; `U+00DF` is 137 versus 192,
-  and `U+FB02` is 192. After one tab lookup `Begrüßung` shapes to
-  `Begr¸ﬂung`, character for character as reported.
-- Fixed at all three leaking sites: the harfbuzz patch,
-  `DesktopEditor/fontengine/TextShaper.cpp` and
-  `DesktopEditor/fontengine/FontFile.cpp` (the latter two do leak for fonts
-  listing a non-Unicode cmap last, e.g. `core-fonts/fonts-beng-extra/ani.ttf`).
+**The editor canvas is not**, because it loads a prebuilt
+`sdkjs/common/libfont/engine/fonts.wasm`. That is no longer a dead end:
 
-**Still outstanding.** The editor is a CEF page and loads the font engine as a
-**prebuilt `sdkjs/common/libfont/engine/fonts.wasm` checked into `sdkjs`**.
-There is no emscripten here and no wasm recipe anywhere in `build_tools`. So
-x2t, doctrenderer, PDF and image export and thumbnails are fixed, and **the
-editor's own canvas still has this bug until that wasm is rebuilt from these
-sources.** Establishing a `fonts.wasm` build is the next step. A JS-only
-mitigation (re-probing a Unicode charmap after each shape) was considered and
-not shipped: it cannot repair corruption inside a string that contains the
-poisoning character.
+- **The build recipe exists and upstream deleted it from `core`** - commits
+  `2da2866862` "Refactoring" (15 files under `DesktopEditor/fontengine/js/`,
+  including the 377-line `libfont.json`) and `b77b3dc7e2` "Remove unused files"
+  (47 more, `Common/js/make.py` and `graphics/pro/js/`). Both recoverable from
+  `<commit>^`. `make.py` pins emsdk to emscripten **3.1.48**.
+- **It has been rebuilt and the artefact proven to be the shipped one.** The
+  generated `fonts.js` glue is **byte-identical to the checked-in file past the
+  license header - 58,721 bytes**. Export and import tables match exactly. The
+  wasm differs by 730 bytes (0.02%), which is source drift in our fork since the
+  binary was vendored.
+- **The fix was verified inside the wasm**, which no earlier test reached. A/B
+  against `a980108812^`, relinked for Node: the baseline returns
+  `shape("Begrüßung")` = `[37,72,74,85,220,192,...]` - literally `Begr¸ﬂung` - and the
+  fixed build returns `[...,129,137,...]`.
+- Working recipe, emsdk and artefacts are outside the repo in
+  `../wasm-work/` (1.8 GB, 1.4 GB of it emsdk); entry points
+  `build-fonts-wasm.sh` and `relink-node.sh`.
 
-Note also that `Common/3dParty/harfbuzz/make.py` applies the patch **only on a
-fresh clone**, so an existing gitignored `harfbuzz/` checkout does not pick it
-up; the local checkout was edited to match.
+**Two findings that enlarge this issue, both confirmed in the source:**
+
+1. **`a980108812` does not reach the canvas even after a rebuild.**
+   `libfont.json` does not compile `fontengine/FontFile.cpp` at all. The wasm
+   carries a private copy of the same loop in
+   `DesktopEditor/fontengine/js/cpp/text.cpp` (`ASC_FT_SetCMapForCharCode`) with
+   no charmap save or restore, whose non-Unicode branch assigns `nCharIndex` and
+   keeps iterating - the pre-fix code verbatim. It must be patched before
+   shipping a rebuild. (Established by reading the source; not reproduced,
+   because the JS surface does not expose `face->charmap` and MacRoman agrees
+   with ASCII.)
+2. **The PDF viewer has the leak independently.** `drawingfile.json` *does*
+   compile `FontFile.cpp`, so `sdkjs/pdf/src/engine/drawingfile.wasm` (10.2 MB)
+   needs the same rebuild. Same driver, larger source set.
+
+**Remaining work, roughly 1.5-3 days, mostly not the build:** restore ~80 recipe
+files from `2da2866862^`/`b77b3dc7e2^` (note `graphics/pro/js/before.py` mutates
+tracked files in place, so stage it outside the tree); patch `cpp/text.cpp`;
+decide on the stale asm.js twin `fonts_ie.js`, which `loader.js:100-107` only
+reaches when `WebAssembly` is absent; rebuild `drawingfile.wasm`; wire it into
+`build_tools` so it is not a laptop ritual; and land the output at **all six
+checked-in copies** of `fonts.wasm` (`sdkjs/`, `sdkjs/deploy/`,
+`desktop-apps/macos/Vendor/...`, and three under `build_tools/out/`).
+
+**Do not mitigate in JS.** The A/B settles it: corruption appears *within a
+single shaping call* on an already-poisoned face, so no post-hoc re-probe can
+repair glyph indices already returned. And note the rebuild is reproducible but
+**not bit-identical**, so the first ship is a real change to the font engine
+rather than a like-for-like swap - it deserves a wider render smoke test than
+this issue alone.
 
 ### #2278 - copying a sheet to a new file opens the whole original instead
 
