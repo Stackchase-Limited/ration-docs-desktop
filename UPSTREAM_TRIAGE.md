@@ -15,12 +15,29 @@ Branch `ration/9.4-stability` in the superproject and in every submodule it
 bumps. Everything described in this file is committed; nothing is pushed, and no
 human has run a build with any of it.
 
-**Next task:** nothing is traced and waiting. The two items left from earlier
-rounds are both blocked rather than untouched - the caret half of #1868 needs a
-format change, and the password *prompt* for #2252 needs a `web-apps` dialog that
-should wait until the localization diff below is settled. So the next round starts
-with fresh triage from the upstream tracker; prefer crashes and data loss, and
-prefer what can be tested without a compiler.
+**Next task:** continue the crash and data-loss sweep. Triage of the open
+`confirmed-bug` list (via `gh issue list --repo ONLYOFFICE/DesktopEditors --label
+confirmed-bug --state open`) leaves these worth taking next, in order:
+
+- **#2110** slide PDF export crops the right side, and **#2208** the PDF editor
+  replaces barcodes with numbers or a black box. Both are export corruption - what
+  leaves the app does not match the document - so both are data loss in the sense
+  that matters.
+- **#2148** newly added PDF objects are not printed. Same family.
+- **#2337** the spell-check language changes on every keystroke. Adjacent to the
+  #1179/#402 fix but **not** covered by it: that fix rejects a LANGID no authority
+  knows, and a valid-but-unwanted LANGID still retags the run. The Linux
+  `KeyboardLayout::GetKeyboardLayout()` mapping is where to start.
+
+Ruled out while triaging: **#2135** (two instances of one document) is a feature
+request, not a defect; **#2000** (network shares absent from the dialog) is a
+Flatpak portal sandbox question rather than our code; **#2105** (Wayland) is a
+port, not a fix.
+
+The two items left from earlier rounds are both blocked rather than untouched - the
+caret half of #1868 needs a format change, and the password *prompt* for #2252
+needs a `web-apps` dialog that should wait until the localization question is
+settled.
 
 **Build status: everything here compiles and links.** A full
 `build_tools/make.py` build was run on 2026-09-12 with all of this session's work
@@ -125,6 +142,7 @@ C++), `issue-2429-saveas-extension/` (real QtCore).
 | #1179, #402 | A keyboard layout's LANGID became the text language unvalidated; a custom or neutral layout set it to 8192 and spell check stopped | `sdkjs` |
 | #2278 | Copying a sheet to a new file opened the whole original workbook; the selected-sheets binary was written only for cloud-crypto documents | `desktop-sdk` |
 | #2252 | A reference to a password-protected workbook showed `#REF!`; no password could be supplied and the failure reason never reached JS | `desktop-sdk` + `sdkjs`, partial |
+| #2243 | An unmapped format id made a nameless filter, and the portal then refused the whole Save As dialog - the document could not be saved | `desktop-apps` |
 
 Two defects in our own tooling were fixed alongside: CEF remote debugging was
 pinned to a hardcoded port 8080 that could not be overridden, and CEF failures

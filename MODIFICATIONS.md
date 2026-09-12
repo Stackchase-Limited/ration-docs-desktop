@@ -84,6 +84,16 @@ prompted by a public ONLYOFFICE report, but the code is ours.
   discarded the poster frame's real dimensions and hardcoded 50x50 pixels, so
   every video and audio insert became a 50x50 box. Upstream: #2310, #1509.
 
+- **Save As works again on KDE with the desktop portal** (`desktop-apps`). A format
+  id with no entry in the file dialog's filter map produced an empty filter name -
+  `QMap::value()` returns an empty `QString` for a missing key, silently - and
+  xdg-desktop-portal refuses the entire request when it sees one, so no dialog
+  appeared and the document could not be saved. Unmapped ids are now skipped, and
+  nameless filters are dropped at the portal boundary so no future producer can
+  break the dialog the same way. Two use-after-frees in the same code were fixed
+  alongside: the filter pattern and the parent window handle were both read from a
+  `QByteArray` temporary that had already been freed. Upstream: #2243.
+
 - **A password-protected workbook behind an external reference can now be read**
   (`desktop-sdk` + `sdkjs`). A formula referencing an encrypted workbook showed
   `#REF!` and nothing ever asked for a password. `CConvertFileInEditor` now has an
@@ -145,3 +155,7 @@ prompted by a public ONLYOFFICE report, but the code is ours.
   only cloud-crypto ones (#2278).
 - 2026-09-12: Password and converter error code plumbed between the editor and
   x2t, so an encrypted external reference can be read (#2252, partial).
+- 2026-09-12: Save As fixed on the KDE desktop portal, plus two use-after-frees in
+  the file dialog (#2243).
+- 2026-09-12: Help images stored once instead of once per language; desktop payload
+  1.8G -> 1.5G.
