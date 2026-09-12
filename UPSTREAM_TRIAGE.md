@@ -142,6 +142,64 @@ and `ß` to the `fl` ligature, because our harfbuzz patch's
 single tab or newline is enough to poison a cached face. x2t, doctrenderer, PDF
 and image export and thumbnails are correct.
 
+**The canvas half is now built and proven, and the binary shipping today is
+confirmed affected.** The deleted emscripten recipe was restored in `core`
+(`bf2e06d09a`, `dcbc889a60`) and the wasm's own copy of the shaper fixed
+(`5394be5543`).
+
+Three results, each checked independently of the agent that produced them:
+
+1. **Toolchain proof.** With the restored recipe and emsdk 3.1.48, the generated
+   glue `fonts.js` is **byte-identical** to the copy checked into `sdkjs` -
+   58,721 bytes of body, differing only in the 19-byte 2026 copyright header
+   refresh. Export/import tables match at 145 entries. The recipe reproduces
+   what upstream shipped.
+2. **The fix works.** `fork-fix-tests/issue-2155-canvas-wasm/run.sh both`:
+   pre-fix `shape("Begrüßung")` gives `[37,72,74,85,220,192,88,81,74]`,
+   which reads `Begr¸ﬂung`; post-fix `[...,129,137,...]`. 12/12 both ways.
+3. **The shipping binary has the bug.** Loading the *currently checked-in*
+   `sdkjs/common/libfont/engine/fonts.wasm` under that same glue fails 4 of the
+   12 assertions with exactly the corrupt GIDs (220, 192). This is what settles
+   the entry: the corruption is live in the artefact users get, not merely
+   reproducible in a synthetic baseline.
+
+**Scope of the rebuild.** The rebuilt wasm is +802 bytes. Only four files in the
+whole wasm-compiled source set differ from what produced the checked-in binary:
+`DesktopEditor/fontengine/FontFile.cpp` and `TextShaper.cpp` (+39 lines, the
+charmap restore), `Common/3dParty/harfbuzz/patch/hb-ft.cc.patch` (+24, the fix
+that actually corrects the canvas) and `languages.h` (+5/-2, the yo/ig/ha
+registration) - plus the wasm's own `text.cpp` and upstream's copyright refresh.
+Everything else in the module (zlib, the PNG/JPEG/TIFF/PSD/TGA decoders,
+EMF/WMF playback, hyphenation) is the same source through the same toolchain,
+which the byte-identical glue evidences.
+
+**The `text.cpp` fix specifically is defence in depth, not a separately
+observable fix.** The reproduced corruption comes from the harfbuzz leak. A
+leaked charmap only corrupts a lookup when the wrong charmap *returns* a glyph,
+and no available font has a last-in-list non-Unicode cmap that is also dense
+over U+0080-U+00FF - Arial's is dense but not last, `ani.ttf`'s is last but
+sparse. Part 4 of the test is therefore an invariant that holds on both builds,
+and says so.
+
+**Not done: placing the artefacts.** `wasm-work/place-artifacts.sh` (dry run by
+default) writes one tracked file - `sdkjs/common/libfont/engine/fonts.wasm` and
+`fonts_ie.js`; `fonts.js` needs no change, its body already matches - plus six
+gitignored copies. It preserves each destination's license header, because
+`min.py` prepends `core/Common/license/header.license`, still the 2023 text
+while `sdkjs` carries the 2026 refresh, so a wholesale copy would silently
+revert it. `fonts_ie.js` was rebuilt in the same pass (`libfont.json` has
+`"asm": true`); its body differs by +1,258 bytes, consistent with carrying the
+same source changes. `drawingfile.wasm` (the PDF canvas) needs no source change
+- it compiles the already-fixed `FontFile.cpp` and no harfbuzz at all - but does
+need a rebuild, which means staging eight more component trees and 795 TUs.
+`build_tools` has no wasm step at all today; `build_js.py` only copies prebuilt
+binaries.
+
+**Hazard worth remembering:** the harfbuzz fix reaches the wasm only through the
+*gitignored* `Common/3dParty/harfbuzz/harfbuzz/` checkout, patched on fresh
+clone from the tracked patch. An existing unpatched checkout silently drops the
+fix.
+
 **The editor canvas is not**, because it loads a prebuilt
 `sdkjs/common/libfont/engine/fonts.wasm`. That is no longer a dead end:
 
