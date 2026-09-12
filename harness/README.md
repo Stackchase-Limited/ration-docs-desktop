@@ -7,7 +7,7 @@ occurred during the work with the document*" into a stack trace.
 Most bugs in the upstream tracker cannot be confirmed by reading code alone. The
 editor is a CEF browser, so it can be attached to and scripted like any page.
 
-## Why this works, and what upstream got wrong
+## Why this works, and what the bug was
 
 Debug-info support is enabled by `ascdesktop-support-debug-info-keep` in
 `settings.xml` (see `LoadSettings` / `CheckSetting` in
@@ -15,49 +15,71 @@ Debug-info support is enabled by `ascdesktop-support-debug-info-keep` in
 command line. Two things hang off it:
 
 **F1 opens DevTools.** `OnPreKeyEvent` in `cefview.cpp` calls `ShowDevTools()`
-for key code 112 when `GetDebugInfoSupport()` is true. That check happens at
-runtime, so **this works on the shipped build today** - it is just manual.
+for key code 112 when `GetDebugInfoSupport()` is true.
 
-**Remote debugging did not work at all.** `client_app.h` appends the port from
-`OnBeforeCommandLineProcessing`:
+**Remote debugging was pinned to port 8080 and failed silently.**
+`CAscClientAppBrowser::OnBeforeCommandLineProcessing` in `client_app.h`
+appended the port as a command-line switch with the value hardcoded:
 
 ```cpp
 if (m_manager->GetDebugInfoSupport())
     command_line->AppendSwitchWithValue("--remote-debugging-port", "8080");
 ```
 
-but `main.cpp` calls `Init_CEF` *before* `initializeApp()` loads `settings.xml`,
-so `GetDebugInfoSupport()` is still false when the browser command line is
-built. The switch only ever landed on child process command lines - and the
-DevTools HTTP server runs in the **browser** process. Verified on the shipped
-9.0.4 build: the renderer had `--remote-debugging-port=8080` and nothing was
-listening.
+That switch **overrides** `CefSettings.remote_debugging_port`, so
+`--remote-debugging-port` could not be honoured - whatever you asked for, CEF
+used 8080. And 8080 collides with all sorts of ordinary dev servers. When the
+bind fails the DevTools server just does not start, and because `Init_CEF` set
+`settings.log_severity = LOGSEVERITY_DISABLE` there was no message anywhere:
 
-CEF starts that server from `CefSettings.remote_debugging_port`, which the app
-never set. Our `desktop-sdk` now reads the port from the command line in
-`Init_CEF` and sets it.
+```
+ERROR:socket_posix.cc(147)] bind() failed: Address already in use (48)
+ERROR:devtools_http_handler.cc(309)] Cannot start http server for devtools.
+```
 
-**That is necessary but not yet sufficient on macOS.** Built from this tree and
-tested on 2026-09-12, still nothing binds the port. Established, so nobody has
-to redo it:
+Two changes in `desktop-sdk` fix it:
 
-- the fix is in the loaded binary (the new `--remote-debugging-port=` literal is
-  present in `ascdocumentscore.framework`, absent from the previous build)
-- macOS does reach it: `mac_application.mm` `Start:argv:` passes argc/argv to
-  `Init_CEF`, and the process command line carries the port
-- `settings.remote_debugging_port` is assigned before
-  `MainContextImpl::Initialize`, which forwards the settings straight to
-  `CefInitialize`, and nothing reassigns it in between
-- the bundled CEF does contain the DevTools server (`/json/version`,
-  `devtools_remote`)
+- `client_app.h` supplies the 8080 default only when no port was requested, so
+  `--remote-debugging-port=<n>` works.
+- `Init_CEF` keeps CEF's own logging at `WARNING` when debug info is requested,
+  instead of silencing it. The failure above was invisible for hours; it should
+  never be again.
 
-So something after `CefInitialize` declines to start the server, and the cause
-is not yet known. `settings.log_severity = LOGSEVERITY_DISABLE` in `Init_CEF`
-means CEF logs nothing, so raising that temporarily is the obvious next probe.
+`Init_CEF` also sets `CefSettings.remote_debugging_port`. That is belt and
+braces only - the command-line switch wins over it - but it makes the outcome
+independent of when the manager happens to read its settings.
 
-**Until this is closed out, scripted CDP does not work on macOS.** Use F1 for
-interactive debugging, and `bin/x2t.sh` for anything that can be expressed as a
-conversion - that path is fully working.
+Both need a build from this tree. On a build without them, use F1, or free up
+port 8080.
+
+### Verified, and what is still missing
+
+Verified on 2026-09-12 against a build from this tree: launching with
+`--remote-debugging-port=9222` prints
+
+```
+DevTools listening on ws://127.0.0.1:9222/devtools/browser/<id>
+```
+
+and `http://127.0.0.1:9222/json/version` answers, reporting
+`AscDesktopEditor/9.4.0.0`. Before the fix nothing bound any port.
+
+What is **not** yet demonstrated is attaching to an editor *page*. `/json`
+reports zero targets, because a CEF browser only exists once a document is
+open - the start window is native. Two things stand in the way, neither of them
+about the port:
+
+- Swapping a freshly built `ascdocumentscore.framework` into an existing app
+  bundle is not enough to get a usable app: the resulting mixture of an older
+  app binary and a new framework launched with no window at all. Testing pages
+  needs a properly packaged build from `desktop-apps/macos`, not an injected
+  framework.
+- In that broken bundle neither a file path on the command line nor an
+  `open -a <app> <file>` Apple Event opened a document. Which of those works on
+  a properly packaged build is untested.
+
+So `editor-eval.js` and `repros/` are ready and the transport is proven, but
+running a repro end to end still needs a packaged app with a document open.
 
 ## Setup
 
@@ -135,8 +157,8 @@ path directly, so the failure is attributable rather than just observable.
 
 ## Limits
 
-- Scripted CDP does not work on macOS yet (see above) - `editor-eval.js` and
-  `repros/` are written and ready, but blocked. F1 works; so does `x2t.sh`.
+- Scripted CDP needs a build from this tree (see above). On an older build,
+  either use F1 or make sure port 8080 is free.
 - Needs a document open and editable; the scripts say so rather than guessing.
 - Only exercises `sdkjs` / `web-apps`. Changes to `core`, `desktop-sdk` or
   `desktop-apps` are C++ and still need a full build.

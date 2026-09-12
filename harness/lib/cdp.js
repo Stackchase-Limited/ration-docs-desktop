@@ -26,7 +26,12 @@ function getJSON(port, path) {
 
 async function listPages(port) {
 	const all = await getJSON(port, '/json');
-	return all.filter((t) => t.type === 'page' && t.webSocketDebuggerUrl);
+	// CEF answers with [] until a browser exists, and can answer with an object
+	// on error, so do not assume an array.
+	if (!Array.isArray(all)) {
+		return [];
+	}
+	return all.filter((t) => t && t.type === 'page' && t.webSocketDebuggerUrl);
 }
 
 // The editor page appears a moment after the window does, so poll.
@@ -41,6 +46,11 @@ async function waitForPage(port, match, timeoutMs) {
 				: pages[0];
 			if (hit) return hit;
 			if (pages.length) last = 'pages open but none match "' + match + '": ' + pages.map((p) => p.url).join(', ');
+			else {
+				// The endpoint is up but the app has no browser yet: usually no
+				// document is open, since the start window is native rather than CEF.
+				last = 'CDP is up but reports no pages - is a document open in the editor?';
+			}
 		} catch (e) {
 			last = e.message;
 		}
