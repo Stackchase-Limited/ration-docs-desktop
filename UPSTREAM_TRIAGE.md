@@ -15,16 +15,18 @@ Branch `ration/9.4-stability` in the superproject and in every submodule it
 bumps. Everything described in this file is committed; nothing is pushed, and no
 human has run a build with any of it.
 
-**Next task, already traced:** #1179 and #402 - validate the keyboard layout's
-LANGID in `asc_getKeyboardLanguage` rather than deeper in the C++. See that
-entry below; the chain is mapped end to end and the fix point named. Two issues,
-one accessor shared by all three editors.
+**Next task, already traced:** #2278 - copying a sheet to a new file opens the
+whole original workbook instead. The defect is in `desktop-sdk`, not `sdkjs`;
+see that entry below, which names the member to prefer and the line to change.
+The two other traced-but-unfixed items are #2252 (a password prompt has to be
+plumbed through four layers before `sdkjs` can act) and the caret half of #1868
+(blocked on a format change).
 
 **Owed before shipping:** integration smoke testing of the rebuilt
 `fonts.wasm`, which no test in `../fork-fix-tests/` can do. The list is at the
-end of the #2155 entry.
+end of the #2155 entry. This one needs a human at a real build.
 
-**Loose end that is nobody's yet:** `web-apps` has 166 uncommitted files,
+**Loose end that is nobody's yet:** `web-apps` has 158 modified tracked files,
 ~170k insertions - a generated localization sync appending English fallback
 strings into every locale file, including `ar.json`. Not produced by any fix
 here. It needs a decision: commit, discard, or regenerate. Left untouched so it
@@ -74,6 +76,7 @@ C++), `issue-2429-saveas-extension/` (real QtCore).
 | #2310, #1509 | An inserted video became a 50x50 box instead of its poster size | `sdkjs` |
 | #459 | Spanish spell-check worked only for es-ES; 20 other locales were unmapped | `sdkjs` + `dictionaries` |
 | #2262 | macOS Control+click opened no context menu in any editor | `sdkjs` |
+| #1179, #402 | A keyboard layout's LANGID became the text language unvalidated; a custom or neutral layout set it to 8192 and spell check stopped | `sdkjs` |
 
 Two defects in our own tooling were fixed alongside: CEF remote debugging was
 pinned to a hardcoded port 8080 that could not be overridden, and CEF failures
@@ -272,46 +275,6 @@ repair glyph indices already returned. And note the rebuild is reproducible but
 **not bit-identical**, so the first ship is a real change to the font engine
 rather than a like-for-like swap - it deserves a wider render smoke test than
 this issue alone.
-
-### #1179 and #402 - the keyboard layout's LANGID is adopted as the text language unvalidated
-
-Both reporters see the same literal symptom: the spell-check language becomes
-**8192** as soon as they type, and nothing is underlined. #1179 is on a custom
-Microsoft Keyboard Layout Creator layout; #402 on a "Russian (Ukraine)" layout.
-8192 is `0x2000`, whose primary-language field (`& 0x3FF`) is 0 - `LANG_NEUTRAL`.
-It is not a language at all, so no dictionary can match it.
-
-The whole chain is unvalidated, end to end:
-
-1. `CAscApplicationManager::GetPlatformKeyboardLayout()` returns the OS LANGID.
-2. `CAscKeyboardChecker::Check` (`desktop-sdk/.../keyboardchecker.cpp:57-81`)
-   stores it and calls `Send` **before** the big `switch` on known languages -
-   that switch only builds a log string (`sLang`), it gates nothing.
-3. `Send` (`:265-273`) puts the raw value on the event.
-4. `cefview.cpp:7173-7181` forwards it as the `keyboard_layout` process message.
-5. `client_renderer_wrapper.cpp:6243-6247` assigns it verbatim:
-   `window["asc_current_keyboard_layout"] = <value>;`
-6. `asc_getKeyboardLanguage` returns it as-is (`sdkjs/cell/api.js:6042-6047`,
-   `word/api.js:7173`, `slide/api.js:6859`), and `asc_getInputLanguage`
-   (`cell/api.js:6048`) prefers it over every other source.
-
-So any LANGID the OS reports - including a custom layout's, or a neutral one -
-becomes the text language of whatever is typed.
-
-**Next step:** validate in `asc_getKeyboardLanguage` rather than deeper in the
-C++, since all three editors share that one accessor and the JS side already
-has both authorities: `AscCommon.spellcheckGetLanguages()` (the LCID ->
-dictionary map) and `g_aLcidNameIdArray` in `common/commonDefines.js`. Return
-`-1` for a LANGID in neither, which makes `asc_getInputLanguage` fall through to
-the document's own language instead of overwriting it - exactly what #1179 asks
-for ("manually changing it should make it so it does not change"). Check what
-`GetPlatformKeyboardLayout` returns on each platform first;
-`mac_keyboardlayout.h:45` returns a `uint16_t`.
-
-**#402 cannot be fixed by adding a locale.** There is no `ru-UA` LCID anywhere
-in `g_aLcidNameIdArray` - Russian has only `ru-RU` (1049) and `ru-MO` (2073) -
-so no dictionary mapping can satisfy it. It is this defect, not a missing
-dictionary.
 
 ### #2278 - copying a sheet to a new file opens the whole original instead
 

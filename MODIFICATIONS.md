@@ -84,6 +84,17 @@ prompted by a public ONLYOFFICE report, but the code is ours.
   discarded the poster frame's real dimensions and hardcoded 50x50 pixels, so
   every video and audio insert became a 50x50 box. Upstream: #2310, #1509.
 
+- **The keyboard layout's LANGID is validated before it becomes the text
+  language** (`sdkjs`). The desktop shell reports the OS keyboard layout's LANGID
+  and the editors adopted it verbatim, so a custom MSKLC layout - or one like
+  "Russian (Ukraine)" that has no LCID of its own - set the text language to
+  0x2000 (8192), whose primary-language field is `LANG_NEUTRAL`. No dictionary
+  can match that, so spell check silently stopped. `asc_getKeyboardLanguage` now
+  passes the value through `AscCommon.checkKeyboardLanguageId`, which accepts
+  only a LANGID known to the LCID name table or the installed dictionary map and
+  returns `-1` otherwise - the value callers already read as "no keyboard
+  language", leaving the document's own language in place. Upstream: #1179, #402.
+
 - **macOS Control+click opens the context menu** (`sdkjs`). The editors suppress
   the DOM `contextmenu` event and raise their own menu from `Button === 2`, but
   `getMouseButton` returned the raw `e.button`, so the macOS secondary-click
@@ -104,3 +115,5 @@ prompted by a public ONLYOFFICE report, but the code is ours.
 - 2026-09-12: Second stability round - save with a cell in edit mode, print
   range falsy-zero, inserted video size, Spanish spell-check locales, macOS
   Control+click. 8 upstream issues from 5 fixes; see `UPSTREAM_TRIAGE.md`.
+- 2026-09-12: Keyboard-layout LANGID validated before it is adopted as the text
+  language (#1179, #402).
