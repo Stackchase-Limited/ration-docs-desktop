@@ -227,6 +227,7 @@ C++), `issue-2429-saveas-extension/` (real QtCore).
 | #2168 | The file dialog froze on Wayland: an in-process GTK chooser inside an XWayland Qt app | `desktop-apps` |
 | #1748 | The executable exported its statically linked libstdc++, so the system one bound to it and aborted before `main` | `desktop-apps` |
 | #2444 | A failed connection was reported as "Invalid URL", sending users to correct an address that was already right | `desktop-sdk` |
+| #2426 | A FILTER returning from no-match filled only its first cell: the spill pass was scheduled on a flag recalculation had already cleared | `sdkjs` |
 
 Two defects in our own tooling were fixed alongside: CEF remote debugging was
 pinned to a hardcoded port 8080 that could not be overridden, and CEF failures
@@ -473,8 +474,16 @@ crash under Flatpak, with GBM driver errors logged before anything of ours runs)
 together and after #2136's version script is validated on Linux, since three are glyph
 selection and that is where the FreeType collision was doing damage.
 
-**Formula engine, worth its own session:** #2426 (FILTER not recalculated when a condition
-goes from no-match to match). Testable the way #2068 was.
+**Formula engine: #2426 is fixed.** A formula joins the volatile-array list - the pass that
+writes a spill - in the `_foreachChanged` block of `Workbook.js`, and the test that put it
+there ran *after* `oCell._checkDirty()` while keying on `aca && ca`. Recalculation is what
+clears those: `parserFormula.calculate()` calls `setAca(false)/setCa(false)` as soon as a
+dynamic array fits again. So a FILTER going from collapsed back to spilled had already lost
+the flag, was never scheduled, and its spill was never rewritten - only its own cell, which
+is calculated normally, showed the new value. That F9 does not help fits the same reason,
+and that editing the formula does fits too, since that path rebuilds the spill from
+scratch. Now sampled before the recalculation and accepted in either state, so collapsing
+and re-expanding both schedule the pass.
 
 **Feature requests, not defects:** #1876, #1687.
 

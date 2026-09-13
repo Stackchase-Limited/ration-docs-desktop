@@ -84,6 +84,14 @@ prompted by a public ONLYOFFICE report, but the code is ours.
   discarded the poster frame's real dimensions and hardcoded 50x50 pixels, so
   every video and audio insert became a 50x50 box. Upstream: #2310, #1509.
 
+- **A FILTER that starts matching again fills its whole spill** (`sdkjs`). Changing a
+  dynamic array's condition to something that matches nothing and then back left only the
+  first result cell filled. The pass that writes a spill is scheduled by a test that ran
+  after recalculation while keying on `aca && ca` - flags recalculation itself clears the
+  moment the array fits again - so a formula returning from collapsed was never scheduled.
+  The state is now sampled before recalculating and accepted in either direction.
+  Upstream: #2426.
+
 - **The editor no longer aborts before `main` on a mismatched system libstdc++**
   (`desktop-apps`). `-static-libstdc++` links a whole copy of the C++ runtime into the
   executable, and nothing hid it, so the linker published it into the global symbol scope
@@ -224,3 +232,5 @@ prompted by a public ONLYOFFICE report, but the code is ours.
 - 2026-09-13: Wayland sessions use the desktop portal for file dialogs (#2168).
 - 2026-09-13: Statically linked libstdc++ hidden in the app binary (#1748); AI plugin
   distinguishes a connection failure from a bad URL (#2444).
+- 2026-09-13: Dynamic-array spill rescheduled when a FILTER starts matching again
+  (#2426).
