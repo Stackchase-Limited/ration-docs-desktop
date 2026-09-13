@@ -511,13 +511,12 @@ face with no Unicode subtable, where the legacy subtable is the only mapping the
 `MS_SYMBOL` is deliberately not gated: it is a Unicode convention (the U+F000 private use
 area), not a legacy encoding.
 
-**A latent bug found next to it, not fixed.** In that same branch `nCharIndex` is assigned
-unconditionally, so a later charmap's *miss* overwrites an earlier charmap's *hit*. It
-showed up as a test assertion that passed on the baseline for the wrong reason - Mac Roman
-found the glyph and the Big5 subtable then cleared it. After this change it can only
-happen on a face with several legacy subtables and no Unicode one, which is rare, and
-there is no reported symptom. Recorded rather than folded into a fix for something else;
-the change would be to keep the first hit rather than the last assignment.
+**A latent bug found next to it, since fixed.** In that same branch `nCharIndex` was
+assigned from inside the `if` condition, so a later charmap's *miss* overwrote an earlier
+charmap's *hit* and the lookup reported that a face could not draw a character it can. It
+surfaced as a test assertion that passed on the baseline for the wrong reason - Mac Roman
+found the glyph and the Big5 subtable then cleared it - which is worth more attention than
+an assertion that fails. Fixed in `core` ee2677f68d with a case in the same test.
 
 #2199 turned out not to be a font list at all: nothing set a `lang` attribute anywhere, so
 the renderer had no way to tell zh-CN from zh-TW and fell back to fontconfig's ranking.
@@ -581,6 +580,29 @@ in whether the preference is stored - `=default` clears it, the plain form sets 
 predates the Wayland fix and was left alone deliberately; the test asserts the behaviour
 as it is. If it is ever changed, `--xdg-desktop-portal=default` meaning "GTK, and forget
 my preference" is the reading that matches the name.
+
+### #2327 - does not reproduce on 9.4
+
+Reported against 9.3.1.8 as "OnlyOffice adds some text before the binary content", with a
+saved docx rejected by an upload that accepted the same file from other editors.
+
+Round-tripped `document-templates/sample/sample.docx` through the shipped x2t, docx -> bin
+-> docx, which is the path the editor takes on open and save. The output:
+
+- begins with `50 4b 03 04`, a normal local file header, with nothing before it
+- has `[Content_Types].xml` as its first entry, which is what OPC requires
+- passes `unzip -t`
+- sets the data-descriptor bit on no local header, so nothing is written in streaming mode
+  that a strict reader would refuse
+
+The entry *order* after the first differs from Word's, which is allowed and is not what
+was reported. The "text before the binary content" in the screenshot is most likely the
+first entry's filename, which in any zip sits immediately after the 30-byte header and
+shows up as readable text in a hex viewer.
+
+So either this was fixed between 9.3.1.8 and 9.4, or it is specific to the reporter's
+file. **Ask for the file**; without it there is nothing further to test, and the
+round trip above is the test anyone would run.
 
 ### Crash sweep, 2026-09-13: #2394, #1324, #1832, and a locale hazard ruled out
 
