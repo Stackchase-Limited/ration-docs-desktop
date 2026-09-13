@@ -582,6 +582,45 @@ predates the Wayland fix and was left alone deliberately; the test asserts the b
 as it is. If it is ever changed, `--xdg-desktop-portal=default` meaning "GTK, and forget
 my preference" is the reading that matches the name.
 
+### Crash sweep, 2026-09-13: #2394, #1324, #1832, and a locale hazard ruled out
+
+**#2394 (the app crashes on Open Local File / Save As) is very probably already fixed by
+the #2168 change.** The reporter's own workaround is `--native-file-dialog
+--xdg-desktop-portal`, which is precisely what #2168 made the default on Wayland: it
+stops the in-process GTK chooser being used at all. They are on Debian with GNOME 50,
+where Wayland is the session by default, and it reproduces across deb, Flatpak and
+AppImage - consistent with a display-server problem rather than a packaging one. #2168
+was filed as a freeze and this as a crash; the same dialog can do either.
+
+**Not claimed as closed**, for one reason: the #2168 default keys on the session being
+Wayland, so if this reporter is on X11 they are still running the in-process dialog and
+still crashing. Worth asking them for `echo $XDG_SESSION_TYPE` before closing it.
+
+**#1324 (abort at startup) and #1832 (crash playing a video)** both carry
+`gtk_disable_setlocale() must be called before gtk_init()` in their logs. That warning is
+real and is now fixed - `main.cpp` said it too late - but it is a warning, not the abort,
+and neither report is claimed as fixed.
+
+**The next thing to try for #1324**, and the more interesting one: `main.cpp` calls
+`gtk_init()` *before* CEF starts, while `desktop-sdk`'s `cefapplication.cpp` initialises
+GTK *after* CEF on purpose, with the comment "the Chromium sandbox requires that there
+only be a single thread during initialization". gtk_init spawns threads. So the early call
+contradicts a constraint our own tree documents, and an abort during sandbox startup is
+the shape that would produce. `a21bbc19d` shows the call was moved to main.cpp to
+consolidate four scattered `gtk_init(NULL, NULL)` calls, not for an ordering reason, so
+removing it may well be safe - but it needs a Linux build to try, which is why it was not
+done here.
+
+**Ruled out while looking, and worth not re-deriving:** Qt, not GTK, is what sets the
+process locale in this application - `SingleApplication` is constructed before either
+`gtk_init`, and Qt calls `setlocale(LC_ALL, "")`. Measured: under `LC_ALL=de_DE.UTF-8` a
+`QCoreApplication` moves `LC_NUMERIC` from `C` to `de_DE.UTF-8`, after which
+`strtod("1.5")` returns 1.0. That is a genuine hazard for any C-library float parsing, and
+**nothing in this tree corrects it** - but it has almost no consumer: the Qt shell has no
+`atof`/`strtod`/`sscanf("%f")` at all, and `graphics`, `fontengine` and `common` have one
+occurrence between them. So it is not the cause of these crashes. Worth remembering if a
+number-parsing bug ever appears on a comma-decimal locale.
+
 ### #2011, #2145 - swept this round, neither actionable yet
 
 **#2011 (freeze copying all cells).** Not found by reading, and the obvious explanation
