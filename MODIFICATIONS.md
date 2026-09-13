@@ -84,6 +84,20 @@ prompted by a public ONLYOFFICE report, but the code is ours.
   discarded the poster frame's real dimensions and hardcoded 50x50 pixels, so
   every video and audio insert became a 50x50 box. Upstream: #2310, #1509.
 
+- **Korean text no longer falls back to a Chinese font and draws ideographs** (`core`).
+  The font-coverage scan walked every charmap of every face and recorded the raw codes as
+  Unicode. macOS's `STHeiti Light.ttc` carries a Mac Traditional Chinese (Big5) subtable,
+  so Heiti TC/SC were recorded as covering U+A140-U+F9FE, which overlaps Hangul
+  Syllables - Heiti then won the fallback for Korean and every syllable whose code point
+  is also a valid Big5 code came out as an unrelated ideograph. Coverage is now taken from
+  Unicode subtables only. Upstream: #2433.
+
+- **The interface language is declared to the renderer** (`web-apps`). Nothing set a
+  `lang` attribute, so with a UI font stack that has no Han glyphs the renderer chose
+  regional forms by fontconfig ranking alone, and a Simplified Chinese interface was drawn
+  in Traditional forms. The tag is now set, keeping the region even where the translation
+  file is chosen by language alone. Upstream: #2199.
+
 - **A FILTER that starts matching again fills its whole spill** (`sdkjs`). Changing a
   dynamic array's condition to something that matches nothing and then back left only the
   first result cell filled. The pass that writes a spill is scheduled by a test that ran
@@ -234,3 +248,5 @@ prompted by a public ONLYOFFICE report, but the code is ours.
   distinguishes a connection failure from a bad URL (#2444).
 - 2026-09-13: Dynamic-array spill rescheduled when a FILTER starts matching again
   (#2426).
+- 2026-09-13: Font coverage taken from Unicode charmaps only (#2433); interface language
+  declared to the renderer (#2199).

@@ -228,6 +228,8 @@ C++), `issue-2429-saveas-extension/` (real QtCore).
 | #1748 | The executable exported its statically linked libstdc++, so the system one bound to it and aborted before `main` | `desktop-apps` |
 | #2444 | A failed connection was reported as "Invalid URL", sending users to correct an address that was already right | `desktop-sdk` |
 | #2426 | A FILTER returning from no-match filled only its first cell: the spill pass was scheduled on a flag recalculation had already cleared | `sdkjs` |
+| #2433 | A Big5 subtable was recorded as Unicode coverage, so Heiti won the Hangul fallback and drew Chinese ideographs | `core` |
+| #2199 | The interface language was never declared to the renderer, so Simplified Chinese was drawn in Traditional forms | `web-apps` |
 
 Two defects in our own tooling were fixed alongside: CEF remote debugging was
 pinned to a hardcoded port 8080 that could not be overridden, and CEF failures
@@ -470,9 +472,31 @@ substitution is silent), #2396 (GStreamer codecs absent from the sandbox), #1832
 crash under Flatpak, with GBM driver errors logged before anything of ours runs), #2411
 (fcitx5 positioning under Wayland at 200% scale).
 
-**Font and glyph cluster, unexamined:** #2199, #2433, #2437, #2020, #2327. Worth taking
-together and after #2136's version script is validated on Linux, since three are glyph
-selection and that is where the FreeType collision was doing damage.
+**Font and glyph cluster: #2433 and #2199 are fixed; #2437, #2020 and #2327 remain.**
+
+#2433 was the best-written report on the tracker and its analysis held up line for line.
+`CheckSymbols` walked every charmap and fed raw codes to a checker whose codes are treated
+as Unicode, so Heiti's Big5 subtable made it claim U+A140-U+F9FE - overlapping Hangul. The
+font's subtable list was verified against the real file on this machine: `STHeiti
+Light.ttc` font 0 is exactly (0,4) Unicode format 12, (1,0) Mac Roman format 6, (1,2) Mac
+Traditional Chinese format 2. Coverage is now recorded from Unicode subtables only, with
+MS Symbol kept and no-Unicode faces left alone.
+
+**Still open from that report, deliberately:** `CFontFile::SetCMapForCharCode` asks a
+non-Unicode subtable for a Unicode code point in its `FT_ENCODING_NONE` branch, which is
+what turns Big5 0xD14C into 埕 once such a font has been picked. Stopping the pick
+addresses the symptom; that branch deserves its own change and its own test, and it is
+shared with symbol and Apple Roman fonts so it cannot simply be deleted.
+
+#2199 turned out not to be a font list at all: nothing set a `lang` attribute anywhere, so
+the renderer had no way to tell zh-CN from zh-TW and fell back to fontconfig's ranking.
+Declared now, with the region preserved even though the translation file is chosen by
+language alone.
+
+**#2020 (paste values changes formatting)** was looked at: the `pasteOnlyValues` branch
+does `_clean()` then `val = true`, which is right, so the leak is further down the paste
+path and needs the editor to find. **#2437** (borders printed wrong) is an image-only
+report in the print path. **#2327** unexamined.
 
 **Formula engine: #2426 is fixed.** A formula joins the volatile-array list - the pass that
 writes a spill - in the `_foreachChanged` block of `Workbook.js`, and the test that put it
