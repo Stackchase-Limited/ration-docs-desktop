@@ -145,6 +145,27 @@ Two consequences worth being blunt about:
 them, the way `desktop-apps` and `dictionaries` already are. Until then "pushed" means
 the superproject, the Qt shell and the dictionaries, and nothing else.
 
+**The remotes are now arranged so this cannot be got wrong by accident.** A push to
+`ONLYOFFICE/desktop-sdk.git` was attempted on 2026-09-13 - habit, in the middle of a batch
+- and failed only because the account has no permission there. That is not a safety
+margin. In all four submodules the ONLYOFFICE remote is now named `upstream`, is fetch
+only, and has a deliberately invalid push URL, so a push fails locally before any network
+contact:
+
+```
+$ git push upstream ration/9.4-stability
+fatal: 'DO-NOT-PUSH-to-ONLYOFFICE-use-lab02' does not appear to be a git repository
+```
+
+`.git/config` is not tracked, so a fresh clone comes back with `origin` pointing at
+ONLYOFFICE again. `tools/configure-remotes.sh` reapplies the layout, and
+`tools/configure-remotes.sh --check` reports it - worth running after any clone, and worth
+wiring into CI if this ever gets CI. The script adds `origin` only once the matching lab02
+project exists, so until then a push says "not set up yet" rather than 404.
+
+The four projects it expects: `ration-docs-core`, `ration-docs-sdkjs`,
+`ration-docs-web-apps`, `ration-docs-desktop-sdk`, under `lab02.ration.works/ration`.
+
 ## The verification standard
 
 A fix is not considered done until a test proves it, and proves it *detects the
