@@ -109,13 +109,26 @@ Worth weighing separately that the sync puts English text into every RTL locale
 
 ## Where this work lives, and what is not on lab02
 
-Pushed to lab02 on 2026-09-13, each as a **new** branch (nothing existing was moved):
+Every checkout in the tree, and where its work actually goes. Taken from the remotes
+themselves on 2026-09-13, not from memory:
 
-| repo | branch |
-|---|---|
-| `ration/ration-docs-desktop` (superproject) | `ration/9.4-stability` |
-| `ration/ration-docs-desktop-apps` | `ration/9.4-stability` |
-| `ration/ration-docs-dictionaries` | `ration/iconv-fix` |
+| checkout | remote | pushed? |
+|---|---|---|
+| superproject | `lab02 ration/ration-docs-desktop` | yes, `ration/9.4-stability` |
+| `desktop-apps` | `lab02 ration/ration-docs-desktop-apps` | yes, `ration/9.4-stability` |
+| `dictionaries` | `lab02 ration/ration-docs-dictionaries` | yes, `ration/iconv-fix` |
+| `build_tools` | `lab02 ration/ration-docs-build-tools` | yes, `ration/9.4-stability` |
+| `core` | **github ONLYOFFICE/core** | no - nowhere to push |
+| `sdkjs` | **github ONLYOFFICE/sdkjs** | no - nowhere to push |
+| `web-apps` | **github ONLYOFFICE/web-apps-pro** | no - nowhere to push |
+| `desktop-sdk` | **github ONLYOFFICE/desktop-sdk** | no - nowhere to push |
+| `onlyoffice.github.io` | **github ONLYOFFICE/onlyoffice.github.io** | no - carries the #2129 fix |
+| `core-fonts`, `document-templates` | github ONLYOFFICE | unmodified |
+
+`build_tools` was missed in the first pass here and is now pushed; it carries the
+help-image dedup. It also settles the naming convention - `ration-docs-<checkout>` under
+the `ration` namespace - which is what `tools/configure-remotes.sh` expects for the four
+that are missing.
 
 **Four submodules could not be pushed, and most of the work is in them.** `core`,
 `sdkjs`, `web-apps` and `desktop-sdk` still have exactly one remote each, and it is
@@ -165,6 +178,15 @@ project exists, so until then a push says "not set up yet" rather than 404.
 
 The four projects it expects: `ration-docs-core`, `ration-docs-sdkjs`,
 `ration-docs-web-apps`, `ration-docs-desktop-sdk`, under `lab02.ration.works/ration`.
+A fifth would be needed for `onlyoffice.github.io`, which carries the #2129 fix.
+
+**How this was checked**, so nobody repeats it: `ration-docs-{core,sdkjs,web-apps,
+desktop-sdk}` and about thirty other name and namespace combinations were probed over
+both HTTPS and SSH. SSH authenticates as `@ademola` with full user access and still
+returns "project not found", so this is absence rather than a permissions artefact. Note
+the HTTPS credential in the keychain is **git-only**: the GitLab API rejects it for
+project listing, and `/projects/ration%2Fration-docs-desktop` returns 404 for a project
+that was pushed to minutes earlier. Use SSH for anything beyond a plain fetch or push.
 
 ## The verification standard
 
