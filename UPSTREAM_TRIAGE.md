@@ -504,11 +504,20 @@ Light.ttc` font 0 is exactly (0,4) Unicode format 12, (1,0) Mac Roman format 6, 
 Traditional Chinese format 2. Coverage is now recorded from Unicode subtables only, with
 MS Symbol kept and no-Unicode faces left alone.
 
-**Still open from that report, deliberately:** `CFontFile::SetCMapForCharCode` asks a
-non-Unicode subtable for a Unicode code point in its `FT_ENCODING_NONE` branch, which is
-what turns Big5 0xD14C into 埕 once such a font has been picked. Stopping the pick
-addresses the symptom; that branch deserves its own change and its own test, and it is
-shared with symbol and Apple Roman fonts so it cannot simply be deleted.
+**Both halves are now fixed.** `CFontFile::SetCMapForCharCode` was asking a non-Unicode
+subtable for a Unicode code point, which is what turned Big5 0xD14C into 埕 once such a
+font had been picked. `FT_ENCODING_NONE` and `APPLE_ROMAN` are now consulted only for a
+face with no Unicode subtable, where the legacy subtable is the only mapping there is.
+`MS_SYMBOL` is deliberately not gated: it is a Unicode convention (the U+F000 private use
+area), not a legacy encoding.
+
+**A latent bug found next to it, not fixed.** In that same branch `nCharIndex` is assigned
+unconditionally, so a later charmap's *miss* overwrites an earlier charmap's *hit*. It
+showed up as a test assertion that passed on the baseline for the wrong reason - Mac Roman
+found the glyph and the Big5 subtable then cleared it. After this change it can only
+happen on a face with several legacy subtables and no Unicode one, which is rare, and
+there is no reported symptom. Recorded rather than folded into a fix for something else;
+the change would be to keep the first hit rather than the last assignment.
 
 #2199 turned out not to be a font list at all: nothing set a `lang` attribute anywhere, so
 the renderer had no way to tell zh-CN from zh-TW and fell back to fontconfig's ranking.
