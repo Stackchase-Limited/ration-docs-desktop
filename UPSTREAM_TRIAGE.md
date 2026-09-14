@@ -263,6 +263,7 @@ C++), `issue-2429-saveas-extension/` (real QtCore).
 | #2445 | *Tooling.* A shipped module imported an entry point the kernel beside it did not export and the loader refused to start the app; nothing in the build noticed. The package step now checks the payload's symbol closure | `build_tools` |
 | #2434 | The app exited 0 straight after Qt initialised: on a host whose loopback has only 127.0.0.1, it could not bind its per-uid instance address and read that as "somebody else is primary" | `desktop-apps` |
 | #2443 | A throw inside a row or column structure change left recalculation suspended for the rest of the session, so every formula went blank with no error shown (hardening - not a confirmed reproduction, see below) | `sdkjs` |
+| #2430 | Fourteen bounds checks in the shared binary reader executed a bare `throw;`, which can only call `std::terminate` - any binary that ran the reader past its buffer killed x2t outright (the abort only; the underlying desync is still open, see below) | `core` |
 
 Two defects in our own tooling were fixed alongside: CEF remote debugging was
 pinned to a hardcoded port 8080 that could not be overridden, and CEF failures
@@ -952,6 +953,37 @@ it leaves a commented-out duplicate of the function body behind.
 
 ## Already fixed in our 9.4 baseline - no action
 
+### #2011 - spreadsheet freezes when copying all cells
+
+Already fixed upstream before our baseline, by `72bf2637d9` ("fix/bug-76100",
+2025-07-25), which is an ancestor of our branch. The reporter is on 9.0.3.29,
+which predates it.
+
+Worth recording *why*, because the report contains the diagnosis and it is easy
+to look in the wrong place. Copy produces several clipboard flavours, and the
+data ones - text, HTML, and the binary - have been clamped to the used range
+since 2017/2020 via `_getRangeMaxRowCol` (`cell/model/clipboard.js`), which is
+why they were never the problem. `Range._foreachNoEmpty` is bounded too, by
+`cellsByColRowsCount`/`rowsData.getMaxIndex()` since 2022, so it costs nothing on
+an empty sheet. `_getRowTop` is O(1).
+
+What was unbounded was the *image* flavour. Before `72bf2637d9`,
+`Clipboard.prototype.drawSelectedArea` went straight to
+
+    let ctx = ws.workbook.printForCopyPaste(ws, activeRange, true);
+    base64 = ctx.canvas.toDataURL("image/png");
+
+with no size limit, so selecting everything asked for a canvas covering
+1,048,576 rows by 16,384 columns. That is precisely the asymmetry the reporter
+describes and which identifies the culprit: a whole **row** is one row tall and
+copies fine, a whole **column** is a million rows tall and takes "a few
+seconds", and **everything** never comes back. The fix added per-browser canvas
+limits, clamped `activeRange` down to what fits, and bailed out entirely past
+`maxCanvasArea`.
+
+Our tree has all of it. No action.
+
+
 ### #1690 - German `ZELLE` gives `#VALUE!` in PDF export
 The plumbing exists and is used. `sdkjs/cell/api.js:7061` puts
 `AscCommon.cCellFunctionLocal` into the print options as
@@ -1144,6 +1176,124 @@ fallback - getting *only* the image means the data flavours came back empty.
 **What would move this forward:** the file, or the browser console from a session
 where it happened. The remaining 35 `lockRecal()` call sites across `cell/` have
 the same shape and have not been converted.
+
+### #2430 - xlsm with a Form Control checkbox cannot be saved - HALF FIXED
+
+**Reproduced here**, from the reporter's own `example.xlsm`, and bisected against
+our own x2t. The abort is fixed and verified. **The underlying defect is not** -
+read the last section before assuming this issue is closed.
+
+**The bisect.** Same file, same changes directory, one variable at a time:
+
+| | result |
+|---|---|
+| bin -> xlsx, no changes | exit 0 |
+| bin + changes, plain control sheet | exit 0 |
+| bin + changes, `m_bFromChanges` true but no changes dir | exit 0 |
+| bin + changes, VML checkbox removed from the file | exit 0 |
+| **bin + changes, checkbox present** | **SIGABRT** |
+
+So it needs the apply-changes path *and* the checkbox, which is exactly what the
+reporter said. `0xC0000409` on Windows is how this same abort surfaces there.
+
+**What was fixed.** A breakpoint on `__cxa_throw` never fires; one on
+`std::terminate` shows frame #1 `__cxa_rethrow`. That is a bare `throw;` running
+with no exception in flight. There were **fourteen** of them, one in every bounds
+check of `CBinaryFileReader` (`OOXML/Binary/Presentation/BinaryFileReaderWriter.cpp`
+- the file name is historical, this reader is shared, not presentation-only):
+`Seek`, `GetUChar`, `GetChar`, `GetUShort`, `GetShort`, `GetULong`, `GetLong64`,
+`GetRecordSize`, `GetDoubleReal`, `GetString1`, `GetStringUtf8`, `GetString3`,
+`GetString4`, `GetPointer`. They read as "give up on this read" and could never do
+anything but kill the process.
+
+That is a class, not one file: any binary that sent this reader past the end of
+its buffer took x2t with it, silently, and the editor turned that into "This file
+cannot be saved or created" with the user's edits unwritten. All fourteen now
+throw `std::out_of_range` naming the function and position. Verified on a rebuilt
+binary (checked by `strings`, not by trusting the build - see the build note
+below): **exit 134 SIGABRT becomes exit 80, a clean conversion error.**
+
+**What is still broken, and where to start.** The file still does not convert. The
+exception says where:
+
+    CBinaryFileReader::GetRecordSize (record length 797560):
+        read outside the buffer (pos 1647, size 3789)
+
+`GetRecordSize` reads a record length from the stream and checks
+`m_lPos + sz > m_lSize`. Position 1647 in a 3789-byte buffer is well inside it, and
+the length read there is **797,560** - two hundred times the size of the whole
+buffer. That is not a truncated or short record; it is not a length at all, so
+**the reader has lost sync with the stream** and is reading structure out of the
+middle of something else. It happens partway
+through a small sub-stream, and only when the VML checkbox is present. The next
+step is to find what sdkjs's serializer writes there for a legacy drawing and where
+the C++ reader's idea of the layout diverges from it. The throw site now reports
+the record length as well, because the position and size alone read as survivable
+and hide the desync.
+
+### A build defect found while verifying this, which matters on its own
+
+`make.py` exited 0, and the x2t it deployed did not contain the change that had
+just compiled. This happened **twice**, and the second time looked like this:
+
+    Sep 14 17:36  hasNewCode=1  core/build/lib/mac_arm64/libPPTXFormatLib.a
+    Sep 14 17:29  hasNewCode=0  core/build/bin/mac_arm64/x2t
+    Sep 14 17:41  hasNewCode=0  build_tools/out/.../converter/x2t
+
+The deployed binary has the **newest mtime of the three and the oldest content** -
+it is new only because it was copied. Nothing about the build looks wrong.
+
+The cause is `ADD_DEPENDENCY` in `core/Common/base.pri:711`, which does only
+`LIBS += -L<path> -l<lib>` and never sets `PRE_TARGETDEPS`. So make has no
+dependency edge from any target to the static libraries it links, and will not
+relink when one changes. Every project in the tree that uses `ADD_DEPENDENCY` is
+affected, not just x2t.
+
+**Consequence:** any change in `core` that does not touch a given binary's *own*
+sources may not reach that binary on an incremental build. This is a plausible
+mechanism for #2445, which was recorded above as somebody else's packaging
+accident - a mismatched `ooxmlsignature.dll` shipped beside a newer kernel is
+exactly what this produces.
+
+**Workaround in the meantime:** delete the binary before rebuilding
+(`rm core/build/bin/<platform>/x2t`), and check the result with `strings` rather
+than trusting the exit code. **Proposed fix:** have `ADD_DEPENDENCY` add each
+static library to `PRE_TARGETDEPS`. Not done here - it touches every project in
+the tree and needs a clean build and an incremental build to verify, which is more
+than this issue should carry.
+
+### #2145 - random SIGSEGV in libascdocumentscore.so on Fedora
+
+**Not actionable from what is on the thread**, and it is worth saying exactly why so
+nobody re-reads it hoping otherwise.
+
+Two crash reports, and both are a *single frame*:
+
+    #0  0x00007fdddc4f056f n/a (.../libascdocumentscore.so + 0x2f056f)
+    #0  0x00007f7d792f6522 n/a (.../libascdocumentscore.so + 0x2f6522)
+
+No unwind past frame 0, symbols stripped ("n/a"), and the two offsets are different
+in different releases (9.1.0 and 9.2.0). An offset is only meaningful against the
+exact binary that produced it, which is a shipped Flatpak build, not ours. There is
+nothing here to resolve.
+
+The second reporter does give a real repro - open a spreadsheet, select a cell,
+press Ctrl+; to insert the date - which is worth keeping, because it is the only
+deterministic handle anyone has offered. It does not lead anywhere from source
+alone: `Ctrl+;` reaches
+`c_oAscSpreadsheetShortcutType.CellInsertDate` in `cell/view/EventsController.js`,
+which only opens the cell editor with empty text, and a SIGSEGV is native - JS
+cannot produce one. Whatever dies, dies below that.
+
+**What would move this forward:** a backtrace with frames, from a build with
+symbols, or a core file plus the exact package it came from. Failing that, driving
+Ctrl+; against our own build under a debugger - the harness in `../../harness/` can
+launch a build and drive the editor over CDP.
+
+Worth noting for whoever picks it up: the first reporter's crashes are random, 1-3
+a day, sometimes on resume from suspend; the second's are deterministic on one
+shortcut. Those are not obviously the same defect, and treating them as one issue
+may be part of why neither has moved.
 
 ### #2434 - exits silently after Qt initialisation under FreeBSD Linuxulator
 
