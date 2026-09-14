@@ -257,6 +257,7 @@ C++), `issue-2429-saveas-extension/` (real QtCore).
 | #2302 | The interface language came from `LANG` alone, ignoring `LC_ALL` and `LC_MESSAGES` (language half only) | `desktop-apps` |
 | #2395 | The desktop entry had no localised `Name`, so launchers running in a locale could not find the application | `desktop-apps` |
 | #2397 | Nothing told Qt which desktop entry this is, so a Wayland panel had no `app_id` to match and showed no icon | `desktop-apps` |
+| #2435 | Chat messages took their direction from the interface, so Arabic replies were laid out left to right | `desktop-sdk` |
 
 Two defects in our own tooling were fixed alongside: CEF remote debugging was
 pinned to a hardcoded port 8080 that could not be overridden, and CEF failures
@@ -585,6 +586,24 @@ in whether the preference is stored - `=default` clears it, the plain form sets 
 predates the Wayland fix and was left alone deliberately; the test asserts the behaviour
 as it is. If it is ever changed, `--xdg-desktop-portal=default` meaning "GTK, and forget
 my preference" is the reading that matches the name.
+
+### Batch, 2026-09-14 (fourth): #2435 fixed, #1848 is not a defect
+
+**#2435 - fixed.** The plugin already had RTL support, which is why this looked puzzling
+at first: an `isRTL` flag drives `dir` on the dropdowns, inputs, dialogs and layout. But
+that flag follows the *interface* language, and a message's direction belongs to the
+message. An English interface is shown Arabic answers and the reverse, often in one
+conversation, so no interface-wide direction can be right for the transcript.
+`dir="auto"` on the assistant's markdown container and the user's bubble lets the browser
+judge each paragraph and list item from its first strong character. The chrome stays on
+`isRTL` on purpose - which way menus open should not flip because someone pasted a line of
+Arabic.
+
+**#1848 - not a defect in this tree.** A student compiled from source on Windows and the
+"Edit Text" button did not appear; they are asking whether their build is wrong. It is
+labelled `question` upstream and there is nothing to reproduce - no version, no log, and
+the answer depends on their build configuration rather than on our source. Nothing to do
+here unless it turns up again from a packaged build.
 
 ### Batch, 2026-09-14 (third): #2395 and #2397 - two Linux integration defects
 

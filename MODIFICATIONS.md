@@ -84,6 +84,12 @@ prompted by a public ONLYOFFICE report, but the code is ours.
   discarded the poster frame's real dimensions and hardcoded 50x50 pixels, so
   every video and audio insert became a 50x50 box. Upstream: #2310, #1509.
 
+- **Chat messages are laid out in their own direction** (`desktop-sdk`). The AI plugin
+  took text direction from the interface language, so Arabic replies in an English
+  interface were laid out left to right. Message content now uses `dir="auto"`, letting the
+  browser decide per paragraph and list item from the first strong character, while the
+  chrome keeps following the interface. Upstream: #2435.
+
 - **The application can be found and shows its icon on Linux** (`desktop-apps`). Two
   omissions in how it identifies itself to the desktop. The desktop entry had no localised
   `Name`, so a launcher running in a non-English locale could not match it by name - while
@@ -283,3 +289,5 @@ prompted by a public ONLYOFFICE report, but the code is ours.
 - 2026-09-14: Interface language read with POSIX precedence (#2302).
 - 2026-09-14: Desktop entry localised and the desktop file name declared to Qt, so Linux
   launchers and Wayland panels can find the application (#2395, #2397).
+- 2026-09-14: Chat message direction taken from the message rather than the interface
+  (#2435).
