@@ -84,6 +84,14 @@ prompted by a public ONLYOFFICE report, but the code is ours.
   discarded the poster frame's real dimensions and hardcoded 50x50 pixels, so
   every video and audio insert became a 50x50 box. Upstream: #2310, #1509.
 
+- **The application can be found and shows its icon on Linux** (`desktop-apps`). Two
+  omissions in how it identifies itself to the desktop. The desktop entry had no localised
+  `Name`, so a launcher running in a non-English locale could not match it by name - while
+  its own "New document" actions, which are localised into forty languages, could be found.
+  And nothing called `QGuiApplication::setDesktopFileName`, so on Wayland - where there is
+  no WM_CLASS and `StartupWMClass` means nothing - a panel had no `app_id` to tie the
+  window to the entry, and drew a placeholder instead of the icon. Upstream: #2395, #2397.
+
 - **The interface language follows the system properly** (`desktop-apps`). Only `LANG`
   was read, though POSIX precedence is `LC_ALL`, then `LC_MESSAGES`, then `LANG` - so a
   desktop that sets the interface language through `LC_MESSAGES`, as KDE and GNOME do, was
@@ -273,3 +281,5 @@ prompted by a public ONLYOFFICE report, but the code is ours.
 - 2026-09-14: Windows per-user font directory resolved properly (#1954); relative file
   hyperlinks resolved against their document (#2293).
 - 2026-09-14: Interface language read with POSIX precedence (#2302).
+- 2026-09-14: Desktop entry localised and the desktop file name declared to Qt, so Linux
+  launchers and Wayland panels can find the application (#2395, #2397).

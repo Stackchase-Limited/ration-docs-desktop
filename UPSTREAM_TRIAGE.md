@@ -255,6 +255,8 @@ C++), `issue-2429-saveas-extension/` (real QtCore).
 | #1954 | Store-installed fonts were missed: the profile directory was guessed from the account name | `core` |
 | #2293 | A relative file hyperlink was handed to the shell unresolved, so nothing opened and nothing said why | `desktop-apps` |
 | #2302 | The interface language came from `LANG` alone, ignoring `LC_ALL` and `LC_MESSAGES` (language half only) | `desktop-apps` |
+| #2395 | The desktop entry had no localised `Name`, so launchers running in a locale could not find the application | `desktop-apps` |
+| #2397 | Nothing told Qt which desktop entry this is, so a Wayland panel had no `app_id` to match and showed no icon | `desktop-apps` |
 
 Two defects in our own tooling were fixed alongside: CEF remote debugging was
 pinned to a hardcoded port 8080 that could not be overridden, and CEF failures
@@ -583,6 +585,37 @@ in whether the preference is stored - `=default` clears it, the plain form sets 
 predates the Wayland fix and was left alone deliberately; the test asserts the behaviour
 as it is. If it is ever changed, `--xdg-desktop-portal=default` meaning "GTK, and forget
 my preference" is the reading that matches the name.
+
+### Batch, 2026-09-14 (third): #2395 and #2397 - two Linux integration defects
+
+Both were reported as separate problems and turned out to be the same omission seen twice:
+the application was not telling the desktop who it is.
+
+**#2395 - the launcher cannot find it.** The `[Desktop Entry]` block carried `Name=` with
+no localised variants. The specification says a launcher should fall back to the
+unlocalised key, and many do, but several index only `Name[<locale>]` once a locale is set.
+The giveaway is in the file: all four Desktop Actions carry about forty localised Names
+each, so "New document" was findable in French while the application it belongs to was not.
+Forty-one localised Names added, each the product name unchanged - it is a brand, so what
+matters is that the key exists, not that the value differs. The locale list is taken from
+the Actions already in the file rather than invented.
+
+**#2397 - no icon in a Wayland panel.** A panel matches a window back to a desktop entry.
+Under X11 it can use WM_CLASS, which is what our `StartupWMClass` key is for, and that has
+been present all along - which is why the desktop file looked innocent. Under Wayland there
+is no WM_CLASS at all; the compositor has only the xdg-shell `app_id`, and Qt takes that
+from `QGuiApplication::setDesktopFileName`, which was never called. `DESKTOP_FILE_NAME`
+already existed in `defines.h` with the right value and was being used only for a DBus
+activation call.
+
+**Still open in the same file, and needing translations rather than a mechanical edit:**
+`GenericName` and `Comment` are localised for Russian only, so a French user now finds the
+application and then reads "Document Editor" underneath it in English.
+
+**A rebranding hazard worth knowing:** #2397's fix only works while `DESKTOP_FILE_NAME` and
+the installed `.desktop` basename agree. They do for a package built from this tree, since
+both derive from the same name, but a rebrand that changes one and not the other makes the
+icon quietly disappear again with nothing to indicate why.
 
 ### Batch, 2026-09-14 (second): #2302 fixed, #2337 and #1491 ruled in scope but not done
 
