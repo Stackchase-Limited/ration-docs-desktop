@@ -269,6 +269,10 @@ C++), `issue-2429-saveas-extension/` (real QtCore).
 | #2250 | A copied bullet reached the plain-text clipboard flavour as a raw symbol-font codepoint, with no font to give it meaning | `sdkjs` |
 | #2280 | Times written to CSV had the wrong meridiem at noon and midnight, and lost a second on roughly half of all times | `core` |
 | #2301 | `wcstod` accepts hexadecimal float literals, so any `0x...` CSV value was imported as a number and the text discarded | `core` |
+| #2328 | `correctFromInterface` parsed a conditional formatting formula as locale and assembled it back to locale, so a comma decimal separator was stored and then misread | `sdkjs` |
+| #2216 | The GTK theme was forced to Adwaita for every dialog, replacing whatever theme the desktop runs | `desktop-apps` |
+| #2274 | A bundled Qt plugin needed Qt Quick, which was not bundled - dead on a machine without system Qt5, and a second QtCore in the process on one with it | `build_tools` + `desktop-apps` |
+| #2105 | Forcing the xcb platform plugin on a Wayland session with no X display segfaulted instead of saying so (the crash only; Wayland support is a port) | `desktop-apps` |
 
 Two defects in our own tooling were fixed alongside: CEF remote debugging was
 pinned to a hardcoded port 8080 that could not be overridden, and CEF failures
@@ -1310,6 +1314,49 @@ than trusting the exit code. **Proposed fix:** have `ADD_DEPENDENCY` add each
 static library to `PRE_TARGETDEPS`. Not done here - it touches every project in
 the tree and needs a clean build and an incremental build to verify, which is more
 than this issue should carry.
+
+### #2394 - the app crashes on Open Local File, Save and Save As
+
+Same family as #2136 and #2355, and closed by the same version script - though, as
+with #2355, not verified against this reporter's own system.
+
+Everything in the report fits that mechanism and not much else. It is the in-process
+GTK file chooser that dies, and running with `--native-file-dialog
+--xdg-desktop-portal` - which replaces that chooser with the portal - is the
+reporter's own workaround. The system is a Chinese locale with a CJK UI font
+(腾祥嘉丽细圆GB18030), and the maintainer's question on the thread is whether that font
+is involved. It is: the font is the trigger, `libgraphics.so` exporting its bundled
+FreeType 2.10.4 is the mechanism, and cairo and pango binding their `FT_*` calls to it
+while painting a file name is where it goes wrong. See #2136 for the full account.
+
+`graphics.version` localises `FT_*`, `ft_*`, `hb_*`, `_hb_*` and `Brotli*`, and
+`graphics.pro` applies it under `core_linux:graphics_dynamic_library`.
+
+Two other things in the report are separate and are **not** addressed by that:
+fractional scaling (the reporter mentions `--force-scale=1.25` as a workaround for
+the scaling, not the crash), and their note that pptx cannot be worked around at all
+- which has no explanation yet and would need its own reproduction.
+
+### #2230 - pasted content disappears when switching document tabs
+
+**Not reproducible from what is on the thread**, and this one is worth someone's time
+when it is: content pasted into one open spreadsheet vanishes after switching to
+another tab and back. That is data loss with no error, in the one place a user has no
+reason to check.
+
+What the report has is a video on the reporter's own Nextcloud and a five-line
+sequence: copy in one sheet, switch, paste, switch back, switch again, the paste is
+gone. There is no file, no version of either document, and no indication whether the
+destination was ever saved. Nothing in it says whether the paste reached the document
+model and was later discarded, or never committed at all - and those lead to opposite
+places in the code.
+
+**What would settle it:** both files, or a browser console from a session where it
+happens. Failing that, the two candidates to separate are (a) the paste completing
+asynchronously and being abandoned when the view is switched away, and (b) the paste
+landing but not marking the document modified, so a later reload of the tab restores
+the last saved state over it. (b) would also explain why the content comes back
+missing rather than partially applied.
 
 ### #2145 - random SIGSEGV in libascdocumentscore.so on Fedora
 
