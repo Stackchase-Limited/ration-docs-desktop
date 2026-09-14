@@ -252,6 +252,8 @@ C++), `issue-2429-saveas-extension/` (real QtCore).
 | #2426 | A FILTER returning from no-match filled only its first cell: the spill pass was scheduled on a flag recalculation had already cleared | `sdkjs` |
 | #2433 | A Big5 subtable was recorded as Unicode coverage, so Heiti won the Hangul fallback and drew Chinese ideographs | `core` |
 | #2199 | The interface language was never declared to the renderer, so Simplified Chinese was drawn in Traditional forms | `web-apps` |
+| #1954 | Store-installed fonts were missed: the profile directory was guessed from the account name | `core` |
+| #2293 | A relative file hyperlink was handed to the shell unresolved, so nothing opened and nothing said why | `desktop-apps` |
 
 Two defects in our own tooling were fixed alongside: CEF remote debugging was
 pinned to a hardcoded port 8080 that could not be overridden, and CEF failures
@@ -580,6 +582,29 @@ in whether the preference is stored - `=default` clears it, the plain form sets 
 predates the Wayland fix and was left alone deliberately; the test asserts the behaviour
 as it is. If it is ever changed, `--xdg-desktop-portal=default` meaning "GTK, and forget
 my preference" is the reading that matches the name.
+
+### Batch, 2026-09-14: #1954 and #2293 fixed
+
+**#1954 (Microsoft Store fonts missing from the list).** They install under
+`%LOCALAPPDATA%\Microsoft\Windows\Fonts`, and that directory *was* scanned - but it was
+located by concatenating the account name into `C:\Users\<name>\AppData\Local`. A
+profile directory is frequently not named after the account: a Microsoft account login
+derives it from the email address, a renamed account keeps its old folder, a domain
+account can be `<name>.<DOMAIN>`, a redirected profile is not under `C:\Users` at all. The
+reporter is on Windows 11 24H2, where a Microsoft account is the normal sign-in. The
+system directory had the same shape of bug more simply: `sWinFontDir` is read from
+`CSIDL_FONTS` at the top of that function and was then ignored for a hardcoded
+`C:\Windows\Fonts`. Both now come from the shell, with the old guess kept as the fallback.
+
+**#2293 (relative file hyperlinks do nothing).** The URL reached `Utils::openUrl` exactly
+as stored, and a relative path has no scheme, so `QDesktopServices` and `xdg-open` both
+have nothing to act on and neither reports an error - hence a prompt followed by silence.
+Resolved now against the document's own directory, which the handler can reach through the
+event's sender id and the public `CCefView::GetLocalFilePath()`.
+
+**Neither is compiled where it runs.** #1954 is inside `#if defined(_WIN32)` and no Windows
+compiler has seen it; #2293 is Linux/Windows shell code. Both were extracted and run
+against stubs, #2293 against real QtCore over a real temporary tree.
 
 ### #2327 - does not reproduce on 9.4
 

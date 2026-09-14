@@ -84,6 +84,19 @@ prompted by a public ONLYOFFICE report, but the code is ours.
   discarded the poster frame's real dimensions and hardcoded 50x50 pixels, so
   every video and audio insert became a 50x50 box. Upstream: #2310, #1509.
 
+- **Fonts installed for the current user are found on Windows** (`core`). The per-user
+  font directory was located by concatenating the account name into
+  `C:\Users\<name>\AppData\Local`, which is not where a profile lives when the account
+  was created from a Microsoft account, renamed, domain-joined or redirected - so
+  Microsoft Store fonts were invisible to the editor while Windows and other applications
+  listed them. The system font directory was hardcoded to `C:\Windows\Fonts` in the same
+  way. Both now come from the shell. Upstream: #1954.
+
+- **A relative file hyperlink opens** (`desktop-apps`). A link like `..\..\file.pdf` was
+  handed to the shell unresolved; with no scheme there was nothing to act on and no error,
+  so confirming the prompt did nothing. It is now resolved against the directory of the
+  document holding it, as Excel and LibreOffice do. Upstream: #2293.
+
 - **Korean text no longer falls back to a Chinese font and draws ideographs** (`core`).
   The font-coverage scan walked every charmap of every face and recorded the raw codes as
   Unicode. macOS's `STHeiti Light.ttc` carries a Mac Traditional Chinese (Big5) subtable,
@@ -250,3 +263,5 @@ prompted by a public ONLYOFFICE report, but the code is ours.
   (#2426).
 - 2026-09-13: Font coverage taken from Unicode charmaps only (#2433); interface language
   declared to the renderer (#2199).
+- 2026-09-14: Windows per-user font directory resolved properly (#1954); relative file
+  hyperlinks resolved against their document (#2293).
