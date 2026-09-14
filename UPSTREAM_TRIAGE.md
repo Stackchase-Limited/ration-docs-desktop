@@ -264,6 +264,8 @@ C++), `issue-2429-saveas-extension/` (real QtCore).
 | #2434 | The app exited 0 straight after Qt initialised: on a host whose loopback has only 127.0.0.1, it could not bind its per-uid instance address and read that as "somebody else is primary" | `desktop-apps` |
 | #2443 | A throw inside a row or column structure change left recalculation suspended for the rest of the session, so every formula went blank with no error shown (hardening - not a confirmed reproduction, see below) | `sdkjs` |
 | #2430 | Fourteen bounds checks in the shared binary reader executed a bare `throw;`, which can only call `std::terminate` - any binary that ran the reader past its buffer killed x2t outright (the abort only; the underlying desync is still open, see below) | `core` |
+| #2189 | `GetLastError()` was read after `CreateMutex` without clearing it first, so a stale `ERROR_ALREADY_EXISTS` made the only running instance decide it was a second one and exit 0 | `desktop-apps` |
+| #2269 | A conditional formatting rule loaded from file was built with no parent and no dependencies, so it never evaluated until an edit forced it | `sdkjs` |
 
 Two defects in our own tooling were fixed alongside: CEF remote debugging was
 pinned to a hardcoded port 8080 that could not be overridden, and CEF failures
