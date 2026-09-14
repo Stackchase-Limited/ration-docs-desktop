@@ -258,6 +258,7 @@ C++), `issue-2429-saveas-extension/` (real QtCore).
 | #2395 | The desktop entry had no localised `Name`, so launchers running in a locale could not find the application | `desktop-apps` |
 | #2397 | Nothing told Qt which desktop entry this is, so a Wayland panel had no `app_id` to match and showed no icon | `desktop-apps` |
 | #2435 | Chat messages took their direction from the interface, so Arabic replies were laid out left to right | `desktop-sdk` |
+| #2368 | Pasting a paragraph or a table row reused the source's `w14:paraId`, so the saved docx carried ids that must be unique on up to five paragraphs (part of #2368 only - see below) | `sdkjs` |
 
 Two defects in our own tooling were fixed alongside: CEF remote debugging was
 pinned to a hardcoded port 8080 that could not be overridden, and CEF failures
@@ -1091,6 +1092,65 @@ xls. The reporter's actual ask is an override - "open this in Spreadsheet
 anyway". Not investigated in depth.
 
 ## Not reproducible or not testable here
+
+### #2368 - text duplicated and merged with the wrong font after save and reopen
+
+**The reported symptom does not reproduce here, and the attached file cannot
+show it.** `2026JUN-20-ECID-T-la208602-nicolas.docx` is the *already damaged*
+file, not an input that produces damage. Round-tripping it through our shipped
+x2t (`broken.docx -> Editor.bin -> out.docx`, formats 8193 then 65) is
+text-lossless: 14 text-bearing parts, 1835 `w:t` runs and 94,744 characters on
+both sides, zero differing runs, and the duplication profile is unchanged (66
+long runs repeated, maximum multiplicity 7). So x2t reads and writes this file
+faithfully; whatever produced the damage is upstream of it, in the editor.
+
+*A caution for whoever picks this up:* a first pass here measured "550
+characters lost" in that round trip. That was an artifact of matching `<w:t`
+with `<w:t[^>]*>`, which also matches `<w:tab .../>` - it was counting tab
+markup as text. The round trip loses nothing.
+
+**What the file does show.** The damaged region is paragraphs 59-64 of
+`word/document.xml`: three paragraphs repeated verbatim, the two copies
+carrying different `w:pPr` (the first has no `w:jc` and an empty `w:rPr`, the
+second `w:jc="left"` with `bCs`/`i`/`highlight`). That is the maintainer's "two
+different revisions of the same paragraphs saved side by side". Their
+`w14:paraId`s are revealing: the second copy's first paragraph has a fresh id
+while the other two reuse the ids of the originals - exactly the shape a paste
+leaves, where the first pasted paragraph merges into the paragraph at the caret
+and the rest are inserted whole. It is structurally indistinguishable from a
+paste of the three preceding paragraphs. That is a hint about the origin, not a
+proof of a code path, and no repro was found.
+
+**A real defect was found on the way, and is fixed** - separately, and it does
+*not* explain the symptom above. `w14:paraId` must be unique within a document
+(`ST_LongHexNumber`; Word keys co-authoring on it). The file carries six
+duplicated ids, one of them on five paragraphs. They are not chance: ids come
+from `AscCommon.CreateDurableId()`, a random 31-bit value, so 1167 ids collide
+with probability ~0.0003. They come from the clipboard: the paragraph writer
+emits `c_oSerParType.ParaID` (`sdkjs/word/Editor/Serialize2.js:5444`) and
+`ReadParagraph` restores it with `SetParaId` (same file, ~:11626), so pasting a
+paragraph or a table row inside one document leaves two paragraphs holding one
+id. Three of the duplicate groups here are a copied table column whose cells
+hold *different* text under one id, which is what confirms copy/paste rather
+than content duplication as the source.
+
+Fixed on the write side rather than the paste side, so it holds no matter how a
+duplicate arose (paste, undo, plugin, the `SetParaId` builder API): the
+paragraph writer now keeps a `usedParaIds` set on `DocSaveParams` and renumbers
+a repeat claimant, which is the same thing `BinaryCommentsTableWriter` already
+does for comment durable ids (`Serialize2.js:7172-7177`). The first paragraph to
+claim an id keeps it; a document with no duplicates is written unchanged.
+`fork-fix-tests/issue-2368-duplicate-paraid-test.js` extracts the real writer
+block and the real `DocSaveParams` constructor by brace matching and drives
+them over the id sequence from the reporter's file; `BASELINE=1` fails on it.
+
+**If anyone reproduces the duplication itself:** it happens only after close and
+reopen, per the reporter, but the maintainer confirmed the corruption is
+physically in the saved docx - so reopening reveals it rather than causing it.
+Both reporters were using the Zotero plugin and had done a bibliography refresh,
+which drives many programmatic edits at once through the plugin API. That, and
+the paste-shaped signature above, is where to look first.
+
 
 ### #2417 - macOS: hours of work lost, silently, document left clean
 The **silent** half is fixed: a failed write is now reported and the document
