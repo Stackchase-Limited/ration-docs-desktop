@@ -84,6 +84,13 @@ prompted by a public ONLYOFFICE report, but the code is ours.
   discarded the poster frame's real dimensions and hardcoded 50x50 pixels, so
   every video and audio insert became a 50x50 box. Upstream: #2310, #1509.
 
+- **The interface language follows the system properly** (`desktop-apps`). Only `LANG`
+  was read, though POSIX precedence is `LC_ALL`, then `LC_MESSAGES`, then `LANG` - so a
+  desktop that sets the interface language through `LC_MESSAGES`, as KDE and GNOME do, was
+  ignored and the application started in the wrong language. All three are read now, and
+  `C`/`POSIX` are skipped rather than taken as language codes. Upstream: #2302 (language
+  half).
+
 - **Fonts installed for the current user are found on Windows** (`core`). The per-user
   font directory was located by concatenating the account name into
   `C:\Users\<name>\AppData\Local`, which is not where a profile lives when the account
@@ -265,3 +272,4 @@ prompted by a public ONLYOFFICE report, but the code is ours.
   declared to the renderer (#2199).
 - 2026-09-14: Windows per-user font directory resolved properly (#1954); relative file
   hyperlinks resolved against their document (#2293).
+- 2026-09-14: Interface language read with POSIX precedence (#2302).

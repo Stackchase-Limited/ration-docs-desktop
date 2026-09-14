@@ -254,6 +254,7 @@ C++), `issue-2429-saveas-extension/` (real QtCore).
 | #2199 | The interface language was never declared to the renderer, so Simplified Chinese was drawn in Traditional forms | `web-apps` |
 | #1954 | Store-installed fonts were missed: the profile directory was guessed from the account name | `core` |
 | #2293 | A relative file hyperlink was handed to the shell unresolved, so nothing opened and nothing said why | `desktop-apps` |
+| #2302 | The interface language came from `LANG` alone, ignoring `LC_ALL` and `LC_MESSAGES` (language half only) | `desktop-apps` |
 
 Two defects in our own tooling were fixed alongside: CEF remote debugging was
 pinned to a hardcoded port 8080 that could not be overridden, and CEF failures
@@ -582,6 +583,38 @@ in whether the preference is stored - `=default` clears it, the plain form sets 
 predates the Wayland fix and was left alone deliberately; the test asserts the behaviour
 as it is. If it is ever changed, `--xdg-desktop-portal=default` meaning "GTK, and forget
 my preference" is the reading that matches the name.
+
+### Batch, 2026-09-14 (second): #2302 fixed, #2337 and #1491 ruled in scope but not done
+
+**#2302 - fixed, the language half.** `CLangater::init` read `LANG` and nothing else, but
+that is the last of the three variables that decide the message language: POSIX order is
+`LC_ALL`, `LC_MESSAGES`, `LANG`. A desktop that offers "interface language" separately from
+"formats" - KDE and GNOME both do - sets `LC_MESSAGES` and leaves `LANG` alone, so reading
+only `LANG` reports a language the user did not choose. All three are read now, and `C` and
+`POSIX` are skipped because they are not languages. The reporter's other symptom, AltGr
+being dead on a French layout under Wayland, is a keyboard matter and is **not** claimed.
+
+**#2337 (spell-check language changes as you type) - deliberately not changed.** The retag
+is intentional and narrowly scoped: `CheckLanguageOnTextAdd` is set true only around
+inserting a **space**, so the language of the word just completed is re-evaluated, which is
+what Word does. The #1179 fix already rejects a LANGID no authority recognises; this
+reporter's layout maps to a valid one, so it retags and the feature is working as designed.
+What they are asking for is a way to turn it off, and **there is no such setting anywhere in
+the tree** - `LanguageDetection`, `languageDetection` and `autoLanguage` return nothing in
+`sdkjs` or `web-apps`. So this is a feature request wearing a bug label, and doing it means
+adding a setting and wiring it through the same five places #2442 needed. Worth doing;
+worth doing deliberately.
+
+**#1491 (video swallows the keys that should change slides) - the work is identified.**
+`QAscVideoView::keyPressEvent` handles Left and Right as video scrubbing and always calls
+`event->accept()`, so nothing reaches the presentation. It does emit `onKeyDown`, and
+`QCefView_Media` both declares and defines `onMediaKeyDown` to receive it - but **the
+connection is commented out** (`qcefview_media.cpp:279`) **and the slot body is an empty
+stub** (`:333`). Someone started this and stopped. Finishing it means deciding which keys a
+presentation should take back (Left, Right, Escape, Page Up/Down at least) and how to hand
+them to CEF, then not accepting those events in the player. That needs a Qt and CEF build to
+try, which is why only the unambiguous defect next to it - `Key_P` falling through into
+`Key_Escape`, fixed in desktop-sdk 2d8dcfc0 - was taken here.
 
 ### Batch, 2026-09-14: #1954 and #2293 fixed
 
