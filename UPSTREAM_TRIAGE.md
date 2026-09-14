@@ -262,6 +262,7 @@ C++), `issue-2429-saveas-extension/` (real QtCore).
 | #2355 | Save As closed the whole application when the folder held a file with an emoji in its name - the same symbol interposition as #2136, and closed by that fix | `core` |
 | #2445 | *Tooling.* A shipped module imported an entry point the kernel beside it did not export and the loader refused to start the app; nothing in the build noticed. The package step now checks the payload's symbol closure | `build_tools` |
 | #2434 | The app exited 0 straight after Qt initialised: on a host whose loopback has only 127.0.0.1, it could not bind its per-uid instance address and read that as "somebody else is primary" | `desktop-apps` |
+| #2443 | A throw inside a row or column structure change left recalculation suspended for the rest of the session, so every formula went blank with no error shown (hardening - not a confirmed reproduction, see below) | `sdkjs` |
 
 Two defects in our own tooling were fixed alongside: CEF remote debugging was
 pinned to a hardcoded port 8080 that could not be overridden, and CEF failures
@@ -1095,6 +1096,54 @@ xls. The reporter's actual ask is an override - "open this in Spreadsheet
 anyway". Not investigated in depth.
 
 ## Not reproducible or not testable here
+
+### #2443 - spreadsheet unable to save after adjusting table structure
+
+**Not reproduced**, and it cannot be from what is on the thread: there is no
+attached file, and the reporter could not restate the steps ("I did some more
+adjusting"). What was landed is a defect found along the reported path that
+would produce these symptoms; it is not proof that it is *the* cause.
+
+**The defect.** The row and column structure operations suspend recalculation
+across their whole body - `DependencyGraph.lockRecal()` raises a counter and
+`calcTree()` returns immediately while it is above zero (`Workbook.js`, "if
+(this.lockCounter > 0) { callback && callback(); return; }"). The matching
+`unlockRecal()` sat at the end of the function with nothing between them to
+survive a throw. So one exception anywhere in `_insertColsBefore`,
+`_insertRowsBefore`, `_removeCols`, `_removeRows` or `lockRecalExecute` left the
+counter stuck above zero and the workbook unable to recalculate **for the rest of
+the session**. Nothing reports that state.
+
+That is a close match for the report: "formulas break, stop working, cells show
+empty, but no visible errors", and a freshly typed `=SUM(A2+1)` blank as well -
+which is exactly what a document that has stopped recalculating looks like, and
+exactly why there was no error to point at.
+
+Fixed by releasing the lock while unwinding. `unlockRecal(true)` skips the
+recalculation itself: the model is mid-failure, and running `calcTree` over it
+would at best throw again and mask the original error. Ignoring indentation the
+change is purely additive - 55 lines inserted, none removed - so every success
+path is untouched. `fork-fix-tests/issue-2443-recalc-lock-test.js` extracts the
+real `_insertColsBefore` and the real lock members by brace matching, forces a
+throw at the first call the body makes, and checks the counter returns to zero
+and the next edit recalculates; `BASELINE=1` fails with `lockCounter=1`.
+
+**Ruled out along the way**, so nobody repeats the search: `_insertColsBefore`'s
+`borders` array is not read when it is undefined (the `prevCellsByCol` block that
+indexes it is inside `if (!bUndoChanges)`, which is the same condition that
+assigns it, and `index > 0` guards both). `TablePart.addTableColumns` renumbers
+correctly when several columns are inserted, because `_generateColumnName2`
+rebuilds its name map on each call and so sees the names already assigned in that
+loop. Inserting a column at the table's first column deliberately shifts the
+table rather than joining it - that is Excel's behaviour too, and it is what the
+reporter hit as "wasn't able to make this new column a part of the table", not a
+bug. The copy-as-image the reporter saw is a deliberate clipboard flavour
+(`cell/model/clipboard.js`, `printForCopyPaste` then `toDataURL`), not an error
+fallback - getting *only* the image means the data flavours came back empty.
+
+**What would move this forward:** the file, or the browser console from a session
+where it happened. The remaining 35 `lockRecal()` call sites across `cell/` have
+the same shape and have not been converted.
 
 ### #2434 - exits silently after Qt initialisation under FreeBSD Linuxulator
 
