@@ -261,6 +261,7 @@ C++), `issue-2429-saveas-extension/` (real QtCore).
 | #2368 | Pasting a paragraph or a table row reused the source's `w14:paraId`, so the saved docx carried ids that must be unique on up to five paragraphs (part of #2368 only - see below) | `sdkjs` |
 | #2355 | Save As closed the whole application when the folder held a file with an emoji in its name - the same symbol interposition as #2136, and closed by that fix | `core` |
 | #2445 | *Tooling.* A shipped module imported an entry point the kernel beside it did not export and the loader refused to start the app; nothing in the build noticed. The package step now checks the payload's symbol closure | `build_tools` |
+| #2434 | The app exited 0 straight after Qt initialised: on a host whose loopback has only 127.0.0.1, it could not bind its per-uid instance address and read that as "somebody else is primary" | `desktop-apps` |
 
 Two defects in our own tooling were fixed alongside: CEF remote debugging was
 pinned to a hardcoded port 8080 that could not be overridden, and CEF failures
@@ -1094,6 +1095,54 @@ xls. The reporter's actual ask is an override - "open this in Spreadsheet
 anyway". Not investigated in depth.
 
 ## Not reproducible or not testable here
+
+### #2434 - exits silently after Qt initialisation under FreeBSD Linuxulator
+
+Fixed, though not verified on FreeBSD - see the caveat at the end.
+
+`CSocket` decides whether this process is the primary instance by binding a UDP
+socket to `127.<uid-1000>.1` (`inetAddrFromUserId`, `csocket.cpp`), so that two
+users on one machine do not fight over port 13012. Linux puts the whole of
+127.0.0.0/8 on `lo`, so that address binds for any uid. **FreeBSD configures only
+127.0.0.1 on `lo0`**, and the Linuxulator uses the FreeBSD network stack - so
+every uid but 1000 fails that bind with `EADDRNOTAVAIL`.
+
+`createSocket` could not tell that apart from `EADDRINUSE`: any failure meant
+"somebody else is primary". So `main` took the `!app.isPrimary()` branch, tried to
+hand its arguments to a primary that does not exist, and returned 0 - no window,
+and nothing printed, because the one log line goes to the log file rather than the
+terminal somebody is watching. That is exactly the reported "Qt/xcb platform
+initializes successfully, then immediately calls `exit_group(0)`".
+
+Two changes, `desktop-apps`:
+
+- `initSocket` falls back to 127.0.0.1 when the uid-derived address is not present
+  on this host's loopback. Inside `initSocket` rather than in its callers, so the
+  receiver and the sender cannot end up on different addresses. It costs per-user
+  separation on such a host - one shared instance, as it was before the unique
+  address was introduced in 2024 - which is much better than not starting.
+  `EADDRINUSE` is untouched, so a genuine second instance is still secondary.
+- `main` no longer returns 0 when it is told it is not primary but no primary
+  answers. It says so on stderr and starts normally. A second window is a visible,
+  recoverable outcome; a silent exit is neither.
+
+`fork-fix-tests/issue-2434-loopback-bind/` extracts the real `initSocket`,
+`inetAddrFromUserId` and `addr_not_available` by brace matching and binds for real.
+It has to resolve the `_WIN32` branches before matching, because `initSocket` opens
+a brace inside `#ifdef _WIN32` and another inside its `#else` while closing only
+one. **macOS has the same single-address loopback as FreeBSD**, so the host running
+the test reproduces the condition rather than simulating it - on this machine uid
+501 maps to 127.254.13.1 and gets `EADDRNOTAVAIL`. It checks that a first instance
+becomes primary, that a second stays secondary with `EADDRINUSE` (the fallback must
+not manufacture two primaries), and that `use_unique_addr=false` is unchanged.
+`BASELINE=1` fails on the first two.
+
+**Caveat, stated rather than papered over:** this does not explain the reporter's
+claim that 9.2 worked and 9.4 does not. The unique-address scheme dates to
+`464590931` (2024-03-01), before both releases, so if this is their fault then 9.2
+should have failed too. Either something else in their environment changed, or
+there is a second cause still to find. The defect fixed here is real on its own
+merits and produces precisely this symptom.
 
 ### #2445 - "the procedure entry point ... could not be located in ooxmlsignature.dll"
 
