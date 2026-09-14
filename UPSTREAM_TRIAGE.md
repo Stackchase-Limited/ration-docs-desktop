@@ -259,6 +259,8 @@ C++), `issue-2429-saveas-extension/` (real QtCore).
 | #2397 | Nothing told Qt which desktop entry this is, so a Wayland panel had no `app_id` to match and showed no icon | `desktop-apps` |
 | #2435 | Chat messages took their direction from the interface, so Arabic replies were laid out left to right | `desktop-sdk` |
 | #2368 | Pasting a paragraph or a table row reused the source's `w14:paraId`, so the saved docx carried ids that must be unique on up to five paragraphs (part of #2368 only - see below) | `sdkjs` |
+| #2355 | Save As closed the whole application when the folder held a file with an emoji in its name - the same symbol interposition as #2136, and closed by that fix | `core` |
+| #2445 | *Tooling.* A shipped module imported an entry point the kernel beside it did not export and the loader refused to start the app; nothing in the build noticed. The package step now checks the payload's symbol closure | `build_tools` |
 
 Two defects in our own tooling were fixed alongside: CEF remote debugging was
 pinned to a hardcoded port 8080 that could not be overridden, and CEF failures
@@ -1092,6 +1094,62 @@ xls. The reporter's actual ask is an override - "open this in Spreadsheet
 anyway". Not investigated in depth.
 
 ## Not reproducible or not testable here
+
+### #2445 - "the procedure entry point ... could not be located in ooxmlsignature.dll"
+
+**Not a defect in our source.** The mangled name in the reporter's dialog,
+`?Encode@CBase64Converter@NSFile@@SA_NPEAEHAEAPEADAEAHK@Z`, carries `PEAE` for
+its first parameter - a non-const `BYTE*`. core commit `a84491cf74` ("Fix param
+type", 2025-07-10) changed `CBase64Converter::Encode`'s first parameter to
+`const BYTE*`, which changes the mangled name. So the `ooxmlsignature.dll` in
+that 9.4.0 install was built against a header older than the `kernel.dll` shipped
+beside it, and the loader refused the import at startup.
+
+Our own build is consistent, checked rather than assumed: `kernel` exports
+`__ZN6NSFile16CBase64Converter6EncodeEPKhiRPcRim` (`PKh`, const), the
+`ooxmlsignature` we build imports exactly that, and no module in the payload
+imports the stale non-const form.
+
+**What was missing is anything that would have noticed**, and that is worth
+having in a fork that ships binaries: this whole class fails at launch, on the
+user's machine, with a dialog and an exit. `build_tools/scripts/check_symbol_closure.py`
+walks the finished payload, collects what each module imports and what the
+payload as a whole exports, and reports any import belonging to one of *our own*
+namespaces that nothing in the payload defines. Restricting it to our namespaces
+is what keeps it quiet - libc, libstdc++, Qt, ICU and the system frameworks are
+resolved from outside the payload and are not its business. It reads symbol
+tables rather than linking, so `deploy_desktop.py` prints its result and does not
+fail the build; run the script directly for a non-zero exit in CI. On the real
+9.4 mac payload it clears 27 modules and 13,921 exported symbols in about four
+seconds.
+
+`fork-fix-tests/issue-2445-symbol-closure/` builds both halves of the mismatch
+for real with clang++ - one library exporting the const signature, one importing
+the pre-a84491cf74 non-const one - and checks that the script fails on the stale
+pairing and passes once the importer is rebuilt.
+
+### #2355 - Save As closes the whole application when a folder holds an emoji file name
+
+Same defect as #2136, and closed by that fix. The reporter's account matches it
+exactly: the dialog paints for about a second and the process disappears with no
+error, no freeze prompt and no crash dialog - which is what a `SIGSEGV` while GTK
+paints a file name looks like from the outside.
+
+The maintainer's reply on the thread attributes it to a non-standard system font
+and asks whether `segoe-ui-linux` is installed; the reporter confirmed it is not.
+That does not rule this out, because the font is only the *trigger*, not the
+mechanism. The mechanism is that `libgraphics.so` exported its bundled FreeType
+2.10.4, so cairo and pango bound their `FT_*` calls to it, and the COLRv1 colour
+glyph API that arrived in FreeType 2.11 is absent from that copy - so an emoji's
+colour path fell through to the system FreeType, which then read a face laid out
+by 2.10.4. Any font that routes the name down the colour path will do it; Segoe
+UI is simply the one the maintainer reproduced with. See the #2136 entry below
+for the full account and the runnable demonstration.
+
+`core/DesktopEditor/graphics/pro/graphics.version` localises `FT_*`, `ft_*`,
+`hb_*`, `_hb_*` and `Brotli*`, and `graphics.pro` applies it under
+`core_linux:graphics_dynamic_library` - both #2136 and #2355 are Linux. Not
+verified against this reporter's own font set, which was not reproduced here.
 
 ### #2368 - text duplicated and merged with the wrong font after save and reopen
 
