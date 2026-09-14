@@ -266,6 +266,9 @@ C++), `issue-2429-saveas-extension/` (real QtCore).
 | #2430 | Fourteen bounds checks in the shared binary reader executed a bare `throw;`, which can only call `std::terminate` - any binary that ran the reader past its buffer killed x2t outright (the abort only; the underlying desync is still open, see below) | `core` |
 | #2189 | `GetLastError()` was read after `CreateMutex` without clearing it first, so a stale `ERROR_ALREADY_EXISTS` made the only running instance decide it was a second one and exit 0 | `desktop-apps` |
 | #2269 | A conditional formatting rule loaded from file was built with no parent and no dependencies, so it never evaluated until an edit forced it | `sdkjs` |
+| #2250 | A copied bullet reached the plain-text clipboard flavour as a raw symbol-font codepoint, with no font to give it meaning | `sdkjs` |
+| #2280 | Times written to CSV had the wrong meridiem at noon and midnight, and lost a second on roughly half of all times | `core` |
+| #2301 | `wcstod` accepts hexadecimal float literals, so any `0x...` CSV value was imported as a number and the text discarded | `core` |
 
 Two defects in our own tooling were fixed alongside: CEF remote debugging was
 pinned to a hardcoded port 8080 that could not be overridden, and CEF failures
@@ -289,6 +292,50 @@ asserts the JS map and the generated table agree, since a mismatch is invisible
 at runtime.
 
 ## Root-caused, not fixed
+
+### #2288 - ROW(INDIRECT("2:N")) reports a circular reference that is not one
+
+Root-caused precisely; **deliberately not fixed here**, for a reason worth stating:
+getting this wrong means *missing* a real cycle, and a missed cycle is an infinite
+recursion, which is a far worse failure than the false positive being removed. It
+needs a test that runs the formula engine end to end, which the harnesses in
+`../fork-fix-tests/` are not set up to do.
+
+**Mechanism.** `INDIRECT` and `OFFSET` produce references the static dependency
+graph cannot see, so both hand their result to
+`g_cCalcRecursion.saveFunctionResult` for a dynamic check
+(`cell/model/FormulaObjects/lookupandreferenceFunctions.js:1790` and `:1963`).
+`Cell.recheckCellForCycle` (`cell/model/Workbook.js:17122`) then walks those saved
+results and flags a cycle on one test:
+
+    if (range.bbox.contains(t.nCol, t.nRow) && range.worksheet.getName() === t.ws.getName())
+
+That asks whether the formula's own cell lies inside the range. It does not ask
+whether the formula reads any *value* from it - and `ROW`, `ROWS`, `COLUMN` and
+`COLUMNS` read only coordinates. So `=ROW(INDIRECT("2:2"))` in any cell in rows
+2..N is called circular, while Excel does not, and the reporter's own observations
+fit: the same formula outside the row range works, and `SEQUENCE` works because it
+produces no reference at all.
+
+**A fix that would be safe in shape:** have the positional functions discard the
+saved result they consumed, matched by object identity, so only the reference that
+`ROW` actually took is exempted. `SUM(INDIRECT("A1:A10"))` in A5 still saves its
+result and is still caught. The failure mode of an identity mismatch is that
+nothing is discarded - the current behaviour - rather than a missed cycle, which is
+what makes this shape worth preferring over widening the test.
+
+Note while you are in there: the store is one slot per function name
+(`oIndirectFuncResult`, `oOffsetFuncResult`, `oCellContentFuncRes` in
+`parserFormula.js:12126`), so a formula with two `INDIRECT` calls already keeps only
+the last. The mechanism is approximate before any change of ours.
+
+**Also unexplained, and reported:** the reporter says the error survives deleting
+and retyping the formula, survives save and reopen, and is reproduced by copying
+the sheet - but a new sheet with identical content is fine. That is not explained
+by the above, which is recomputed per calculation. Something is being persisted.
+`parsedFormula.ca` is set to true by this same code path and is serialized; that is
+the first thing to check.
+
 
 ### #1868 - scroll position fixed; the caret still needs a format change
 
