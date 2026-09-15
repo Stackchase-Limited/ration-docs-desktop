@@ -23,6 +23,7 @@ X2T="$(rd_x2t)"
 [ -n "$X2T" ] || { echo "x2t.sh: no x2t found (build the app, or install an editor)" >&2; exit 1; }
 # Run it from its own directory so the sibling frameworks resolve.
 CONV="$(dirname "$X2T")"
+FRAMEWORKS="$(rd_x2t_frameworks "$X2T")"
 
 # AVS_OFFICESTUDIO_FILE_* from core/Common/OfficeFileFormats.h
 if [ -z "$FMT" ]; then
@@ -45,19 +46,42 @@ if [ -z "$FMT" ]; then
 	esac
 fi
 
+# A text-ish input needs more than the output format. x2t works the conversion
+# direction out from the extensions, but for csv/tsv/txt it refuses with 89
+# (CONVERT_NEED_PARAMS) unless the source format and the delimiter are spelled out -
+# the encoding and delimiter are not guessable, so it will not guess. Without these
+# three lines every CSV input fails with an error code that says nothing about why.
+#
+# Encoding is the table INDEX from core/UnicodeConverter/UnicodeConverter_Encodings.h
+# (46 is UTF-8), not a Windows code page - see #1359, where the two being confused
+# segfaulted the converter. Override either with RD_CSV_ENCODING / RD_CSV_DELIMITER.
+FROM_XML=""
+case "${IN##*.}" in
+	csv)  FROM_XML="<m_nFormatFrom>260</m_nFormatFrom>" ;;
+	tsv)  FROM_XML="<m_nFormatFrom>262</m_nFormatFrom>" ;;
+	txt)  FROM_XML="<m_nFormatFrom>69</m_nFormatFrom>"  ;;
+esac
+if [ -n "$FROM_XML" ]; then
+	FROM_XML="$FROM_XML
+<m_nCsvTxtEncoding>${RD_CSV_ENCODING:-46}</m_nCsvTxtEncoding>
+<m_nCsvDelimiter>${RD_CSV_DELIMITER:-4}</m_nCsvDelimiter>"
+fi
+
 FONTS="$(dirname "$(rd_settings_file)")/fonts"
 PARAMS="$(mktemp -t rd-x2t).xml"
 cat > "$PARAMS" <<XML
 <?xml version="1.0" encoding="utf-8"?><TaskQueueDataConvert>
 <m_sFileFrom>$(cd "$(dirname "$IN")" && pwd)/$(basename "$IN")</m_sFileFrom>
 <m_sFileTo>$OUT</m_sFileTo>
+$FROM_XML
 <m_nFormatTo>$FMT</m_nFormatTo>
 <m_sFontDir>$FONTS</m_sFontDir>
 </TaskQueueDataConvert>
 XML
 
 set +e
-( cd "$CONV" && DYLD_LIBRARY_PATH="$CONV" LD_LIBRARY_PATH="$CONV" "./$(basename "$X2T")" "$PARAMS" )
+( cd "$CONV" && DYLD_LIBRARY_PATH="$CONV" LD_LIBRARY_PATH="$CONV" \
+  DYLD_FRAMEWORK_PATH="$FRAMEWORKS" "./$(basename "$X2T")" "$PARAMS" )
 rc=$?
 set -e
 rm -f "$PARAMS"

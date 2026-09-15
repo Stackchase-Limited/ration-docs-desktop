@@ -18,10 +18,25 @@ if [ -z "${RD_APP:-}" ]; then
 	done
 fi
 
-# x2t from our own build, preferring the copy inside the app bundle: that one is
-# self-contained, while core/build/bin/x2t needs the bundle's @rpath framework
-# layout and aborts on its own.
+# x2t from our own build. core/build/bin/<plat>/x2t comes FIRST because it is the
+# one a rebuild updates - the copy inside the app bundle is only refreshed when
+# somebody repackages, so preferring it (as this did until #1359) silently tests a
+# converter that predates the fix you are trying to verify, and reports success.
+#
+# The bundle copy is self-contained; the core/build one resolves its frameworks
+# through @rpath and aborts on its own, which is why it was skipped. That is fixable
+# rather than fatal: rd_x2t also sets RD_X2T_FRAMEWORKS, and callers put it in
+# DYLD_FRAMEWORK_PATH.
+#
+# Export RD_X2T to pin a specific binary - point it at the bundle copy deliberately
+# when you want a pre-fix baseline to compare against.
 rd_x2t() {
+	if [ -n "${RD_X2T:-}" ]; then echo "$RD_X2T"; return; fi
+	for plat in mac_arm64 mac_x86_64 linux_x86_64; do
+		if [ -x "$RD_ROOT/core/build/bin/$plat/x2t" ]; then
+			echo "$RD_ROOT/core/build/bin/$plat/x2t"; return
+		fi
+	done
 	for candidate in \
 		"$RD_ROOT/desktop-apps/build/Ration Docs.app/Contents/Resources/converter/x2t" \
 		"$RD_APP/Contents/Resources/converter/x2t" \
@@ -29,6 +44,20 @@ rd_x2t() {
 	do
 		if [ -x "$candidate" ]; then echo "$candidate"; return; fi
 	done
+}
+
+# Where that binary's frameworks live. Derived from the path rather than set inside
+# rd_x2t, because rd_x2t is called as $(rd_x2t) - a subshell, whose variable
+# assignments are discarded. core/build/bin/<plat>/x2t resolves @rpath against
+# core/build/lib/<plat>; every other copy keeps its frameworks beside it.
+rd_x2t_frameworks() {
+	local x2t="$1"
+	case "$x2t" in
+		"$RD_ROOT"/core/build/bin/*)
+			echo "$RD_ROOT/core/build/lib/$(basename "$(dirname "$x2t")")" ;;
+		*)
+			dirname "$x2t" ;;
+	esac
 }
 
 # 8080 is the app's built-in default but collides with common dev servers,
