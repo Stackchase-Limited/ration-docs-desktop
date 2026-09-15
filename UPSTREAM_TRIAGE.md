@@ -226,7 +226,7 @@ So the entries below fall into three groups, and the difference matters.
 
   #2434, #2445, #2443, #2368, #2301, #2328, #2269, #2250, #2234, #2244, #2189,
   #2105, #2216, #2274, #2296, #2324, #2263, #2425, #2334, #2389, #2022,
-  #2426, #963, #2056   (the last three back-filled)
+  #2426, #963, #2056, #2433, #2429   (back-filled)
 
 **2. No test file, but verified by direct observation this session** - a conversion
 run through the shipped x2t, before and after, with the output recorded in the commit
