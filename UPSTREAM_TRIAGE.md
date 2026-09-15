@@ -1149,6 +1149,138 @@ new process message with no renderer-side handler so the prompt never fires, and
 it leaves a commented-out duplicate of the function body behind.
 
 
+### #2107 - a plugin installed for all users cannot be uninstalled
+
+Root-caused and confirmed by reading, not by running: this machine has no
+system-plugin install to remove.
+
+The plugin **list** and the plugin **remove** disagree about where plugins live.
+`CPluginsManager` carries two directories - `m_strDirectory` (the system one,
+next to the binary) and `m_strUserDirectory` - and the call site in
+`client_renderer_wrapper.cpp` fills in both:
+
+    oPlugins.m_strDirectory     = m_sSystemPlugins;
+    oPlugins.m_strUserDirectory = m_sUserPlugins;
+
+Enumeration honours both. `GetInstalledPlugins` reads `GetDirPlugins(m_strDirectory)`
+*and* `GetDirPlugins(m_strUserDirectory)` and pushes system entries into the same
+list the user's own plugins go into, so the UI offers a system plugin for removal
+exactly like any other. `RemovePlugin` then does this, and only this:
+
+    std::wstring sPluginDir = m_strUserDirectory + L"/" + sAdd;
+    if (NSDirectory::Exists(sPluginDir))
+    {
+        ...          // remove, or move to backup
+    }
+    return bResult;
+
+There is no second branch. For a system plugin the constructed path does not
+exist, the entire body is skipped, and `bResult` stays `false`. `m_strDirectory`
+is never consulted by this function - it is used for listing and for reading
+`config.json`, never for deletion.
+
+**Why it looks like nothing happened.** The call site returns `bResult` to
+JavaScript, so the failure is not lost at the C++ boundary, but it then
+unconditionally runs
+
+    "if (window.UpdateInstallPlugins) window.UpdateInstallPlugins();"
+
+whether the removal worked or not. The list is re-read from disk, the system
+plugin is still on disk, and so it reappears in place. To the user the click did
+nothing and said nothing.
+
+**Not fixed, and the reason is not laziness.** Deleting from the system directory
+is a privileged write - on Windows that is `Program Files`, on Linux `/opt`, on
+macOS inside the signed and notarised bundle, where removing a file breaks the
+signature. There is no elevation path in this process. The honest fixes are to
+stop offering system plugins for removal, or to report the refusal instead of
+redrawing the list; both are product decisions about what the plugin manager
+promises, so they are parked rather than guessed at.
+
+### #2095 - dragging a file into the editor does nothing for anything but an image
+
+Root-caused; the filter is explicit and one line long.
+
+`sdkjs/common/clipboard_base.js` reduces the incoming item list to images before
+anything else looks at it:
+
+    let checkImages = function (callback) {
+        let items = _clipboard.items;
+        if (null != items && 0 !== items.length && !isDisableRawPaste) {
+            for (var i = 0; i < items.length; ++i) {
+                if (items[i].kind === 'file' && items[i].type.indexOf('image/') !== -1) {
+                    callback(items[i]);
+                }
+            }
+        }
+    };
+
+Every caller of `checkImages` is the only thing that ever looks at `kind === 'file'`,
+so an item that is a file but not an `image/*` is examined once, fails the `type`
+test, and is dropped. Nothing downstream ever sees it.
+
+`text/uri-list` - the flavour a desktop file manager actually puts on the drag for
+a dropped file - is not read anywhere. Confirmed by searching the editor sources
+rather than assuming:
+
+    grep -rn "uri-list" sdkjs/common sdkjs/word sdkjs/cell sdkjs/slide web-apps/apps
+    (no matches)
+
+So there are two independent reasons a dropped `.docx` or `.csv` goes nowhere: the
+item is filtered out for not being an image, and the flavour that would name the
+file on disk is never requested.
+
+**Not fixed** because what *should* happen on such a drop is a product question
+with several defensible answers - open it as a new document, insert it as an OLE
+object, refuse it with a message - and the branch to write depends on which one.
+Parked with that question attached, not with "needs investigation".
+
+### #2123 - recent files list - the reported path difference is real but is not the cause
+
+This is recorded because it is a **claim I checked and could not stand behind**, and
+the checking is worth as much as a fix.
+
+The reported root cause was that `recents.xml` resolves to a different place on
+Windows than on Linux and macOS. The first half is true. Every reader and writer
+agrees on the *expression*:
+
+    recover_path + L"/../recents.xml"          (applicationmanager_p.h x2, client_renderer_wrapper.cpp)
+
+but `recover_path` is assigned twice, in two projects, with different bases:
+
+    applicationmanager.cpp:  recover_path = app_data_path  + L"/data/recover"
+    main.cpp:                recover_path = user_data_path + "/recover"
+
+and on Windows only, `main.cpp` mutates the base first - `user_data_path` is
+captured **by reference** and the Windows branch does
+`Utils::makepath(user_data_path.append("/data"))`, which is an in-place append.
+So the file lands under `.../data/` on Windows and one level up elsewhere.
+
+**But that does not break anything**, which is the part the report missed. The
+mutation happens before any of the path assignments that use it, all three call
+sites compute the name from the same `recover_path`, and `setup_paths` is invoked
+exactly once:
+
+    grep -n "setup_paths" desktop-apps/win-linux/src/main.cpp
+    144:    auto setup_paths = [&user_data_path](CAscApplicationManager * manager) {
+    259:    setup_paths(&AscAppManager::getInstance());
+
+A second call *would* append `/data` again and strand the list at `.../data/data/`,
+because the capture is by reference and `QString::append` mutates - that is a real
+trap sitting one refactor away, and it is noted below under latent problems. It is
+not today's bug. Each platform is self-consistent, so a path difference between
+platforms cannot by itself lose a recents list on one of them.
+
+Left open with the root cause **not** established, rather than closed on a
+plausible-sounding one.
+
+### #2126 - debug mode stays on after it is turned off
+
+Reported as a sticky value in `settings.xml`. **Not confirmed here** - the search
+for the setting in the desktop app sources returned nothing to anchor on, and
+rather than reason from the issue text alone it is left unverified. No claim is
+made about the cause.
+
 ## Already fixed in our 9.4 baseline - no action
 
 ### #2011 - spreadsheet freezes when copying all cells
@@ -1951,6 +2083,20 @@ only `projicons/` and `update-daemon/`.
   picks "Associate selected" - the UI can present a selection nobody made.
 
 ## Latent problems found in passing, not yet fixed
+
+**`setup_paths` mutates the variable it captures by reference** -
+`desktop-apps/win-linux/src/main.cpp:144`. The lambda is
+`[&user_data_path](...)`, and its Windows branch does
+`Utils::makepath(user_data_path.append("/data"))`. `QString::append` mutates in
+place, so the capture is permanently one directory deeper after the call. It is
+harmless today only because there is exactly one call site (line 259). A second
+call - one more manager to configure, one retry - silently relocates
+`recover_path`, `cookie_path`, `fonts_cache_info_path`, `user_plugins_path` and
+`recents.xml` to `.../data/data/`, abandoning the user's recovery files and
+recent list without an error. Found while checking #2123; the fix is a local copy
+inside the lambda, deliberately not made blind since it touches Windows path
+layout that cannot be tested on this machine.
+
 
 Not reported upstream; found while working on something else, and cheap to lose.
 
