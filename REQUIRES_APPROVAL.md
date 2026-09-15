@@ -98,3 +98,35 @@ of every shipped theme, which is your call, not mine.
 The drop-shadow half of the issue is not done and cannot be: it needs the compositor
 to draw around our frameless window, which is the Qt Wayland port already ruled out
 of reach for #2287 and #2285.
+
+---
+
+## 7. Should a macro be able to reach arbitrary hosts?  (#2220, security)
+
+A macro running in a document cannot call an external API. That is not a bug in our
+code: `--disable-web-security` is compiled out, `universal_access_from_file_urls` is
+compiled out on CEF 102 and later, and the one bypass that exists -
+`onlyoffice-proxy://` - is gated to `onlyoffice://` frames. The plugin runs at a
+`file:` origin, so the browser's own CORS rules stop it. Headers are not being
+stripped by anything in this fork; that is Chromium's preflight.
+
+Opening it up would let **any macro in any document reach any host, with no CORS**.
+That is a security posture decision, not a patch. The maintainer's own answer on the
+thread points at a plugin with `onlyofficeScheme`, and an async Office API "in
+upcoming releases".
+
+**Needed:** a decision on whether we want that door open at all, and if so how narrow.
+
+## 8. The AI plugin ships committed build output
+
+`desktop-sdk/ChromiumBasedEditors/plugins/ai-agent/deploy/` is a committed build
+artifact, and the fixes for #2268 (and #2444 before it) are in `src/`. **They do not
+reach users until the plugin is rebuilt.** `node_modules` is absent here, so the
+plugin cannot be built or typechecked in this environment either.
+
+**Needed:** either a plugin build step in our pipeline, or a decision that `src/`
+changes there are not shipped until someone runs it by hand.
+
+Related: `onlyoffice.github.io/sdkjs-plugins/content/ai/` - which holds the grammar
+checker behind #2272 - is not a submodule of this superproject at all, so it is
+outside the tree we build and version. Worth deciding whether it should be.
