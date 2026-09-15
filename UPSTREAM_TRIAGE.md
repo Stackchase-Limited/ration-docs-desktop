@@ -418,6 +418,72 @@ at runtime.
 
 ## Root-caused, not fixed
 
+### #2187 - a macro assigned to a shape stops working after reopening - only via ODS
+
+Root-caused precisely. The reported symptom is real, but **not where the title
+suggests**: the `.xlsx` path is provably intact, and the binding is lost only when
+the workbook is saved to `.ods`.
+
+A JSA assignment is `xdr:sp/@macro = "jsaProject_{guid}"`, and sdkjs derives both
+the pointing-finger cursor and the click from that one string
+(`GraphicObjectBase.js:923` `hasJSAMacro`, consumed at `CommonController.js:983`).
+The ODF writer never carries it:
+
+- `core/OdfFile/Writer/Converter/ConvertDrawing.cpp:829` -
+  `OoxConverter::convert(PPTX::Logic::Shape *)` never reads `oox_shape->macro`,
+  and neither do the Pic or CxnSp paths.
+- The form-control equivalent is a stub with the assignment commented out,
+  `core/OdfFile/Writer/Format/odf_controls_context.cpp:287`:
+
+      void odf_controls_context::set_macro(const std::wstring & val)
+      {
+          if (val.empty()) return;
+          if (impl_->controls_.empty()) return;
+          //impl_->controls_.back().form_elm-> = val;
+      }
+
+  so `XlsxConverter.cpp:3441` calls it and nothing happens.
+- `odf_drawing_context::start_action` has an `else if (value.find(L"macro"))`
+  branch at `:3149` whose body is empty.
+
+**What makes it a defect rather than a format limit:** the `.ods` still gets
+`jsaProject.bin` at its root. The macro body is kept and stays listed in the Macros
+dialog, with nothing bound to it. That also explains the reporter's own workaround -
+"assign the already assigned macro once again" works because the macro is still
+there.
+
+**Verified end to end**, and the negative results are as important as the positive
+one. `xlsx -> bin -> xlsx` keeps every `@macro` on all six drawing shapes across
+twoCell/oneCell/absolute anchors. Driving the real sdkjs headlessly through
+`docbuilder`: after `xlsx -> ods -> open` the shape reports
+`{"sp":[["null",false]],"macLen":176}` - binding gone, macro list intact. The
+invocation path is innocent: `checkDrawingHyperlinkAndMacro` returns
+`{cursorType:"pointer", macro:"{guid}"}` identically before save and after reopen.
+And `git diff v9.2.1.43 HEAD` shows zero macro-related changes in
+`PPTXFormat/Logic/Shape.cpp` or in sdkjs's shape serialisation, so the reporter's
+9.2.1 xlsx path is byte-identical to ours - their file cannot have been a plain
+xlsx shape.
+
+The `.xlsx` vs `.xlsm` question does not apply: JSA macros live in
+`xl/jsaProject.bin`, an ONLYOFFICE part that `.xlsx` carries fine. Only VBA needs
+`.xlsm`.
+
+**What a fix needs - both halves.** The writer must emit
+`office:event-listeners`/`script:event-listener` (the machinery exists:
+`Writer/Format/office_event_listeners.h:108`), and the reader must translate it
+back - `draw_frame::pptx_convert` already calls
+`office_event_listeners_->pptx_convert`, but `draw_frame::xlsx_convert` never
+touches the field, so writing alone would still lose it on the way home.
+
+`fork-fix-tests/issue-2187-shape-macro/run.py` is the ready-made regression test:
+it passes today with the gap recorded, and `ODS_CARRIES_MACRO=1` turns it into six
+failures - the same assertions that already pass on the xlsx route.
+
+**Even if the ODF binding is judged out of scope**, dropping it *silently while
+still writing `jsaProject.bin` into the file* is not defensible. The honest minimum
+is a warning on save-as-ODS.
+
+
 ### #1343 - "Invalid character in spreadsheet" - nothing is invalid, and nothing is lost
 
 Root-caused precisely and **deliberately not fixed**, because the honest fix is a
