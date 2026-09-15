@@ -69,3 +69,32 @@ counters. It is currently preserved on `ration/l10n-build-output`. Left tracked 
 makes noise in every diff; ignored, a genuine translation change could be missed.
 
 **Needed:** a decision either way.
+
+---
+
+## 6. Landed, but reversible - every theme's window border got darker  (#2229)
+
+The issue asks for a higher-contrast border so a window's edges can be seen.
+Measured against WCAG 2.1 SC 1.4.11, which asks 3:1 for a UI component boundary,
+**all seven themes were below it** and two were effectively invisible:
+
+    gray     #cbcbcb on #d9d9d9   1.15  ->  #787878   3.13
+    white    #d9d9d9 on #eaeaea   1.17  ->  #858585   3.07
+    night    #616161 on #383838   1.89  ->  #858585   3.18
+    dark     #616161 on #282828   2.38  ->  #757575   3.20
+    classic  #888    on #e4e4e4   2.79  ->  #808080   3.11
+    light    #888    on #E4E4E4   2.79  ->  #808080   3.11
+    contrast #616161 on #181818   2.87  ->  #7a7a7a   4.14
+
+Each moved by the smallest neutral step that clears the threshold. Five shift only
+slightly; **gray and white shift visibly**, because their borders were barely there.
+
+Landed rather than parked: it is the smallest change that answers the issue, and it
+is justified by a published threshold rather than by taste. But it changes the look
+of every shipped theme, which is your call, not mine.
+
+**To undo:** `git -C desktop-apps revert 1509c6228`
+
+The drop-shadow half of the issue is not done and cannot be: it needs the compositor
+to draw around our frameless window, which is the Qt Wayland port already ruled out
+of reach for #2287 and #2285.
