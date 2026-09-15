@@ -46,6 +46,40 @@ rd_x2t() {
 	done
 }
 
+# Anything that RENDERS - PDF output, and the doctrenderer paths generally - needs
+# more than the binary: doctrenderer reads DoctRenderer.config from the process
+# directory and resolves "../editors/sdkjs/..." against it. The packaged app has
+# that tree; core/build/bin/<plat>/x2t does not, so a PDF conversion with the
+# freshly built binary failed with errors that look like product defects
+# ("ReferenceError: Can't find variable: $", "<error code=\"open\"/>") when the real
+# cause is simply that no editors tree was found. That cost time and was briefly
+# written up as a renderer bug; it is not one.
+#
+# So: put a config and an editors symlink next to the fresh binary. The JS comes
+# from the packaged app unless RD_EDITORS points somewhere else - which matters,
+# because it means a C++ fix shows through this path but a **JS fix does not**
+# until that tree is refreshed.
+rd_ensure_doctrenderer() {
+	local x2t="$1"
+	local dir; dir="$(dirname "$x2t")"
+	[ -f "$dir/DoctRenderer.config" ] && [ -e "$dir/../editors" ] && return 0
+
+	local editors="${RD_EDITORS:-$RD_ROOT/desktop-apps/build/Ration Docs.app/Contents/Resources/editors}"
+	# Take the PACKAGED config, not desktop-apps/common/converter/DoctRenderer.config.
+	# The in-tree one is a stale schema - per-product <DoctSdk>/<PpttSdk>/<XlstSdk>
+	# file lists - while doctrenderer now reads <sdkjs>, <allfonts> and
+	# <dictionaries>. Copying the in-tree one produces a converter that loads
+	# nothing and fails with "Can't find variable: $".
+	local config="$RD_ROOT/desktop-apps/build/Ration Docs.app/Contents/Resources/converter/DoctRenderer.config"
+	[ -f "$config" ] || config="$RD_ROOT/desktop-apps/common/converter/DoctRenderer.config"
+	[ -d "$editors" ] || return 0   # nothing to link; leave it alone and let x2t report
+	[ -f "$config" ] || return 0
+
+	[ -e "$dir/../editors" ] || ln -sfn "$editors" "$dir/../editors" 2>/dev/null
+	[ -f "$dir/DoctRenderer.config" ] || cp "$config" "$dir/DoctRenderer.config" 2>/dev/null
+	return 0
+}
+
 # Where that binary's frameworks live. Derived from the path rather than set inside
 # rd_x2t, because rd_x2t is called as $(rd_x2t) - a subshell, whose variable
 # assignments are discarded. core/build/bin/<plat>/x2t resolves @rpath against

@@ -24,6 +24,7 @@ X2T="$(rd_x2t)"
 # Run it from its own directory so the sibling frameworks resolve.
 CONV="$(dirname "$X2T")"
 FRAMEWORKS="$(rd_x2t_frameworks "$X2T")"
+rd_ensure_doctrenderer "$X2T"   # PDF and other rendered output need an editors tree
 
 # AVS_OFFICESTUDIO_FILE_* from core/Common/OfficeFileFormats.h
 if [ -z "$FMT" ]; then

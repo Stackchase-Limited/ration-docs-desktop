@@ -2246,12 +2246,30 @@ at 0.01mm, which lets a table's bottom reach 272.10 against a `YLimit` of 272.01
 0.09mm past the bottom margin. Does not change page count. Found while measuring
 #1570.
 
-**`xlsx -> pdf` cannot be driven from this tree**, and the reason is now known:
-format 513 reaches doctrenderer and fails with
-`ReferenceError: Can't find variable: $`, so the PDF render path is loading a
-script that expects jQuery and not getting it. That blocks rendering the grid
-through the same font picker the editor uses - the natural way to verify any font
-or layout work.
+**Rendering to PDF works - and the note that used to sit here was wrong.** It said
+the PDF render path was broken because doctrenderer failed with
+`ReferenceError: Can't find variable: $`. That was a symptom recorded as a defect.
+
+The real cause: doctrenderer reads `DoctRenderer.config` from the process directory
+and resolves `../editors/sdkjs/...` against it. The packaged app has that tree;
+`core/build/bin/<plat>/x2t` does not. Give the fresh binary a config and an
+`editors` symlink and all three formats render - `sample.docx` 551KB,
+`sample.pptx` 306KB, a small xlsx 11KB. Nothing in the renderer is broken.
+
+`harness/bin/x2t.sh` now sets this up automatically, so anything that renders works
+through the harness without ceremony. **But note what the JS is:** the editors tree
+is the packaged app's, dated 11 September, so a **C++ fix shows through this path
+and a JS fix does not** until that tree is refreshed. `RD_EDITORS` points it
+elsewhere.
+
+**A trap worth knowing:** `desktop-apps/common/converter/DoctRenderer.config` is
+stale and unused. It carries the old per-product `<DoctSdk>`/`<PpttSdk>`/`<XlstSdk>`
+schema; doctrenderer now reads `<sdkjs>`, `<allfonts>` and `<dictionaries>`. Copying
+that file next to a binary produces a converter that loads nothing and fails with
+exactly the `$` error above - which is how the original misdiagnosis happened.
+Packaging does **not** use it (both `build_tools/out` and the macOS vendor copy
+carry the correct 338-byte version), so this is not a shipping defect - just a file
+in the tree that looks authoritative and is not.
 
 
 **A font collection is accepted or rejected on the strength of its first face
