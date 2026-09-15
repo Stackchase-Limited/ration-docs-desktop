@@ -225,7 +225,8 @@ So the entries below fall into three groups, and the difference matters.
 `BASELINE=1`.** These are verified in the sense this file means:
 
   #2434, #2445, #2443, #2368, #2301, #2328, #2269, #2250, #2234, #2244, #2189,
-  #2105, #2216, #2274, #2296, #2324, #2263, #2425, #2334, #2389, #2022
+  #2105, #2216, #2274, #2296, #2324, #2263, #2425, #2334, #2389, #2022,
+  #2426, #963, #2056   (the last three back-filled)
 
 **2. No test file, but verified by direct observation this session** - a conversion
 run through the shipped x2t, before and after, with the output recorded in the commit
@@ -257,6 +258,21 @@ this:
 
 The #2426 test ran green against HEAD on the first attempt, and only failed - correctly,
 with the right message - once pointed at `ede98d9619^`.
+
+**Two more things the first three back-fills turned up**, both about reading results
+rather than about the code:
+
+- A test's exit status is the *last command in the pipeline*. `node t.js | tail -3`
+  reports `tail`'s status, which is always 0. The #963 test looked green that way while
+  it was actually failing. Run the test bare when you want its result.
+- A back-filled test can fail because the **stub** is wrong rather than the fix. The
+  #963 stub modelled prior changes as disappearing once the open edit was committed,
+  which is not how the editor behaves. The answer is to correct the model, never to
+  loosen the assertion until it passes.
+
+And one on scope: `fork-fix-tests/syntax-check-desktop-sdk.sh` is cited by an earlier
+commit too, and is also absent. The missing-artifact problem covers tooling, not only
+tests.
 
 ## Fixed
 
