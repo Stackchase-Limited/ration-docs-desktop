@@ -157,7 +157,7 @@ Verify the download before you run it:
 
 should print
 
-    71f5f81e5470e597d4c06c14e2b18dab56eb9d3634e1fb438d65a66076339a9f
+    babe877641a24d8b662e12e022d0ae7391e3f5a44a043c7cfe8c8f999208f16f
 
 An unsigned build means **you are trusting the source of the file**, and nothing
 else is vouching for it. If that is not acceptable for your use, wait for a signed
@@ -169,7 +169,7 @@ build.
 |---|---|
 | File | `RationDocs-2026.1.0-arm64.dmg` |
 | Size | 760 MB |
-| SHA-256 | `71f5f81e5470e597d4c06c14e2b18dab56eb9d3634e1fb438d65a66076339a9f` |
+| SHA-256 | `babe877641a24d8b662e12e022d0ae7391e3f5a44a043c7cfe8c8f999208f16f` |
 | Application | `Ration Docs.app`, 1.6 GB installed |
 | Bundle id | `com.stackchase.rationdocs` |
 | Requires | macOS on Apple Silicon |
@@ -185,6 +185,28 @@ converter *inside the built application* - #2187, #1359 (two of them), #139 and
 #2113 - and all five pass. The JS fixes were confirmed present in the packaged
 editor bundles the same way. The application was launched from the mounted DMG
 and started normally.
+
+## Start page
+
+Four defects in the branded start page sidebar were fixed for this release, all
+found from a screenshot of the running application rather than from the source -
+two of them are injected at runtime and are not visible in the markup at all.
+
+- The sidebar listed **"AI agent" twice**. One entry was hardcoded by the reskin,
+  the other registered automatically for the AI agent plugin. The hardcoded one
+  was also the broken one - clicking it blanked the content area, because nothing
+  registers the panel it tried to show - so that is the one that went.
+- **"Clouds" appeared twice**, for the same reason: a second heading is injected
+  into the branded group at runtime.
+- Every icon carried a **square outline**. The branded styles reset the icon
+  box's padding, radius and background but never its border.
+- The **selected item rendered as an empty white box** with its label invisible.
+  The generic stylesheet assumes a light sidebar and paints the row white; the
+  branded styles then wrote white text on it. The active item is now what the
+  design intends: a petrol left accent with a faint wash.
+
+Both AI plugins still ship. They share the same stored model and provider
+selection, so configuring one configures the other.
 
 ## Known limitations
 
