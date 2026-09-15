@@ -151,14 +151,40 @@ That is expected for this release, not a sign of a corrupted download. To open i
 Right-click → **Open** also works on some macOS versions, but clearing the
 attribute is more reliable on recent ones.
 
-Verify the download before you run it - the checksum is published alongside the
-DMG:
+Verify the download before you run it:
 
     shasum -a 256 RationDocs-2026.1.0-arm64.dmg
+
+should print
+
+    71f5f81e5470e597d4c06c14e2b18dab56eb9d3634e1fb438d65a66076339a9f
 
 An unsigned build means **you are trusting the source of the file**, and nothing
 else is vouching for it. If that is not acceptable for your use, wait for a signed
 build.
+
+## The artifact
+
+| | |
+|---|---|
+| File | `RationDocs-2026.1.0-arm64.dmg` |
+| Size | 760 MB |
+| SHA-256 | `71f5f81e5470e597d4c06c14e2b18dab56eb9d3634e1fb438d65a66076339a9f` |
+| Application | `Ration Docs.app`, 1.6 GB installed |
+| Bundle id | `com.stackchase.rationdocs` |
+| Requires | macOS on Apple Silicon |
+
+Built from this repository at the commit this file is tagged on, with
+`build_tools/make.py` (115,188 log lines, zero errors) followed by an unsigned
+`xcodebuild` of the `ONLYOFFICE-arm` scheme.
+
+**The shipped converter was tested, not assumed.** The build does not relink
+`x2t` when only a library changed, so a green build is not by itself evidence
+that the binary carries a fix. Five end-to-end tests were run against the
+converter *inside the built application* - #2187, #1359 (two of them), #139 and
+#2113 - and all five pass. The JS fixes were confirmed present in the packaged
+editor bundles the same way. The application was launched from the mounted DMG
+and started normally.
 
 ## Known limitations
 
