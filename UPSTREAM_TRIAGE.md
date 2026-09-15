@@ -227,6 +227,7 @@ So the entries below fall into three groups, and the difference matters.
   #2434, #2445, #2443, #2368, #2301, #2328, #2269, #2250, #2234, #2244, #2189,
   #2105, #2216, #2274, #2296, #2324, #2263, #2425, #2334, #2389, #2022,
   #2426, #963, #2056, #2433, #2429   (back-filled)
+  #2245, #2147, #2161, #2229, #2209, #2195, #2202, #2268
 
 **2. No test file, but verified by direct observation this session** - a conversion
 run through the shipped x2t, before and after, with the output recorded in the commit
@@ -348,6 +349,14 @@ tests.
 | #2425 | The retina fill handle could not be grabbed: the hit test was three device pixels flat while the square drawn is far larger (part) | `sdkjs` |
 | #2022 | *No upstream issue.* The last row of a CSV lost its trailing delimiters, so a reader counting fields dropped its final columns | `core` |
 | - | *No upstream issue.* Number-format padding directives (`_c`, `*c`, `[Red]`) were written into CSV cells as text: Accounting wrote `_ * 8745.00_ ` | `core` |
+| #2245 | Four ways a trendline equation printed something other than the line it fitted, worst an int32 wrap that turned a slope of 1e6 into 141006.5408 (part) | `sdkjs` |
+| #2147 | Colour printing was decided from one PPD keyword drivers do not agree on, so colour printers were offered black and white only | `desktop-apps` |
+| #2161 | The print dialog resolved a standard paper name then threw it away, so CUPS fell back to nameless custom media with no margins | `desktop-apps` |
+| #2229 | Every theme's window border was below the 3:1 contrast threshold, two of them at 1.15 - effectively invisible (border only; drop shadows need a Wayland port) | `desktop-apps` |
+| #2209 | Every CSV ending in a newline gained an empty trailing row: the string was sized in bytes, so the end-of-data guard fired on a file that ended cleanly | `core` |
+| #2195 | A symbolic retry lost its `+ 0xF000`, so Wingdings and Symbol text inside EMF/WMF metafiles was drawn in a substituted font (core half only) | `core` |
+| #2202 | A failed `fork` or `execve` returned 0, so a save reported success for a conversion that never ran and the document was marked clean over lost work | `desktop-sdk` |
+| #2268 | Two AI providers reported every failure as "Invalid URL", sending users to correct an address that was right (the CORS root cause is untouched) | `desktop-sdk` |
 
 Two defects in our own tooling were fixed alongside: CEF remote debugging was
 pinned to a hardcoded port 8080 that could not be overridden, and CEF failures
