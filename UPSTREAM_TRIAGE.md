@@ -357,6 +357,9 @@ tests.
 | #2195 | A symbolic retry lost its `+ 0xF000`, so Wingdings and Symbol text inside EMF/WMF metafiles was drawn in a substituted font (core half only) | `core` |
 | #2202 | A failed `fork` or `execve` returned 0, so a save reported success for a conversion that never ran and the document was marked clean over lost work | `desktop-sdk` |
 | #2268 | Two AI providers reported every failure as "Invalid URL", sending users to correct an address that was right (the CORS root cause is untouched) | `desktop-sdk` |
+| #139 | One character XML forbids - pasted, never from a file - made the whole slide it sat on come back blank, because the run-text escaper handled the five entities and nothing else | `core` |
+| #2113 | A pivot table saved to ODS came back as plain cells: we wrote the container and never filled it, and every unset attribute serialised as the literal `--` | `core` |
+| #676 | Copying an image file in a Linux file manager pasted its path as text, because `text/uri-list` was read nowhere in the editor | `sdkjs` |
 | #2071 | Rows could be hidden but never shown: the whole-sheet branch of `setRowHidden` was an empty `// ToDo`, so a file with `zeroHeight="1"` opened unreadable with no way back | `sdkjs` |
 | #1362 | The `.~lock` marker was written on a share but never read - three defects, all ending in "free, go ahead and write", so two people could edit one file | `desktop-sdk` |
 | #1297 | Every CSV over ~500KB was silently corrupted at each buffer compaction: a delimiter, quote or newline lost its meaning and cells merged (the OOM half is not fixed) | `core` |
@@ -2083,6 +2086,17 @@ only `projicons/` and `update-daemon/`.
   picks "Associate selected" - the UI can present a selection nobody made.
 
 ## Latent problems found in passing, not yet fixed
+
+**The app bundle ships a stale converter, and the harness prefers it.**
+`desktop-apps/build/Ration Docs.app/Contents/Resources/converter/x2t` is a copy
+taken on 11 September; `core/build/bin/<plat>/x2t` is the one a rebuild updates.
+`harness/bin/x2t.sh` reaches for the bundle copy first, so a fix verified against
+a fresh `core/build` binary will appear *absent* when the harness drives the real
+editor - and, worse, a stale bundle will silently pass a test that a
+freshly-built binary would fail. It is useful as a pre-fix baseline precisely
+because it is old (three fixes this round were proved against it), but it must be
+refreshed before the harness is trusted for anything else.
+
 
 **`setup_paths` mutates the variable it captures by reference** -
 `desktop-apps/win-linux/src/main.cpp:144`. The lambda is
