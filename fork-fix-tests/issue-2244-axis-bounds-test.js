@@ -22,7 +22,10 @@ const path = require('path');
 const assert = require('assert');
 
 const WEBAPPS = path.resolve(__dirname, '..', 'web-apps');
-const BASE_REF = process.env.BASE_REF || 'HEAD';
+// Pinned to the parent of the commit that landed this fix. It must NOT default to
+// HEAD: once the fix is committed HEAD carries it, the baseline stops differing,
+// and the test passes forever while testing nothing.
+const BASE_REF = process.env.BASE_REF || 'b0b8517702^';
 
 const FILES = [
 	'apps/spreadsheeteditor/main/app/view/ChartSettingsDlg.js',

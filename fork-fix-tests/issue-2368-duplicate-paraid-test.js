@@ -21,7 +21,10 @@ const assert = require('assert');
 
 const SDKJS = path.resolve(__dirname, '..', 'sdkjs');
 const REL = 'word/Editor/Serialize2.js';
-const BASE_REF = process.env.BASE_REF || 'HEAD';
+// Pinned to the parent of the commit that landed this fix. It must NOT default to
+// HEAD: once the fix is committed HEAD carries it, the baseline stops differing,
+// and the test passes forever while testing nothing.
+const BASE_REF = process.env.BASE_REF || '7cf9e26ee1^';
 
 const source = process.env.BASELINE
 	? execFileSync('git', ['-C', SDKJS, 'show', `${BASE_REF}:${REL}`], { encoding: 'utf8', maxBuffer: 1 << 28 })

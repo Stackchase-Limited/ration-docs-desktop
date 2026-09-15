@@ -41,7 +41,10 @@ import tempfile
 HERE = os.path.dirname(os.path.abspath(__file__))
 CORE = os.path.normpath(os.path.join(HERE, '..', '..', 'core'))
 REL = 'DesktopEditor/fontengine/FontFile.cpp'
-BASE_REF = os.environ.get('BASE_REF', 'HEAD')
+# Pinned to the parent of the commit that landed this fix. It must NOT default to
+# HEAD: once the fix is committed HEAD carries it, the baseline stops differing,
+# and the test passes forever while testing nothing.
+BASE_REF = os.environ.get('BASE_REF', '1269b750a9^')
 
 if os.environ.get('BASELINE'):
     src = subprocess.run(['git', '-C', CORE, 'show', '%s:%s' % (BASE_REF, REL)],

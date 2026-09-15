@@ -44,7 +44,10 @@ const assert = require('assert');
 const SDKJS = path.resolve(__dirname, '..', 'sdkjs');
 const REL_WB = 'cell/model/Workbook.js';
 const REL_EL = 'cell/model/WorkbookElems.js';
-const BASE_REF = process.env.BASE_REF || 'HEAD';
+// Pinned to the parent of the commit that landed this fix. It must NOT default to
+// HEAD: once the fix is committed HEAD carries it, the baseline stops differing,
+// and the test passes forever while testing nothing.
+const BASE_REF = process.env.BASE_REF || 'b98bcb7c01^';
 
 function read(rel) {
 	return process.env.BASELINE

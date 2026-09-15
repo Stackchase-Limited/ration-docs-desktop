@@ -51,7 +51,10 @@ CORE = os.path.join(REPO, 'core')
 APPMGR = 'ChromiumBasedEditors/lib/src/applicationmanager_p.h'
 LOCKER_CPP = 'ChromiumBasedEditors/lib/src/filelocker.cpp'
 LOCKER_H = 'ChromiumBasedEditors/lib/src/filelocker.h'
-BASE_REF = os.environ.get('BASE_REF', 'HEAD')
+# Pinned to the parent of the commit that landed this fix. It must NOT default to
+# HEAD: once the fix is committed HEAD carries it, the baseline stops differing,
+# and the test passes forever while testing nothing.
+BASE_REF = os.environ.get('BASE_REF', '26887f3267^')
 BASELINE = bool(os.environ.get('BASELINE'))
 
 

@@ -212,6 +212,29 @@ C++), `issue-2429-saveas-extension/` (real QtCore).
 
 ## Verification status - read this before trusting the table below
 
+**Audit, and a correction to what "verified" means here.** 35 of the tests in
+`fork-fix-tests/` defaulted their baseline to `HEAD`. That is fine while a fix is
+uncommitted and worthless the moment it lands: `HEAD` then carries the fix, the
+baseline stops differing, and the test passes forever while testing nothing. It
+was already written down as a trap in this file and was still being reproduced in
+new tests, including two written this week.
+
+Measured rather than assumed - every such test was run with `BASELINE=1` and 34 of
+them exited 0, i.e. reported success against code containing the fix. One of them,
+`issue-1362-samba-lock`, was printing *"ok - a document held by somebody else on a
+share is reported held"* while running the fixed file.
+
+Every test is now pinned to the parent of its own landing commit, and each was
+re-run both ways to confirm it fails at the baseline and passes on the working
+tree. `grep -rn "BASE_REF', 'HEAD'" fork-fix-tests/` returns nothing.
+
+**What this does and does not invalidate.** It does *not* invalidate the original
+verification: each fix was demonstrated at a time when `HEAD` was still the pre-fix
+tree, and those runs were real. What was lost is the *regression protection* -
+between the commit landing and this audit, none of those tests would have noticed
+if the fix were reverted. That is now restored.
+
+
 An audit on 2026-09-15 found that **commit messages in this repository are not
 evidence.** Several commits from earlier sessions cite a test directory as their
 verification - `#1954` cites `fork-fix-tests/issue-1954-user-fonts/`, and there are
@@ -392,6 +415,41 @@ asserts the JS map and the generated table agree, since a mismatch is invisible
 at runtime.
 
 ## Root-caused, not fixed
+
+### #2135 - two editable views of one local document
+
+Root-caused; **deliberately not fixed**, and parked as approval item 10. The
+title reads like a feature request and the one-line version of it is a data-loss
+bug, so the mechanism is worth stating here rather than only in the approval list.
+
+Two mechanisms, both deliberate. `asctabwidget.cpp:718` finds an existing view by
+url and selects that tab rather than making a second - **no lock is consulted on
+that path at all**. A second *process* is not refused either; `cefview.cpp:6009`
+queries the lock and demotes the document to read-only and detached from its path.
+
+The reason not to simply pass `forcenew`: the desktop save is a whole-file
+overwrite through the held descriptor (`SeekFile(0)`, write, `Truncate`), with no
+change-log reconciliation for local files, so the second save discards the first.
+And the locker would not catch it, which was measured on this host rather than
+reasoned about:
+
+    C - THIS PROCESS holds it, via the real CFileLockerFCNTL::Lock()
+        the SAME process now asks IsLocked: ltNone (free - the editor will write)
+        and a second F_WRLCK from this process: granted
+
+A POSIX byte-range lock never conflicts with its own owner, and `CLockFileTemp`
+compares user + host + app-data-dir, so a second view of the same user matches its
+own `.~lock` marker. Two views in one process both read "free, go ahead and write".
+
+A safe subset exists - a second **read-only** view, which is what the reporter's
+stated motivation (two places in one long document) actually needs. Two *editable*
+views need either one editor model with two viewports, which is an `sdkjs` change
+since a `CCefView` owns a whole editor instance, or local co-authoring with OT.
+
+Verified incidentally by the same harness: **a stale `.~lock` from your own crash
+does not wedge the document** - your own marker is recognised and ignored. So the
+"stale lock" reading of this report is not what is happening.
+
 
 ### #2275 - the file name in a header or footer is blank in an exported PDF
 

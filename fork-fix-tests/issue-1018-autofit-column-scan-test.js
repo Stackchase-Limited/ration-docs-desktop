@@ -71,7 +71,10 @@ const SDKJS = path.resolve(__dirname, '..', 'sdkjs');
 const REL_WSV = 'cell/view/WorksheetView.js';
 const REL_WB = 'cell/model/Workbook.js';
 const REL_UTILS = 'cell/utils/utils.js';
-const BASE_REF = process.env.BASE_REF || 'HEAD';
+// Pinned to the parent of the commit that landed this fix. It must NOT default to
+// HEAD: once the fix is committed HEAD carries it, the baseline stops differing,
+// and the test passes forever while testing nothing.
+const BASE_REF = process.env.BASE_REF || '26cb022b7c^';
 
 function readGit(rel) {
 	return execFileSync('git', ['-C', SDKJS, 'show', `${BASE_REF}:${rel}`], { encoding: 'utf8', maxBuffer: 1 << 28 });

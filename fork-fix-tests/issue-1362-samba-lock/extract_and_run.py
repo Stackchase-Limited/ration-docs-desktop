@@ -56,7 +56,13 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.normpath(os.path.join(HERE, '..', '..', 'desktop-sdk'))
 CPP = 'ChromiumBasedEditors/lib/src/filelocker.cpp'
 HDR = 'ChromiumBasedEditors/lib/src/filelocker.h'
-BASE_REF = os.environ.get('BASE_REF', 'HEAD')
+# Pinned to a SHA, not to HEAD.  679ebd74 is the commit that landed this fix, so
+# its parent 6cd9fdd6 is the last tree that still has all three defects.  Left on
+# HEAD this baseline stopped differing the moment the fix was committed: BASELINE=1
+# then re-reads the FIXED file, every assertion passes, and the run reports success
+# while testing nothing at all.  Verified: with 'HEAD' this script exits 0 under
+# BASELINE=1; with the SHA below it exits 1, as a baseline must.
+BASE_REF = os.environ.get('BASE_REF', '6cd9fdd654706f281a00ac2f9036367dcd7ed5af')
 BASELINE = bool(os.environ.get('BASELINE'))
 
 

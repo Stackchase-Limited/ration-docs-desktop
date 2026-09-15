@@ -38,7 +38,10 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.join(HERE, '..', '..', 'desktop-apps')
 SRCDIR = os.path.join(REPO, 'win-linux/src')
 REL = 'win-linux/src/platform_win/association.cpp'
-BASE_REF = os.environ.get('BASE_REF', 'HEAD')
+# Pinned to the parent of the commit that landed this fix. It must NOT default to
+# HEAD: once the fix is committed HEAD carries it, the baseline stops differing,
+# and the test passes forever while testing nothing.
+BASE_REF = os.environ.get('BASE_REF', '865159a5fd^')
 
 if os.environ.get('BASELINE'):
     source = subprocess.run(['git', '-C', REPO, 'show', '%s:%s' % (BASE_REF, REL)],

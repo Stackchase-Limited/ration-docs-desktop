@@ -32,7 +32,10 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.join(HERE, '..', '..', 'desktop-apps')
 STYLE_DIR = 'win-linux/res/styles'
-BASE_REF = os.environ.get('BASE_REF', 'HEAD')
+# Pinned to the parent of the commit that landed this fix. It must NOT default to
+# HEAD: once the fix is committed HEAD carries it, the baseline stops differing,
+# and the test passes forever while testing nothing.
+BASE_REF = os.environ.get('BASE_REF', '1509c6228e^')
 BASELINE = bool(os.environ.get('BASELINE'))
 
 MINIMUM = 3.0  # WCAG 2.1 SC 1.4.11, non-text contrast

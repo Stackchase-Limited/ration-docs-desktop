@@ -67,7 +67,10 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 CORE = os.path.normpath(os.path.join(HERE, '..', '..', 'core'))
 REL = 'OOXML/Binary/Sheets/Writer/CSVWriter.cpp'
 LOCALE_REL = 'OOXML/Binary/Sheets/Reader/CellFormatController/LocalInfo.cpp'
-BASE_REF = os.environ.get('BASE_REF', 'HEAD')
+# Pinned to the parent of the commit that landed this fix. It must NOT default to
+# HEAD: once the fix is committed HEAD carries it, the baseline stops differing,
+# and the test passes forever while testing nothing.
+BASE_REF = os.environ.get('BASE_REF', '39a34e13b3^')
 
 if os.environ.get('BASELINE'):
     src = subprocess.run(['git', '-C', CORE, 'show', '%s:%s' % (BASE_REF, REL)],

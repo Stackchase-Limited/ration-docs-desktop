@@ -165,3 +165,56 @@ means re-opening the freeze.
 **Needed:** confirmation that this is the trade you want. It is a visible change
 for anyone who formats whole columns and then autofits, and it is the one item in
 this round that a user could notice without hitting a bug.
+
+## 10. Two editable views of one local document  (#2135, product decision)
+
+**Not fixed, deliberately.** Investigated, root-caused, and handed back rather than
+patched, because the one-line version of this "fix" is a data-loss bug.
+
+What the reporter wants is a split view of one long document - two viewports, to
+stop scrolling back and forth - and they point out that Document Server allows two
+browser tabs on one file. That comparison is the whole problem: two tabs there are
+two co-editing clients reconciled by a server. No such layer exists for a local
+file.
+
+Two separate mechanisms produce today's behaviour, and both are deliberate:
+
+- **Same process.** `asctabwidget.cpp:718` `openLocalDocument` looks for an existing
+  view by url and selects that tab instead of making a second one. **No lock is
+  consulted on this path at all.** `forcenew` exists but is only ever passed for
+  portal URLs.
+- **Second process.** `cefview.cpp:6009` queries the lock and, if held, opens the
+  document read-only and detached from its path. It is not refused; it is
+  demoted.
+
+**Why removing the de-duplication is not safe.** The desktop save path is a
+whole-file overwrite through the held descriptor - `SeekFile(0)`, write, then
+`Truncate(nFileSize)` in `applicationmanager_p.h`. There is no change-log
+reconciliation for local files, so the second save silently discards the first.
+
+And the locker would **not** catch it. This was measured, not assumed:
+
+  C - THIS PROCESS holds it, via the real CFileLockerFCNTL::Lock()
+      the SAME process now asks IsLocked: ltNone (free - the editor will write)
+      and a second F_WRLCK from this process: granted
+
+A POSIX byte-range lock never conflicts with its own owner, and `CLockFileTemp`
+compares user + host + app-data-dir only, so a second view of the same user matches
+its own `.~lock` marker and is waved through. Two views in one process both read
+"free, go ahead and write".
+
+**What granting it would take:**
+
+- *Safe today, small:* a second **read-only** view in a new tab (`forcenew` plus a
+  read-only flag). Covers the reporter's actual motivation - looking at two places
+  in a long document. Needs exactly one save-path owner.
+- *What was literally asked for:* two editable views, which needs either one shared
+  editor model with two viewports - an `sdkjs` change, since a `CCefView` owns a
+  whole editor instance and its own recovery directory - or a local co-authoring
+  session with operational transforms, i.e. reimplementing Document Server.
+
+**Needed:** a decision on whether to build the read-only split view. Nothing should
+be done to the de-duplication itself until then.
+
+Incidental, and good news: the test also shows a **stale `.~lock` left by your own
+crash does not wedge the document** - your own marker is recognised and ignored.
