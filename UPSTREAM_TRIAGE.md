@@ -2206,29 +2206,22 @@ runs and both the plain-text and the `<td>` output come out empty. Separate defe
 from #1364, same neighbourhood.
 
 
-**The app bundle ships a stale converter, and the harness prefers it.**
-`desktop-apps/build/Ration Docs.app/Contents/Resources/converter/x2t` is a copy
-taken on 11 September; `core/build/bin/<plat>/x2t` is the one a rebuild updates.
-`harness/bin/x2t.sh` reaches for the bundle copy first, so a fix verified against
-a fresh `core/build` binary will appear *absent* when the harness drives the real
-editor - and, worse, a stale bundle will silently pass a test that a
-freshly-built binary would fail. It is useful as a pre-fix baseline precisely
-because it is old (three fixes this round were proved against it), but it must be
-refreshed before the harness is trusted for anything else.
+**The harness preferring a stale converter - FIXED.** Landed as `70aca34`.
+`rd_x2t` now prefers `core/build/bin/<plat>/x2t`, the copy a rebuild actually
+updates, and `rd_x2t_frameworks` supplies the `DYLD_FRAMEWORK_PATH` that made the
+bundle copy seem like the only workable one. The stale bundle stays reachable
+through `RD_X2T` and is genuinely useful there - several fixes this week were
+proved against it as a pre-fix baseline. A second defect fixed alongside: a csv,
+tsv or txt input always failed with code 89, because the harness sent no source
+format, encoding or delimiter and x2t refuses to guess them.
 
 
-**`setup_paths` mutates the variable it captures by reference** -
-`desktop-apps/win-linux/src/main.cpp:144`. The lambda is
-`[&user_data_path](...)`, and its Windows branch does
-`Utils::makepath(user_data_path.append("/data"))`. `QString::append` mutates in
-place, so the capture is permanently one directory deeper after the call. It is
-harmless today only because there is exactly one call site (line 259). A second
-call - one more manager to configure, one retry - silently relocates
-`recover_path`, `cookie_path`, `fonts_cache_info_path`, `user_plugins_path` and
-`recents.xml` to `.../data/data/`, abandoning the user's recovery files and
-recent list without an error. Found while checking #2123; the fix is a local copy
-inside the lambda, deliberately not made blind since it touches Windows path
-layout that cannot be tested on this machine.
+**`setup_paths` mutating its captured variable - FIXED.** Landed in `desktop-apps`
+as `2edb2ba03`. The lambda now works on a local copy, so it configures the same
+directories however often it runs. Left unfixed it was correct only by
+coincidence: a second call would have relocated `recover_path`, `cookie_path`,
+`fonts_cache_info_path`, `user_plugins_path` and `recents.xml` to `.../data/data/`
+and abandoned the user's recovery files with no error.
 
 
 Not reported upstream; found while working on something else, and cheap to lose.
