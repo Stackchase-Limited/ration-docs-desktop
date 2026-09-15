@@ -218,3 +218,41 @@ be done to the de-duplication itself until then.
 
 Incidental, and good news: the test also shows a **stale `.~lock` left by your own
 crash does not wedge the document** - your own marker is recognised and ignored.
+
+## 11. Linux arm64 box: credentials to retire, and sizing before it is useful
+
+**Credentials in the transcript.** `172.16.84.144`, user `administrator`, password
+pasted into this session on 2026-09-15. Described as a throwaway box. My SSH public
+key (`id_ed25519`) is now in that account's `authorized_keys`. Retire the box or
+rotate the password and remove the key when it is no longer needed - recorded here
+so it is not forgotten, the same as item 1.
+
+**It cannot build anything as provisioned.** Measured, not estimated:
+
+| | Has | `ARM64_DESKTOP_BUILD.md` requires |
+|---|---|---|
+| Disk free | 8.6 GB | **100 GB** |
+| RAM | 3.9 GB | 8 GB minimum |
+| Swap | 3.3 GB | 4 GB |
+| CPU | 2 cores | - (2 cores means a many-hour build) |
+| Toolchain | none: no `git`, `gcc`, `g++`, `cmake`, `qmake`, `node` | full stack, ~2-3 GB |
+
+Where 100 GB goes: source without git history is ~10 GB, of which
+`core/Common/3dParty` is 4.6 GB and Linux arm64 needs its **own** set fetched (CEF
+dominates); build output ~3.7 GB; and the intermediate object tree, which on macOS
+is the single largest consumer.
+
+**And the bring-up has never been done.** `ARM64_DESKTOP_BUILD.md` says so itself:
+*"This path is not currently runnable as written, and has not been verified."*
+`tools/linux/build-desktop-arm64-docker.sh` has never existed in this repository,
+nor has the `automate.py` it is said to invoke. The plausible route is pointing
+`build_tools/make.py` at `platform=linux_arm64` the way the macOS build does, but
+that has not been tried, so this is a first-ever build bring-up rather than a
+provisioning task.
+
+**Needed:** a decision to resize (suggested 100 GB disk / 16 GB RAM / 8 cores), at
+which point the toolchain install and the first `linux_arm64` build attempt can
+proceed. That work also unblocks the ~19 fixes currently unverifiable on Linux,
+which is worth more than the release artifact itself.
+
+**2026.1.0 therefore ships macOS arm64 only** unless that decision comes first.
