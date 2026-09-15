@@ -357,6 +357,7 @@ tests.
 | #2195 | A symbolic retry lost its `+ 0xF000`, so Wingdings and Symbol text inside EMF/WMF metafiles was drawn in a substituted font (core half only) | `core` |
 | #2202 | A failed `fork` or `execve` returned 0, so a save reported success for a conversion that never ran and the document was marked clean over lost work | `desktop-sdk` |
 | #2268 | Two AI providers reported every failure as "Invalid URL", sending users to correct an address that was right (the CORS root cause is untouched) | `desktop-sdk` |
+| #1018 | AutoFit on a few columns froze the app: the scan walked the sheet's row extent rather than the column's cells - 4,194,304 visits where 400 were needed (see the approval list, item 9, for the row-height change it makes) | `sdkjs` |
 | #139 | One character XML forbids - pasted, never from a file - made the whole slide it sat on come back blank, because the run-text escaper handled the five entities and nothing else | `core` |
 | #2113 | A pivot table saved to ODS came back as plain cells: we wrote the container and never filled it, and every unset attribute serialised as the literal `--` | `core` |
 | #676 | Copying an image file in a Linux file manager pasted its path as text, because `text/uri-list` was read nowhere in the editor | `sdkjs` |

@@ -8,8 +8,8 @@ behind its own commits when this was written, and several commit messages cite
 test directories that have never existed. Nothing here is typed in by hand, so
 nothing here can claim a test that is not on disk.
 
-- **79 issues** with at least one fix commit
-- **43** have a test artifact in `fork-fix-tests/`
+- **80 issues** with at least one fix commit
+- **44** have a test artifact in `fork-fix-tests/`
 - **36** do not - the fix is asserted by its commit message only
 - **17** fix commits carry no issue number (defects found in passing)
 
@@ -61,6 +61,7 @@ that is what the Test column is for. See the verification status section of
 | [#1362](https://github.com/ONLYOFFICE/DesktopEditors/issues/1362) | desktop-sdk | `679ebd742f` | `issue-1362-samba-lock` | 2026-09-15 |
 | [#1323](https://github.com/ONLYOFFICE/DesktopEditors/issues/1323) | core | `b6672e6780` | `issue-1323-docx-zip-entry-order` | 2026-09-15 |
 | [#1297](https://github.com/ONLYOFFICE/DesktopEditors/issues/1297) | core | `1f81e91eca` | `issue-1297-csv-compaction-skip` | 2026-09-15 |
+| [#1018](https://github.com/ONLYOFFICE/DesktopEditors/issues/1018) | sdkjs | `26cb022b7c` `26cb022b7c` | `issue-1018-autofit-column-scan-test.js` | 2026-09-15 |
 | [#963](https://github.com/ONLYOFFICE/DesktopEditors/issues/963) | sdkjs | `bbb6f9ee63` | `issue-963-save-open-cell-edit-test.js` | 2026-09-12 |
 | [#676](https://github.com/ONLYOFFICE/DesktopEditors/issues/676) | sdkjs | `d32100e8a1` `d32100e8a1` | `issue-676-nautilus-image-paste-test.js` | 2026-09-15 |
 | [#139](https://github.com/ONLYOFFICE/DesktopEditors/issues/139) | core | `fd679c60c1` `fd679c60c1` | `issue-139-pptx-invalid-xml-chars` | 2026-09-15 |

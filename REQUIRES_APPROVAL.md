@@ -130,3 +130,38 @@ changes there are not shipped until someone runs it by hand.
 Related: `onlyoffice.github.io/sdkjs-plugins/content/ai/` - which holds the grammar
 checker behind #2272 - is not a submodule of this superproject at all, so it is
 outside the tree we build and version. Worth deciding whether it should be.
+
+## 9. A column autofit no longer resizes rows that have no cell in it  (#1018, landed)
+
+Landed as `26cb022b7c` in `sdkjs`. Revert with
+`git -C sdkjs revert 26cb022b7c`.
+
+The freeze fix for #1018 clamps the autofit scan to the column's own cells instead
+of the sheet's row extent - 4,194,304 visits down to 400. That part is not in
+question. This is about the side effect it removes.
+
+The empty-cell branch of `_addCellTextToCache` is not silent: when
+`isNotDefaultFont()` is true it measures a character and calls `_updateRowHeight`,
+which writes through `model.setRowHeight` and materialises a `Row` record for that
+row. So **rows with no cell in the autofitted column are no longer grown**.
+
+Which rows those are is narrower than it sounds, and the obvious guess is wrong:
+the condition is false when the *row* carries a font - including the whole-sheet
+row formatting that creates the huge extent in the first place - and true when the
+*column* carries a font and the row does not. That is the state after formatting
+whole columns, which is the #1018 gesture itself. Measured at extent 40,000: no
+column styling, 0 rows affected either way; whole-sheet row formatting, 0 either
+way; column styled 48pt, 40 rows sized now against 40,000 before.
+
+The direction is that we now fail to grow rows that upstream would have grown,
+never the reverse.
+
+It was shipped rather than preserved for two reasons: those heights appeared only
+as a side effect of a column autofit and nothing else in the product reproduces
+them, and producing them created one `Row` record per row - 1,048,576 from a single
+autofit, marked changed, which inflates the saved file. Preserving the behaviour
+means re-opening the freeze.
+
+**Needed:** confirmation that this is the trade you want. It is a visible change
+for anyone who formats whole columns and then autofits, and it is the one item in
+this round that a user could notice without hitting a bug.
