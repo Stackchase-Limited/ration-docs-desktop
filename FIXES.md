@@ -8,8 +8,8 @@ behind its own commits when this was written, and several commit messages cite
 test directories that have never existed. Nothing here is typed in by hand, so
 nothing here can claim a test that is not on disk.
 
-- **83 issues** with at least one fix commit
-- **47** have a test artifact in `fork-fix-tests/`
+- **84 issues** with at least one fix commit
+- **48** have a test artifact in `fork-fix-tests/`
 - **36** do not - the fix is asserted by its commit message only
 - **20** fix commits carry no issue number (defects found in passing)
 
@@ -49,6 +49,7 @@ that is what the Test column is for. See the verification status section of
 | [#2202](https://github.com/ONLYOFFICE/DesktopEditors/issues/2202) | desktop-sdk | `26887f3267` `f4b4f9906a` | `issue-2202-x2t-spawn-failure` | 2026-09-15 |
 | [#2195](https://github.com/ONLYOFFICE/DesktopEditors/issues/2195) | core | `1269b750a9` | `issue-2195-symbolic-gid-offset` | 2026-09-15 |
 | [#2189](https://github.com/ONLYOFFICE/DesktopEditors/issues/2189) | desktop-apps | `cba281172d` | `issue-2189-mutex-lasterror` | 2026-09-14 |
+| [#2187](https://github.com/ONLYOFFICE/DesktopEditors/issues/2187) | core | `b4a57ad44e` `b4a57ad44e` | `issue-2187-shape-macro` | 2026-09-15 |
 | [#2161](https://github.com/ONLYOFFICE/DesktopEditors/issues/2161) | desktop-apps | `4ab3fb37ec` | `issue-2161-landscape-print-margins` | 2026-09-15 |
 | [#2147](https://github.com/ONLYOFFICE/DesktopEditors/issues/2147) | desktop-apps | `2441a039db` | `issue-2147-color-printing` | 2026-09-15 |
 | [#2113](https://github.com/ONLYOFFICE/DesktopEditors/issues/2113) | core | `4a3252194b` `4a3252194b` | `issue-2113-ods-pivot-table` | 2026-09-15 |

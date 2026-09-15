@@ -17,20 +17,29 @@ What this asserts, by driving the real x2t both ways and reading the bytes:
      xl/jsaProject.bin.  This is the path the desktop editor uses to open and
      save an .xlsx, and it is NOT where #2187 comes from.
 
-  2. xlsx -> ods -> xlsx  loses every @macro while still carrying jsaProject.bin
-     into the .ods.  So after saving to ODS the macro is still listed in the
-     Macros dialog but no shape is bound to it any more - the report, verbatim.
+  2. xlsx -> ods -> xlsx  keeps every @macro too, and still carries
+     jsaProject.bin into the .ods.  This is where #2187 came from: the ODF
+     writer never looked at the binding, so the macro body survived into the
+     .ods and stayed listed in the Macros dialog with nothing bound to it.
 
-     That is recorded here as the *current* behaviour, not as desired
-     behaviour.  The same check that passes on the xlsx route fails on this
-     one, which is what gives check 1 its teeth.  When core/OdfFile learns to
-     carry the binding (see the report), flip ODS_CARRIES_MACRO to True and
-     this becomes the regression test for that fix.
+     The binding is carried through ODF as office:event-listeners /
+     script:event-listener on the drawing element - the element ODF has for
+     exactly this - with our own script:language and xlink:href scheme inside
+     it.  See core/OdfFile/Common/jsa_macro.h for the convention and why.
+
+  3. A macro assigned to a form control (a Button) survives the same route, as
+     controlPr/@macro.  Same root cause, same carrier - it was dropped by a
+     stub, odf_controls_context::set_macro, with its one assignment commented
+     out.
+
+  4. Negative controls on both routes: a fixture with no @macro anywhere must
+     come back with none, so none of this can pass by matching anything.
 
 Exit 0 = pass.  Any other exit = fail.
 
     ./run.py
-    X2T=".../Ration Docs.app/Contents/Resources/converter/x2t" ./run.py   # baseline binary
+    RD_X2T=".../Ration Docs.app/Contents/Resources/converter/x2t" ./run.py   # baseline binary
+    ODS_CARRIES_MACRO=0 ./run.py    # assert the old, broken ODS behaviour instead
 """
 
 import os
@@ -43,7 +52,12 @@ import zipfile
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
 
-X2T = os.environ.get("X2T", os.path.join(ROOT, "core", "build", "bin", "mac_arm64", "x2t"))
+# RD_X2T is the name harness/lib/env.sh and the other end-to-end tests use; X2T is
+# accepted too because this file was written with it. Having two names for one
+# thing already caused one wrong conclusion - setting RD_X2T here silently did
+# nothing and the baseline looked identical to the fixed binary.
+X2T = os.environ.get("RD_X2T") or os.environ.get("X2T") or os.path.join(
+    ROOT, "core", "build", "bin", "mac_arm64", "x2t")
 FRAMEWORKS = os.environ.get(
     "X2T_FRAMEWORKS", os.path.join(ROOT, "core", "build", "lib", "mac_arm64")
 )
@@ -56,12 +70,13 @@ FORMAT_BIN = 8194
 GUID = "{11111111-2222-3333-4444-555555555555}"
 MACRO = "jsaProject_" + GUID
 
-# Does the ODS route carry a shape's macro binding?  Today it does not: the
-# xlsx->ods writer never looks at PPTX::Logic::Shape::macro, and the form-control
-# equivalent, odf_controls_context::set_macro, is a stub with its one assignment
-# commented out.  Flip this when that changes (ODS_CARRIES_MACRO=1 ./run.py
-# demonstrates that the very same checks fail on the ods route today).
-ODS_CARRIES_MACRO = os.environ.get("ODS_CARRIES_MACRO", "") not in ("", "0")
+# Does the ODS route carry a drawing object's macro binding?  It does, since the
+# #2187 fix in core/OdfFile: the writer emits office:event-listeners on the
+# drawing element and the reader turns it back into @macro.  Setting
+# ODS_CARRIES_MACRO=0 asserts the old behaviour instead - every binding dropped -
+# which is what the pre-fix binary still does, and is how this file records what
+# the fix changed.
+ODS_CARRIES_MACRO = os.environ.get("ODS_CARRIES_MACRO", "1") not in ("", "0")
 
 # One tiny opaque PNG, so the xdr:pic case is a real picture.
 PNG = (
@@ -280,6 +295,118 @@ def read_drawing(xlsx):
     return out
 
 
+def build_button_fixture(path, macro):
+    """A workbook whose only object is a form-control Button carrying `macro`
+    (or none, for the negative control).  The binding lives on
+    controlPr/@macro in the sheet, not in the drawing part."""
+    mattr = ' macro="%s"' % macro if macro else ""
+    anchor_ns = ' xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing"'
+
+    def pos(tag, col, row):
+        return "<%s>%s%s%s%s</%s>" % (
+            tag,
+            "<xdr:col%s>%d</xdr:col>" % (anchor_ns, col),
+            "<xdr:colOff%s>0</xdr:colOff>" % anchor_ns,
+            "<xdr:row%s>%d</xdr:row>" % (anchor_ns, row),
+            "<xdr:rowOff%s>0</xdr:rowOff>" % anchor_ns,
+            tag,
+        )
+
+    sheet = (
+        '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+        '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"'
+        ' xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"'
+        ' xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"'
+        ' xmlns:x14="http://schemas.microsoft.com/office/spreadsheetml/2009/9/main"'
+        ' mc:Ignorable="x14">'
+        '<dimension ref="A1"/><sheetData><row r="1"><c r="A1" t="inlineStr"><is><t>hello</t></is></c></row></sheetData>'
+        "<mc:AlternateContent><mc:Choice Requires=\"x14\"><controls>"
+        "<mc:AlternateContent><mc:Choice Requires=\"x14\">"
+        '<control shapeId="1025" r:id="rIdCtrl" name="Button 1">'
+        '<controlPr defaultSize="0" print="0" autoFill="0" autoPict="0"%s>'
+        '<anchor moveWithCells="1">%s%s</anchor>'
+        "</controlPr></control>"
+        "</mc:Choice></mc:AlternateContent>"
+        "</controls></mc:Choice></mc:AlternateContent>"
+        "</worksheet>" % (mattr, pos("from", 1, 1), pos("to", 4, 5))
+    )
+    jsa = (
+        '{"macrosArray":[{"name":"Macro1","guid":"%s",'
+        '"value":"Api.GetActiveSheet().GetRange(\'A1\').SetValue(\'ran\');",'
+        '"autostart":false}],"current":0}' % GUID
+    )
+    parts = {
+        "[Content_Types].xml": (
+            '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+            '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
+            '<Default Extension="xml" ContentType="application/xml"/>'
+            '<Default Extension="bin" ContentType="application/octet-stream"/>'
+            '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'
+            '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
+            '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'
+            '<Override PartName="/xl/ctrlProps/ctrlProp1.xml" ContentType="application/vnd.ms-excel.controlproperties+xml"/>'
+            "</Types>"
+        ),
+        "_rels/.rels": (
+            '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+            '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument"'
+            ' Target="xl/workbook.xml"/></Relationships>'
+        ),
+        "xl/workbook.xml": (
+            '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"'
+            ' xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
+            '<sheets><sheet name="Sheet1" sheetId="1" r:id="rId1"/></sheets></workbook>'
+        ),
+        "xl/_rels/workbook.xml.rels": (
+            '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+            '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>'
+            '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>'
+            '<Relationship Id="rId3" Type="http://schemas.onlyoffice.com/jsaProject" Target="jsaProject.bin"/>'
+            "</Relationships>"
+        ),
+        "xl/worksheets/sheet1.xml": sheet,
+        "xl/worksheets/_rels/sheet1.xml.rels": (
+            '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+            '<Relationship Id="rIdCtrl" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/ctrlProp"'
+            ' Target="../ctrlProps/ctrlProp1.xml"/></Relationships>'
+        ),
+        "xl/ctrlProps/ctrlProp1.xml": (
+            '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            '<formControlPr xmlns="http://schemas.microsoft.com/office/spreadsheetml/2009/9/main"'
+            ' objectType="Button" lockText="1" text="Click me"/>'
+        ),
+        "xl/styles.xml": (
+            '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+            '<fonts count="1"><font><sz val="11"/><name val="Calibri"/></font></fonts>'
+            '<fills count="1"><fill><patternFill patternType="none"/></fill></fills>'
+            '<borders count="1"><border/></borders>'
+            '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>'
+            '<cellXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/></cellXfs>'
+            "</styleSheet>"
+        ),
+        "xl/jsaProject.bin": jsa,
+    }
+    with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as z:
+        for name, body in parts.items():
+            z.writestr(name, body)
+
+
+def control_macros(xlsx):
+    """Every controlPr/@macro in the first sheet of `xlsx`."""
+    with zipfile.ZipFile(xlsx) as z:
+        names = [n for n in z.namelist() if re.match(r"xl/worksheets/sheet\d+\.xml$", n)]
+        if not names:
+            return []
+        body = z.read(sorted(names)[0]).decode("utf-8", "replace")
+    return [m.group(1) for m in re.finditer(r"<controlPr\b[^>]*?macro=\"([^\"]*)\"", body)]
+
+
 def has_jsa(path):
     with zipfile.ZipFile(path) as z:
         return any(n.endswith("jsaProject.bin") for n in z.namelist())
@@ -322,19 +449,7 @@ def main():
             check(name in got, "%s (%s) kept macro=%s through bin" % (name, tag, MACRO))
         check(has_jsa(back), "xl/jsaProject.bin survived the bin round trip")
 
-    print("2. the same check has teeth: a shape with no @macro must not gain one")
-    ctl_src = os.path.join(tmp, "ctl.xlsx")
-    ctl_mid = os.path.join(tmp, "ctl.bin")
-    ctl_back = os.path.join(tmp, "ctl_back.xlsx")
-    build_fixture(ctl_src, None)
-    if convert(ctl_src, ctl_mid, FORMAT_BIN, tmp) == 0 and convert(
-        ctl_mid, ctl_back, FORMAT_XLSX, tmp
-    ) == 0:
-        check(bound(ctl_back) == set(), "control workbook came back with no bindings")
-    else:
-        check(False, "control workbook converted")
-
-    print("3. xlsx -> ods -> xlsx  (recorded current behaviour, see the header)")
+    print("2. xlsx -> ods -> xlsx  (this is the route #2187 was reported on)")
     ods = os.path.join(tmp, "out.ods")
     ods_back = os.path.join(tmp, "ods_back.xlsx")
     rc = convert(src, ods, FORMAT_ODS, tmp)
@@ -353,9 +468,63 @@ def main():
         else:
             check(
                 got == set(),
-                "ODS drops every shape->macro binding (known gap; the macro body stays, "
-                "so the Macros dialog still lists it and nothing is bound to it)",
+                "ODS drops every shape->macro binding (the pre-fix behaviour; the macro "
+                "body stays, so the Macros dialog still lists it and nothing is bound to it)",
             )
+
+    print("3. a macro on a form-control Button survives xlsx -> ods -> xlsx too")
+    btn_src = os.path.join(tmp, "button.xlsx")
+    btn_ods = os.path.join(tmp, "button.ods")
+    btn_back = os.path.join(tmp, "button_back.xlsx")
+    build_button_fixture(btn_src, MACRO)
+    rc = convert(btn_src, btn_ods, FORMAT_ODS, tmp)
+    check(rc == 0, "button xlsx -> ods converted (rc=%d)" % rc)
+    if rc == 0:
+        rc = convert(btn_ods, btn_back, FORMAT_XLSX, tmp)
+        check(rc == 0, "button ods -> xlsx converted (rc=%d)" % rc)
+    if rc == 0:
+        got = control_macros(btn_back)
+        if ODS_CARRIES_MACRO:
+            check(got == [MACRO], "Button kept controlPr/@macro=%s through ods (got %r)"
+                  % (MACRO, got))
+        else:
+            check(got == [], "ODS drops the Button->macro binding (the pre-fix behaviour)")
+
+    print("4. the checks have teeth: nothing with no @macro may come back with one")
+    ctl_src = os.path.join(tmp, "ctl.xlsx")
+    ctl_mid = os.path.join(tmp, "ctl.bin")
+    ctl_back = os.path.join(tmp, "ctl_back.xlsx")
+    build_fixture(ctl_src, None)
+    if convert(ctl_src, ctl_mid, FORMAT_BIN, tmp) == 0 and convert(
+        ctl_mid, ctl_back, FORMAT_XLSX, tmp
+    ) == 0:
+        check(bound(ctl_back) == set(), "control workbook came back with no bindings via bin")
+    else:
+        check(False, "control workbook converted via bin")
+
+    ctl_ods = os.path.join(tmp, "ctl.ods")
+    ctl_ods_back = os.path.join(tmp, "ctl_ods_back.xlsx")
+    if convert(ctl_src, ctl_ods, FORMAT_ODS, tmp) == 0 and convert(
+        ctl_ods, ctl_ods_back, FORMAT_XLSX, tmp
+    ) == 0:
+        check(bound(ctl_ods_back) == set(), "control workbook came back with no bindings via ods")
+        check(
+            len(read_drawing(ctl_ods_back)) > 0,
+            "and it still came back with its drawings, so that check means something",
+        )
+    else:
+        check(False, "control workbook converted via ods")
+
+    ctl_btn = os.path.join(tmp, "ctl_button.xlsx")
+    ctl_btn_ods = os.path.join(tmp, "ctl_button.ods")
+    ctl_btn_back = os.path.join(tmp, "ctl_button_back.xlsx")
+    build_button_fixture(ctl_btn, None)
+    if convert(ctl_btn, ctl_btn_ods, FORMAT_ODS, tmp) == 0 and convert(
+        ctl_btn_ods, ctl_btn_back, FORMAT_XLSX, tmp
+    ) == 0:
+        check(control_macros(ctl_btn_back) == [], "control Button came back with no macro via ods")
+    else:
+        check(False, "control Button converted via ods")
 
     print()
     if failures:

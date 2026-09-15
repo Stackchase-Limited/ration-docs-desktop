@@ -380,6 +380,7 @@ tests.
 | #2195 | A symbolic retry lost its `+ 0xF000`, so Wingdings and Symbol text inside EMF/WMF metafiles was drawn in a substituted font (core half only) | `core` |
 | #2202 | A failed `fork` or `execve` returned 0, so a save reported success for a conversion that never ran and the document was marked clean over lost work | `desktop-sdk` |
 | #2268 | Two AI providers reported every failure as "Invalid URL", sending users to correct an address that was right (the CORS root cause is untouched) | `desktop-sdk` |
+| #2187 | A macro bound to a shape was silently unbound when the workbook was saved to ODS - while `jsaProject.bin` was still written, so the macro stayed in the dialog with nothing attached | `core` |
 | #1570 | A document written in Verdana spilled a full page onto a second, because Verdana had no metric substitute and the picker fell through to Open Sans - 12% taller per line | `sdkjs`, `core` |
 | #1359 | An encoding number sent by the editor indexed past a 54-entry table: 65001 - the Windows code page for UTF-8, and what our own documented API tells callers to send - killed the converter outright, and 1252 returned success with a blank spreadsheet | `core` |
 | #1364 | Copying one cell whose displayed text is empty replaced the system clipboard with an item carrying **no text flavour at all** - a falsy test where the contract is presence (the in-app half of the report is not explained by this; see the commit) | `sdkjs` |
@@ -418,72 +419,6 @@ asserts the JS map and the generated table agree, since a mismatch is invisible
 at runtime.
 
 ## Root-caused, not fixed
-
-### #2187 - a macro assigned to a shape stops working after reopening - only via ODS
-
-Root-caused precisely. The reported symptom is real, but **not where the title
-suggests**: the `.xlsx` path is provably intact, and the binding is lost only when
-the workbook is saved to `.ods`.
-
-A JSA assignment is `xdr:sp/@macro = "jsaProject_{guid}"`, and sdkjs derives both
-the pointing-finger cursor and the click from that one string
-(`GraphicObjectBase.js:923` `hasJSAMacro`, consumed at `CommonController.js:983`).
-The ODF writer never carries it:
-
-- `core/OdfFile/Writer/Converter/ConvertDrawing.cpp:829` -
-  `OoxConverter::convert(PPTX::Logic::Shape *)` never reads `oox_shape->macro`,
-  and neither do the Pic or CxnSp paths.
-- The form-control equivalent is a stub with the assignment commented out,
-  `core/OdfFile/Writer/Format/odf_controls_context.cpp:287`:
-
-      void odf_controls_context::set_macro(const std::wstring & val)
-      {
-          if (val.empty()) return;
-          if (impl_->controls_.empty()) return;
-          //impl_->controls_.back().form_elm-> = val;
-      }
-
-  so `XlsxConverter.cpp:3441` calls it and nothing happens.
-- `odf_drawing_context::start_action` has an `else if (value.find(L"macro"))`
-  branch at `:3149` whose body is empty.
-
-**What makes it a defect rather than a format limit:** the `.ods` still gets
-`jsaProject.bin` at its root. The macro body is kept and stays listed in the Macros
-dialog, with nothing bound to it. That also explains the reporter's own workaround -
-"assign the already assigned macro once again" works because the macro is still
-there.
-
-**Verified end to end**, and the negative results are as important as the positive
-one. `xlsx -> bin -> xlsx` keeps every `@macro` on all six drawing shapes across
-twoCell/oneCell/absolute anchors. Driving the real sdkjs headlessly through
-`docbuilder`: after `xlsx -> ods -> open` the shape reports
-`{"sp":[["null",false]],"macLen":176}` - binding gone, macro list intact. The
-invocation path is innocent: `checkDrawingHyperlinkAndMacro` returns
-`{cursorType:"pointer", macro:"{guid}"}` identically before save and after reopen.
-And `git diff v9.2.1.43 HEAD` shows zero macro-related changes in
-`PPTXFormat/Logic/Shape.cpp` or in sdkjs's shape serialisation, so the reporter's
-9.2.1 xlsx path is byte-identical to ours - their file cannot have been a plain
-xlsx shape.
-
-The `.xlsx` vs `.xlsm` question does not apply: JSA macros live in
-`xl/jsaProject.bin`, an ONLYOFFICE part that `.xlsx` carries fine. Only VBA needs
-`.xlsm`.
-
-**What a fix needs - both halves.** The writer must emit
-`office:event-listeners`/`script:event-listener` (the machinery exists:
-`Writer/Format/office_event_listeners.h:108`), and the reader must translate it
-back - `draw_frame::pptx_convert` already calls
-`office_event_listeners_->pptx_convert`, but `draw_frame::xlsx_convert` never
-touches the field, so writing alone would still lose it on the way home.
-
-`fork-fix-tests/issue-2187-shape-macro/run.py` is the ready-made regression test:
-it passes today with the gap recorded, and `ODS_CARRIES_MACRO=1` turns it into six
-failures - the same assertions that already pass on the xlsx route.
-
-**Even if the ODF binding is judged out of scope**, dropping it *silently while
-still writing `jsaProject.bin` into the file* is not defensible. The honest minimum
-is a warning on save-as-ODS.
-
 
 ### #1343 - "Invalid character in spreadsheet" - nothing is invalid, and nothing is lost
 
@@ -2272,6 +2207,24 @@ only `projicons/` and `update-daemon/`.
   picks "Associate selected" - the UI can present a selection nobody made.
 
 ## Latent problems found in passing, not yet fixed
+
+**An ODS-round-tripped form control lands at a nonsense row.** `controlPr/anchor`
+comes back as `<xdr:row>18446744071562068031</xdr:row>` - an unsigned underflow.
+Present on the pre-fix binary too, so it is not from the #2187 work; found while
+testing it. A Button that survives the round trip is therefore placed somewhere
+absurd.
+
+**`GraphicFrame` (chart) `@macro` is still dropped on ODS.**
+`PPTXFormat/Logic/GraphicFrame.h:104` has the field and the same one-line hook
+used for Shape/Pic/CxnSp in #2187 would work, but the fixture does not cover it and
+it could not be demonstrated, so it was left rather than changed on spec.
+
+**`draw_frame::serialize` writes `office:event-listeners` before the frame
+content**, where ODF's RNG puts it last. Pre-existing, on a live path (pptx shape
+hyperlinks through `start_action`), and LibreOffice's importer is order-tolerant -
+deliberately not changed while fixing #2187. Worth a look if strict ODF validation
+ever matters.
+
 
 **`docbuilder` aborts instead of reporting a failed open.** When x2t is not
 reachable, `CV8RealTimeWorker::OpenFile` (`core/DesktopEditor/doctrenderer/docbuilder_p.cpp:347`)
