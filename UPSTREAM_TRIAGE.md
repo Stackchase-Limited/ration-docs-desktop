@@ -418,6 +418,64 @@ at runtime.
 
 ## Root-caused, not fixed
 
+### #1343 - "Invalid character in spreadsheet" - nothing is invalid, and nothing is lost
+
+Root-caused precisely and **deliberately not fixed**, because the honest fix is a
+feature we do not have. Investigated as a suspected data-loss defect in the same
+family as #139; it is not one.
+
+**The data is intact.** Verified end to end on the built converter - `❌` (U+274C)
+survives `csv -> xlsx -> bin -> xlsx -> csv` byte-identically, and appears in
+`sharedStrings.xml` as itself. Re-run independently here after the agent reported
+it, using `harness/bin/x2t.sh` both directions: the output is byte-for-byte the
+input.
+
+Also ruled out, each by running rather than by reading: the `_xHHHH_` escaping trap
+(`_x0041_`, `_x000D_` and `a_x005F_x0041_ b` as literal cell text all round-trip
+identically, with correct double-escaping in both directions), and any #139-class
+escaping defect in a spreadsheet writer - a hand-built xlsx carrying `&`, `<`, `"`
+and `'` in sheet name, defined name, shared string, formula text, hyperlink display
+and tooltip, comment author and comment body round-trips with every part
+well-formed.
+
+**What actually happens** is that the character is drawn as `.notdef`, because no
+font the editor's own engine will accept contains U+274C. Two lines do that, both
+in `core/DesktopEditor/fontengine/ApplicationFonts.cpp` - `CFontList::Add`, the
+only door into the font list:
+
+    if ( !( pFace->face_flags & FT_FACE_FLAG_SCALABLE ) )   // :1144
+    {
+        FT_Done_Face( pFace );
+        return;
+    }
+
+and, on macOS, `:1274` skipping any family whose name begins with `.`. Exactly two
+fonts on this machine contain U+274C, and one line excludes each:
+
+    Apple Color Emoji.ttc   scalable=0, upem=0   -> dropped by the SCALABLE test
+    LastResort.otf          family=.LastResort   -> dropped by the leading-dot test
+
+So `ApplicationFontsWorker` emits a range table with no entry covering U+274C,
+`getFontBySymbol` returns `""`, and `file.js` falls back to `m_nDefaultChar` -
+glyph 0, which in DejaVu Sans is the box-with-a-question-mark in the screenshot.
+
+**The reporter's own clue confirms it**: they noted the cell *editor* renders the
+character correctly. That editor is a real DOM `<textarea>`
+(`CellEditor.template:10`), so Chromium renders it with the system font stack and
+finds Noto Color Emoji. The grid beside it is a canvas driven by our FreeType
+engine with a much smaller stack. One string, two font stacks, two results.
+
+**Why not fixed.** Admitting those faces means rendering bitmap and colour fonts,
+and that support is absent everywhere: `FT_LOAD_COLOR` is defined at
+`sdkjs/common/libfont/file.js:62` and referenced nowhere, there is no `COLR`,
+`CPAL`, `BGRA` or `FT_HAS_COLOR` anywhere in `core/DesktopEditor/fontengine/` or
+`sdkjs/common/libfont/`, and `fonts.wasm` contains no such strings. These faces
+also report `units_per_EM == 0`, so admitting them without a strike-based metrics
+path makes matters worse rather than better. That is colour-emoji support - a
+feature, not a stability fix - and no change was made rather than shipping a
+plausible-looking one to shared font code that could not be demonstrated.
+
+
 ### #2135 - two editable views of one local document
 
 Root-caused; **deliberately not fixed**, and parked as approval item 10. The
@@ -2147,6 +2205,41 @@ only `projicons/` and `update-daemon/`.
   picks "Associate selected" - the UI can present a selection nobody made.
 
 ## Latent problems found in passing, not yet fixed
+
+**A font collection is accepted or rejected on the strength of its first face
+alone.** `core/DesktopEditor/fontengine/ApplicationFonts.cpp:1138-1148` opens face
+index **0**, tests `FT_FACE_FLAG_SCALABLE` on it, and `return`s for the whole file
+- all of this *before* the `for (nIndexFace...)` loop that enumerates the
+collection. The check belongs inside that loop. It cuts both ways: a `.ttc` whose
+first face is bitmap-only loses every font in it, and a non-scalable face later in
+a collection is admitted with `units_per_EM == 0`. All 128 font collections on this
+machine were scanned; only `Apple Color Emoji.ttc` trips it, and there both faces
+are non-scalable, so there is no demonstrable real-world trigger today. Found while
+root-causing #1343 and left alone rather than change shared font code for a
+synthetic case - but the asymmetry is a genuine defect and worth a proper fix with
+a real collection to test against.
+
+**`character.js:141` binary-searches an unsorted array.** `this.UsedRanges` is
+built by `push` in discovery order. Harmless today only because the caller
+re-searches the sorted full list on a miss and range-checks the result before
+returning it, so it can lose a cache hit but never return a wrong font.
+
+**`ApplicationFontsWorker.cpp:1123` is off by one**, writing the final range's end
+as `nMaxSymbol - 1` (0x10FFFE) where the loop covers through 0x10FFFF. Affects only
+U+10FFFF, a noncharacter.
+
+**`xlsx -> pdf` cannot be driven from this tree.** `m_nFormatTo=4097` exits 88 with
+no diagnostic on either stream, and the two-argument form reaches doctrenderer and
+fails with `<error code="open"/>`. That blocks rendering the grid through the same
+font picker the editor uses, which is the natural way to verify font work. Worth
+fixing independently - it is a hole in our ability to test anything that renders.
+
+**Confirmed working, recorded so nobody re-derives it:** the #2433 charmap fix is
+doing its job. Validating all 4437 generated ranges against the real fonts (7635
+probes) misses 49, every one at an unassigned code point, a block boundary or PUA.
+The same check against the *shipped* `AllFonts.js`, generated before that fix,
+misses 657 - 542 of them `Heiti TC`/`Heiti SC` claiming Big5-derived ranges.
+
 
 **x2t caps itself at 4GiB and cannot survive hitting the cap.** This is the other
 half of #1359, and it is the half that explains the reporter's own 85MB file.
