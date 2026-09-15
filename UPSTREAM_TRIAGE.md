@@ -380,6 +380,7 @@ tests.
 | #2195 | A symbolic retry lost its `+ 0xF000`, so Wingdings and Symbol text inside EMF/WMF metafiles was drawn in a substituted font (core half only) | `core` |
 | #2202 | A failed `fork` or `execve` returned 0, so a save reported success for a conversion that never ran and the document was marked clean over lost work | `desktop-sdk` |
 | #2268 | Two AI providers reported every failure as "Invalid URL", sending users to correct an address that was right (the CORS root cause is untouched) | `desktop-sdk` |
+| #1359 | An encoding number sent by the editor indexed past a 54-entry table: 65001 - the Windows code page for UTF-8, and what our own documented API tells callers to send - killed the converter outright, and 1252 returned success with a blank spreadsheet | `core` |
 | #1364 | Copying one cell whose displayed text is empty replaced the system clipboard with an item carrying **no text flavour at all** - a falsy test where the contract is presence (the in-app half of the report is not explained by this; see the commit) | `sdkjs` |
 | #1018 | AutoFit on a few columns froze the app: the scan walked the sheet's row extent rather than the column's cells - 4,194,304 visits where 400 were needed (see the approval list, item 9, for the row-height change it makes) | `sdkjs` |
 | #139 | One character XML forbids - pasted, never from a file - made the whole slide it sat on come back blank, because the run-text escaper handled the five entities and nothing else | `core` |
@@ -2146,6 +2147,46 @@ only `projicons/` and `update-daemon/`.
   picks "Associate selected" - the UI can present a selection nobody made.
 
 ## Latent problems found in passing, not yet fixed
+
+**x2t caps itself at 4GiB and cannot survive hitting the cap.** This is the other
+half of #1359, and it is the half that explains the reporter's own 85MB file.
+`core/X2tConverter/src/main.cpp:101` applies `X2T_MEMORY_LIMIT` (default 4GiB)
+through `setrlimit(RLIMIT_DATA)`. The CSV reader materialises the whole workbook
+before writing anything, at roughly **120x the input size** - measured here:
+968KB to 152MB, 4.2MB to 504MB, 8.5MB to 982MB, 35.5MB to 2.7GB. There is **no
+`try`/`catch` and no `set_new_handler` anywhere in x2t**, so the `bad_alloc` goes
+straight to `terminate` and the editor shows its generic failure dialog.
+
+That puts the cliff between the reporter's 9.5MB file, which opens, and their
+35.6MB one, which does not - on Linux and Windows. It is invisible on this machine
+because `RLIMIT_DATA` is a no-op on macOS, which was confirmed rather than assumed
+(`X2T_MEMORY_LIMIT=256MiB` changes nothing here).
+
+**This corrects an earlier note in this file**, under #1297, which said there was
+no memory cliff. There is one; it is self-imposed, and it is why the failure looks
+like corruption rather than an out-of-memory error.
+
+Two things would move it, neither done here: raising or removing the rlimit, and
+the dead weight below.
+
+**~25-30% of the CSV binary output is written and never read.**
+`CSVReader.cpp:216` sets `m_oCacheValue` on every cell and `BinaryWriterS.cpp:6167`
+serialises it, but nothing consumes it - `sdkjs/cell/model/Serialize.js` defines
+`ValueCache: 7` and its cell reader falls through to `ReadUnknown`, and core's own
+`BinaryReaderS.cpp:7201` reads it into a field no writer consults. A 35.5MB CSV
+produces a 271MB `Editor.bin`. Not removed: it changes the on-disk binary format,
+and on its own it would not lift the 4GiB cliff for the reporter's file.
+
+**Five more unguarded subscripts of the same table**, at
+`core/TxtFile/Source/TxtFormat/TxtFile.cpp:99,197` and `File.cpp:89,112,146`. They
+could not be made to fire through x2t's txt path with 65001 or 1252 - every
+attempt returned exit 0 with correct text - so they are recorded rather than
+changed on spec. They are the reason #1359 was fixed in the header.
+
+**A tautology in the `sep=` handling.** `CSVReader.cpp:310` reads
+`(sFileDataW[5] != L'\r' || sFileDataW[5] != L'\n')`, which is always true.
+Harmless today because a surrogate check guards it.
+
 
 **A styled but empty cell loses its styling in the HTML clipboard flavour.**
 `sdkjs/cell/model/clipboard.js:1492` - `_generateHtmlDocStr` guards the whole
