@@ -380,6 +380,7 @@ tests.
 | #2195 | A symbolic retry lost its `+ 0xF000`, so Wingdings and Symbol text inside EMF/WMF metafiles was drawn in a substituted font (core half only) | `core` |
 | #2202 | A failed `fork` or `execve` returned 0, so a save reported success for a conversion that never ran and the document was marked clean over lost work | `desktop-sdk` |
 | #2268 | Two AI providers reported every failure as "Invalid URL", sending users to correct an address that was right (the CORS root cause is untouched) | `desktop-sdk` |
+| #1570 | A document written in Verdana spilled a full page onto a second, because Verdana had no metric substitute and the picker fell through to Open Sans - 12% taller per line | `sdkjs`, `core` |
 | #1359 | An encoding number sent by the editor indexed past a 54-entry table: 65001 - the Windows code page for UTF-8, and what our own documented API tells callers to send - killed the converter outright, and 1252 returned success with a blank spreadsheet | `core` |
 | #1364 | Copying one cell whose displayed text is empty replaced the system clipboard with an item carrying **no text flavour at all** - a falsy test where the contract is presence (the in-app half of the report is not explained by this; see the commit) | `sdkjs` |
 | #1018 | AutoFit on a few columns froze the app: the scan walked the sheet's row extent rather than the column's cells - 4,194,304 visits where 400 were needed (see the approval list, item 9, for the row-height change it makes) | `sdkjs` |
@@ -2272,6 +2273,34 @@ only `projicons/` and `update-daemon/`.
 
 ## Latent problems found in passing, not yet fixed
 
+**`docbuilder` aborts instead of reporting a failed open.** When x2t is not
+reachable, `CV8RealTimeWorker::OpenFile` (`core/DesktopEditor/doctrenderer/docbuilder_p.cpp:347`)
+still calls `NativeOpenFileData`, and `CJSObjectJSC::call_func`
+(`js_internal/jsc/jsc_base.h:196`) does `[arr addObject:_val->value]` with a nil
+`JSValue` - `NSInvalidArgumentException`, SIGABRT. It cost an agent an hour of
+this session. Driving the real sdkjs headlessly through docbuilder is how two
+fixes this week were verified, so this is worth fixing.
+
+**`harness/bin/run-editor.sh` cannot attach to the bundle in `desktop-apps/build`.**
+That bundle's `ascdocumentscore.framework` is from 08:22 on 12 September; the
+remote-debugging fix landed at 09:02 the same day. No CDP endpoint ever appears,
+and a second agent independently lost time to the same thing. The harness README's
+"Verified" note is stale for that bundle. Related to the stale-converter problem
+already fixed in `rd_x2t`: the bundle is old in more ways than one.
+
+**A paragraph that does not fit is still placed on the page it does not fit on,**
+at 0.01mm, which lets a table's bottom reach 272.10 against a `YLimit` of 272.01 -
+0.09mm past the bottom margin. Does not change page count. Found while measuring
+#1570.
+
+**`xlsx -> pdf` cannot be driven from this tree**, and the reason is now known:
+format 513 reaches doctrenderer and fails with
+`ReferenceError: Can't find variable: $`, so the PDF render path is loading a
+script that expects jQuery and not getting it. That blocks rendering the grid
+through the same font picker the editor uses - the natural way to verify any font
+or layout work.
+
+
 **A font collection is accepted or rejected on the strength of its first face
 alone.** `core/DesktopEditor/fontengine/ApplicationFonts.cpp:1138-1148` opens face
 index **0**, tests `FT_FACE_FLAG_SCALABLE` on it, and `return`s for the whole file
@@ -2293,12 +2322,6 @@ returning it, so it can lose a cache hit but never return a wrong font.
 **`ApplicationFontsWorker.cpp:1123` is off by one**, writing the final range's end
 as `nMaxSymbol - 1` (0x10FFFE) where the loop covers through 0x10FFFF. Affects only
 U+10FFFF, a noncharacter.
-
-**`xlsx -> pdf` cannot be driven from this tree.** `m_nFormatTo=4097` exits 88 with
-no diagnostic on either stream, and the two-argument form reaches doctrenderer and
-fails with `<error code="open"/>`. That blocks rendering the grid through the same
-font picker the editor uses, which is the natural way to verify font work. Worth
-fixing independently - it is a hole in our ability to test anything that renders.
 
 **Confirmed working, recorded so nobody re-derives it:** the #2433 charmap fix is
 doing its job. Validating all 4437 generated ranges against the real fonts (7635
