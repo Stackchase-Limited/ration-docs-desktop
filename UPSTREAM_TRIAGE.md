@@ -247,6 +247,17 @@ file which ones were checked**, and that is the problem being recorded.
 **Back-filling is in progress**, data-loss issues first. When a test lands for an
 entry, move its number into group 1 above.
 
+**One trap, found on the first back-fill.** A back-filled test cannot use `HEAD` as its
+baseline: HEAD already contains the fix, so the test passes both ways and proves
+nothing - which is precisely how a green run can mean nothing at all. The baseline has
+to be the commit *before* the fix landed. Give the test a default so nobody has to know
+this:
+
+    const BASE_REF = process.env.BASE_REF || '<fix-commit>^';
+
+The #2426 test ran green against HEAD on the first attempt, and only failed - correctly,
+with the right message - once pointed at `ede98d9619^`.
+
 ## Fixed
 
 | Issue | What it was | Where |
