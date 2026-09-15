@@ -357,6 +357,14 @@ tests.
 | #2195 | A symbolic retry lost its `+ 0xF000`, so Wingdings and Symbol text inside EMF/WMF metafiles was drawn in a substituted font (core half only) | `core` |
 | #2202 | A failed `fork` or `execve` returned 0, so a save reported success for a conversion that never ran and the document was marked clean over lost work | `desktop-sdk` |
 | #2268 | Two AI providers reported every failure as "Invalid URL", sending users to correct an address that was right (the CORS root cause is untouched) | `desktop-sdk` |
+| #2071 | Rows could be hidden but never shown: the whole-sheet branch of `setRowHidden` was an empty `// ToDo`, so a file with `zeroHeight="1"` opened unreadable with no way back | `sdkjs` |
+| #1362 | The `.~lock` marker was written on a share but never read - three defects, all ending in "free, go ahead and write", so two people could edit one file | `desktop-sdk` |
+| #1297 | Every CSV over ~500KB was silently corrupted at each buffer compaction: a delimiter, quote or newline lost its meaning and cells merged (the OOM half is not fixed) | `core` |
+| #1372 | Every built-in number format was discarded on CSV export - percentages, currencies and fractions written as raw values (core half) | `core` |
+| #1323 | A saved docx could be detected as a plain zip: zip entry order put `_rels` where libmagic could not find it | `core` |
+| #1855 | A PDF carrying an outline opened with the bookmarks pane shut - the catalog was pinned to `/UseNone` (core half) | `core` |
+| - | *No upstream issue.* Our own #2056 flush did not compile on Linux: `G_IS_FILE_DESCRIPTOR_BASED` needs a header in `gio-unix-2.0`, which the build never asked for | `desktop-sdk` |
+| - | *No upstream issue.* A zero-length converter result was reported as a successful save, because `StartWrite()` cannot answer whether the locker ever locked | `desktop-sdk` |
 
 Two defects in our own tooling were fixed alongside: CEF remote debugging was
 pinned to a hardcoded port 8080 that could not be overridden, and CEF failures

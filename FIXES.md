@@ -8,8 +8,8 @@ behind its own commits when this was written, and several commit messages cite
 test directories that have never existed. Nothing here is typed in by hand, so
 nothing here can claim a test that is not on disk.
 
-- **70 issues** with at least one fix commit
-- **34** have a test artifact in `fork-fix-tests/`
+- **76 issues** with at least one fix commit
+- **40** have a test artifact in `fork-fix-tests/`
 - **36** do not - the fix is asserted by its commit message only
 - **17** fix commits carry no issue number (defects found in passing)
 
@@ -46,14 +46,20 @@ that is what the Test column is for. See the verification status section of
 | [#2229](https://github.com/ONLYOFFICE/DesktopEditors/issues/2229) | desktop-apps | `1509c6228e` | `issue-2229-window-border-contrast` | 2026-09-15 |
 | [#2216](https://github.com/ONLYOFFICE/DesktopEditors/issues/2216) | desktop-apps | `325ecd480a` | `issue-2216-gtk-system-theme` | 2026-09-14 |
 | [#2209](https://github.com/ONLYOFFICE/DesktopEditors/issues/2209) | core | `80298b5fc2` | `issue-2209-csv-trailing-empty-row` | 2026-09-15 |
-| [#2202](https://github.com/ONLYOFFICE/DesktopEditors/issues/2202) | desktop-sdk | `f4b4f9906a` | `issue-2202-x2t-spawn-failure` | 2026-09-15 |
+| [#2202](https://github.com/ONLYOFFICE/DesktopEditors/issues/2202) | desktop-sdk | `26887f3267` `f4b4f9906a` | `issue-2202-x2t-spawn-failure` | 2026-09-15 |
 | [#2195](https://github.com/ONLYOFFICE/DesktopEditors/issues/2195) | core | `1269b750a9` | `issue-2195-symbolic-gid-offset` | 2026-09-15 |
 | [#2189](https://github.com/ONLYOFFICE/DesktopEditors/issues/2189) | desktop-apps | `cba281172d` | `issue-2189-mutex-lasterror` | 2026-09-14 |
 | [#2161](https://github.com/ONLYOFFICE/DesktopEditors/issues/2161) | desktop-apps | `4ab3fb37ec` | `issue-2161-landscape-print-margins` | 2026-09-15 |
 | [#2147](https://github.com/ONLYOFFICE/DesktopEditors/issues/2147) | desktop-apps | `2441a039db` | `issue-2147-color-printing` | 2026-09-15 |
 | [#2105](https://github.com/ONLYOFFICE/DesktopEditors/issues/2105) | desktop-apps | `2241a8a0e6` | `issue-2105-wayland-no-x` | 2026-09-14 |
+| [#2071](https://github.com/ONLYOFFICE/DesktopEditors/issues/2071) | sdkjs | `b98bcb7c01` | `issue-2071-unhide-all-rows-test.js` | 2026-09-15 |
 | [#2056](https://github.com/ONLYOFFICE/DesktopEditors/issues/2056) | desktop-sdk | `6cd7c621ee` | `issue-2056-flush-before-success` | 2026-09-12 |
 | [#2022](https://github.com/ONLYOFFICE/DesktopEditors/issues/2022) | core | `b398371970` | `issue-2022-csv-last-row` | 2026-09-15 |
+| [#1855](https://github.com/ONLYOFFICE/DesktopEditors/issues/1855) | core | `4116fbeb76` | `issue-1855-pdf-outline-pagemode` | 2026-09-15 |
+| [#1372](https://github.com/ONLYOFFICE/DesktopEditors/issues/1372) | core | `39a34e13b3` | `issue-1372-csv-locale-date-and-numfmt` | 2026-09-15 |
+| [#1362](https://github.com/ONLYOFFICE/DesktopEditors/issues/1362) | desktop-sdk | `679ebd742f` | `issue-1362-samba-lock` | 2026-09-15 |
+| [#1323](https://github.com/ONLYOFFICE/DesktopEditors/issues/1323) | core | `b6672e6780` | `issue-1323-docx-zip-entry-order` | 2026-09-15 |
+| [#1297](https://github.com/ONLYOFFICE/DesktopEditors/issues/1297) | core | `1f81e91eca` | `issue-1297-csv-compaction-skip` | 2026-09-15 |
 | [#963](https://github.com/ONLYOFFICE/DesktopEditors/issues/963) | sdkjs | `bbb6f9ee63` | `issue-963-save-open-cell-edit-test.js` | 2026-09-12 |
 
 ## Not verified - commit message only
