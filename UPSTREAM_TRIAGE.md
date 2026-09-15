@@ -297,6 +297,59 @@ at runtime.
 
 ## Root-caused, not fixed
 
+### #2275 - the file name in a header or footer is blank in an exported PDF
+
+Root-caused and reproduced; **an attempted fix was reverted**, and the reason is
+worth more than the attempt.
+
+**Reproduced** with a two-line xlsx whose header is `&LFILE=&F&CSHEET=&A&RPAGE=&P`,
+converted by our own x2t to PDF:
+
+    FILE=         SHEET=MySheet   PAGE=1
+    body text
+    footerFILE=
+
+`&A` and `&P` resolve; `&F` alone is empty. The reason is visible in
+`sdkjs/cell/model/HeaderFooter.js`: the sheet name comes from `ws.model.sName` and
+the page number is computed, but
+
+    case asc.c_oAscHeaderFooterField.fileName:
+        res = api.DocInfo ? api.DocInfo.Title : "";
+
+and `DocInfo` is set by `asc_setDocInfo` when the *editor* opens a document. The
+converter never calls it, so in the process that actually renders the PDF there is
+nothing to resolve. That is exactly why the reporter's "Microsoft Print to PDF"
+works - a different path, with an editor behind it - and ONLYOFFICE's own export
+does not.
+
+**Why the obvious fix is wrong.** x2t already passes a `<JsonParams>` blob to sdkjs,
+so adding `"documentTitle"` to it looks like the natural channel. It is not.
+`spreadsheet_api.asc_nativePrint` begins `if (_options) { ... }`, and for a plain
+export `_options` is **null**, so that whole block is skipped. Making JsonParams
+non-empty switches it on, and it unconditionally does
+
+    _adjustPrint.asc_setIgnorePrintArea(true);
+    _adjustPrint.asc_setPrintType(Asc.c_oAscPrintType.EntireWorkbook);
+
+before applying a fresh page layout. The header and footer then vanished *entirely* -
+the PDF went from 14,914 to 13,032 bytes - which is worse than the bug. Reverted.
+
+**What a real fix needs:** a dedicated element in the doctrenderer Settings XML
+(`getDoctXml`, `core/X2tConverter/src/cextracttools.cpp`) carried through to sdkjs
+separately from the print options, so the title arrives without turning on the
+layout path. Then `&F` can resolve from it.
+
+Note also that for the desktop's own Save-as-PDF the source file is `Editor.bin`, so
+a title inferred from the source name is useless there - the application has to pass
+`m_sTitle`. Whether it does is unchecked.
+
+**A trap worth knowing, which cost time here:** `strings` cannot see a wide literal.
+`L"documentTitle"` is `wchar_t`, four bytes per character on macOS, so
+`strings x2t | grep documentTitle` finds nothing even when the code is present, and
+it looks exactly like the stale-relink problem described under #2430. Check the raw
+bytes instead: `python3 -c "print(open(p,'rb').read().count('x'.encode('utf-32-le')))"`.
+
+
 ### #2288 - ROW(INDIRECT("2:N")) reports a circular reference that is not one
 
 Root-caused precisely; **deliberately not fixed here**, for a reason worth stating:
