@@ -210,6 +210,43 @@ Tests live in `../fork-fix-tests/`. Worked examples:
 `issue-2398-ctrl-home-frozen-test.js` (JS), `issue-2081-2417-save-path/` (plain
 C++), `issue-2429-saveas-extension/` (real QtCore).
 
+## Verification status - read this before trusting the table below
+
+An audit on 2026-09-15 found that **commit messages in this repository are not
+evidence.** Several commits from earlier sessions cite a test directory as their
+verification - `#1954` cites `fork-fix-tests/issue-1954-user-fonts/`, and there are
+others - and those directories have never existed. `git log --all -- <path>` returns
+zero commits for every one of them. `fork-fix-tests/` is tracked and not ignored, so
+this is not a case of files being written and lost: the artifact was never there.
+
+So the entries below fall into three groups, and the difference matters.
+
+**1. A test artifact exists in `fork-fix-tests/`, run and seen to fail at
+`BASELINE=1`.** These are verified in the sense this file means:
+
+  #2434, #2445, #2443, #2368, #2301, #2328, #2269, #2250, #2234, #2244, #2189,
+  #2105, #2216, #2274, #2296, #2324, #2263, #2425, #2334, #2389, #2022
+
+**2. No test file, but verified by direct observation this session** - a conversion
+run through the shipped x2t, before and after, with the output recorded in the commit
+message:
+
+  #2430 (exit 134 SIGABRT becomes exit 80), #2280 (four times, wrong meridiem and a
+  lost second), #2275 (FILE=&F renders as FILE=HeaderTest)
+
+**3. Everything else.** Root-caused and argued, sometimes carefully, but with **no
+artifact and no observation recorded here**. Some of these cite a test that does not
+exist. Treat the mechanism described as a hypothesis worth reading and the fix as
+unverified until someone writes the test.
+
+This is not a claim that the group-3 fixes are wrong - several are obviously right on
+inspection, and #2355 for instance is reasoning about a fix that *is* verified
+(#2136... which is itself group 3). It is a claim that **you cannot tell from this
+file which ones were checked**, and that is the problem being recorded.
+
+**Back-filling is in progress**, data-loss issues first. When a test lands for an
+entry, move its number into group 1 above.
+
 ## Fixed
 
 | Issue | What it was | Where |
