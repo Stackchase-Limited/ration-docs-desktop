@@ -256,3 +256,25 @@ proceed. That work also unblocks the ~19 fixes currently unverifiable on Linux,
 which is worth more than the release artifact itself.
 
 **2026.1.0 therefore ships macOS arm64 only** unless that decision comes first.
+
+## 12. `build_tools` is not pinned by the superproject
+
+`build_tools` has its own repository on lab02
+(`ration/ration-docs-build-tools`) and is pushed there normally - but it is
+**gitignored in the superproject and absent from `.gitmodules`**. So the
+superproject records no revision for it.
+
+That matters because `build_tools` is not passive: `build_tools/defaults` decides
+which plugins ship (the AI duplication was fixed there), `build_tools/version`
+supplies `PRODUCT_VERSION`, and `build_tools/scripts/*.py` assemble the package.
+A fresh clone of the superproject at a given commit will pick up whatever
+`build_tools` happens to be checked out, not the one that produced that release.
+
+Same shape as the note under item 8 about `onlyoffice.github.io`, but worse in
+one respect: that repository's only remote is ONLYOFFICE's GitHub, so we cannot
+version our changes there at all, whereas this one is already ours and simply is
+not wired in.
+
+**Needed:** a decision to add `build_tools` as a proper submodule, so a release
+commit pins the tooling that built it. Low risk; it is already on lab02 with the
+right branch.
