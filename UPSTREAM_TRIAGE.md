@@ -2188,22 +2188,19 @@ changed on spec. They are the reason #1359 was fixed in the header.
 Harmless today because a surrogate check guards it.
 
 
-**A styled but empty cell loses its styling in the HTML clipboard flavour.**
-`sdkjs/cell/model/clipboard.js:1492` - `_generateHtmlDocStr` guards the whole
-styling block on `cell.getType() !== null`, so a cell with a fill, borders and a
-width but no value emits a bare `<td>`: no fill, no borders, no width. Invisible
-when pasting back into Ration Docs, because the internal binary flavour wins, and
-plainly visible when pasting into Word or LibreOffice. The same pattern is at
-`:1281` in the DOM variant. Found while root-causing #1364, and directly related to
-that reporter's "everything from style ... gets copied" remark, but not its cause.
+**A styled but empty cell losing its styling, and the missing clamp - BOTH FIXED.**
+Landed in `sdkjs` as `ec823d0ce6`. The `getType() !== null` guard now covers only
+the value, not the styling, in both the string builder and its DOM twin; the
+max-row/col clamp moved into `_getRangeMaxRowCol` so all three copy paths get it.
+The `else` turned out to be an optimization rather than a guard - `dc4a593072`,
+"[se] Copy table optimization (html)" - and the expensive half of it is kept.
+Disclosed cost: a blank `<td>` grows by a constant 61 bytes.
 
-**Two copy paths are missing a clamp the third has.** `_getTextFromSheet`
-(`clipboard.js:1815`) and `_generateHtmlDocStr` (`:1444`) use the result of
-`_getRangeMaxRowCol` without the `maxRowCol.col < selectionRange.c1` /
-`.row < .r1` guard that `getBinaryForCopy` applies at `:825`. Select a whole column
-that is entirely empty and `maxCol` comes back below `c1`, so the inner loop never
-runs and both the plain-text and the `<td>` output come out empty. Separate defect
-from #1364, same neighbourhood.
+**Still open in the same file:** `_makeNodesFromCellValueStr` opens `<a>` for an
+external hyperlink and unconditionally closes `</span>`, producing malformed
+markup, and its `getLocation() != null` href branch is unreachable. The DOM twin
+gets this right; the string variant was transcribed from it and lost the
+distinction, which is the same way the styling bug came to exist in two places.
 
 
 **The harness preferring a stale converter - FIXED.** Landed as `70aca34`.

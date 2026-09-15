@@ -450,9 +450,34 @@ check('text/html (which carries the internal binary, and which the paste handler
 	assert.ok(r.flavours.indexOf('text/html') !== -1, JSON.stringify(r.flavours));
 });
 check('ordinary range copy is byte-identical between working tree and baseline', () => {
+	// The html flavour is no longer byte-identical for selections that contain
+	// BLANK cells: a later fix in cell/model/clipboard.js stopped _generateHtmlDocStr
+	// from discarding the style of a cell whose getType() is null, so such a cell
+	// now carries the width/fill/borders that were previously computed and thrown
+	// away. That change is pinned exactly - including its per-cell size cost - in
+	// fork-fix-tests/clipboard-empty-cell-style-and-clamp-test.js. Here the claim
+	// is narrowed to what #1364 is actually about, and made sharper rather than
+	// weaker: the text and internal flavours are unchanged everywhere, and the
+	// html differs ONLY in the style attribute of blank <td>s.
+	const tdTags = (h) => h.match(/<td[^>]*>/g) || [];
 	for (const range of [ONE_CELL, TWO_COLS, TWO_ROWS, new Range(1, 1, 6, 9)]) {
 		for (const cells of [EMPTY_FORMULA, WITH_TEXT, {}]) {
-			assert.deepStrictEqual(sheetText(WORKING, cells, range), sheetText(BASE, cells, range));
+			const a = sheetText(WORKING, cells, range), b = sheetText(BASE, cells, range);
+			for (const flavour of [c_oAscClipboardDataFormat.Text, c_oAscClipboardDataFormat.Internal]) {
+				assert.deepStrictEqual(a[flavour], b[flavour], 'flavour ' + flavour + ' changed for ' + range);
+			}
+			const ta = tdTags(a[c_oAscClipboardDataFormat.Html]), tb = tdTags(b[c_oAscClipboardDataFormat.Html]);
+			assert.strictEqual(ta.length, tb.length, 'a <td> appeared or vanished for ' + range);
+			for (let i = 0; i < tb.length; i++) {
+				if (tb[i] === '<td>') {
+					assert.ok(/^<td style="[^"]*">$/.test(ta[i]), 'unexpected blank-cell markup: ' + ta[i]);
+				} else {
+					assert.strictEqual(ta[i], tb[i], 'a populated <td> changed for ' + range);
+				}
+			}
+			const strip = (h) => h.replace(/<td[^>]*>/g, '<td>');
+			assert.strictEqual(strip(a[c_oAscClipboardDataFormat.Html]), strip(b[c_oAscClipboardDataFormat.Html]),
+				'html changed outside the <td> attributes for ' + range);
 		}
 	}
 });
