@@ -310,6 +310,17 @@ entry, move its number into group 1 above.
 | #2216 | The GTK theme was forced to Adwaita for every dialog, replacing whatever theme the desktop runs | `desktop-apps` |
 | #2274 | A bundled Qt plugin needed Qt Quick, which was not bundled - dead on a machine without system Qt5, and a second QtCore in the process on one with it | `build_tools` + `desktop-apps` |
 | #2105 | Forcing the xcb platform plugin on a Wayland session with no X display segfaulted instead of saying so (the crash only; Wayland support is a port) | `desktop-apps` |
+| #2244 | A chart axis could not be scaled past a million - the clamp was in the spinner, not the engine | `web-apps` |
+| #2234 | A macro writing to a locked cell returned false in silence, so it looked as though macros no longer ran (part) | `sdkjs` |
+| #2275 | The file name field of a header or footer was blank in an exported PDF - the converter has no DocInfo to resolve it from | `core` + `sdkjs` |
+| #2334 | A dragged tab tore out into a new window the instant the pointer left the strip, in any direction, by any distance | `desktop-apps` |
+| #2389 | The "make me your default" toast had no opt-out and threw the answer away, so it returned every day forever (part) | `desktop-apps` |
+| #2296 | One date shown two ways: month-first gave `dd-mmm-yy`, month-second `d-mmm-yy` - and the wider one is where the `#####` came from | `sdkjs` |
+| #2324 | The style gallery listed Heading 9 first: the sort compared `.Name` on an object that stores `name`, so it was a silent no-op | `sdkjs` |
+| #2263 | Justify did nothing to East Asian text - gaps were counted only after a space, and a line of CJK has none | `sdkjs` |
+| #2425 | The retina fill handle could not be grabbed: the hit test was three device pixels flat while the square drawn is far larger (part) | `sdkjs` |
+| #2022 | *No upstream issue.* The last row of a CSV lost its trailing delimiters, so a reader counting fields dropped its final columns | `core` |
+| - | *No upstream issue.* Number-format padding directives (`_c`, `*c`, `[Red]`) were written into CSV cells as text: Accounting wrote `_ * 8745.00_ ` | `core` |
 
 Two defects in our own tooling were fixed alongside: CEF remote debugging was
 pinned to a hardcoded port 8080 that could not be overridden, and CEF failures
@@ -1404,6 +1415,62 @@ than trusting the exit code. **Proposed fix:** have `ADD_DEPENDENCY` add each
 static library to `PRE_TARGETDEPS`. Not done here - it touches every project in
 the tree and needs a clean build and an incremental build to verify, which is more
 than this issue should carry.
+
+### #2424 - Accounting-formatted numbers print as garbled text (Chinese)
+
+**Not `core`, and not garbling.** The screenshots show `##############`, which is the
+column-too-narrow indicator, not mojibake. That fill is decided in
+`sdkjs/cell/model/Workbook.js:17558`.
+
+Swept column widths 7.0 to 12.0 through x2t's PDF path: Accounting needs a width of
+9.0 where `#,##0.00` needs 8.0 - a one-character difference, and Excel reserves the
+same space for the currency symbol and the closing pad. No `####` appears at any
+width where the text actually fits. So the behaviour is correct and the report is
+about a column that is one character too narrow for the format applied.
+
+**What did come out of reproducing it** is a real defect with no issue of its own: the
+literal run-in and run-out of a number format section were being written into the CSV
+as plain text, so an Accounting cell exported as `_ * 8745.00_ `. Fixed; see the Fixed
+table.
+
+### #2318 - some fonts are not rendered properly on Linux
+
+Reproduced and diagnosed in `core`; **not fixed**, because the fix is a data table
+that cannot be validated without building it against the real font.
+
+Converting the reporter's docx with our x2t renders the Wingdings run `U+F0E8 U+F020`
+as `(8) A` where Office shows an arrow. `CFontListNamePicker` substitutes Wingdings
+with OpenSymbol (`core/DesktopEditor/fontengine/ApplicationFonts.h:87`), and OpenSymbol
+has **no U+F0xx coverage at all** - all three of its cmap subtables return glyph 0 for
+both codepoints. So the substitution can never produce the right glyph, whatever else
+is done.
+
+The real fix is a Wingdings-to-Unicode recode table, which is what LibreOffice does:
+about 224 entries, mapping the private-use codepoint to the Unicode character the
+substitute font actually has (OpenSymbol carries U+2794, not U+27A8, so the table has
+to be built against its real coverage rather than copied). Hook it where the substitute
+face is chosen. Not attempted here: 224 unvalidated codepoint mappings is exactly the
+kind of table that looks right and is wrong in a dozen places.
+
+### #2399 - draw.io plugin: PDF export and print preview fail
+
+Not ours, and not a code defect. `onlyoffice.github.io/sdkjs-plugins/content/drawio/vendor/drawio/webapp/js/PreConfig.js:7`
+ships `window.EXPORT_URL = 'REPLACE_WITH_YOUR_IMAGE_SERVER'`. draw.io renders PNG, JPEG,
+SVG and HTML in the browser but POSTs PDF and print preview to that export server -
+which is exactly the split the reporter sees, and explains the message in their
+terminal. The placeholder needs to point at a real export service, or those two formats
+have to be disabled in the plugin.
+
+### #2012 - PDF export garbles auto-skewed and auto-bolded fonts
+
+**Appears fixed since 9.0.3; not reproducible on this tree.** Built the reporter's exact
+condition twice - Open Sans, which has no italic face, and then a font directory with
+the bold-italic faces deleted - and both render correctly.
+
+Decoding the streams shows what was wrong then: their 9.0.3 PDF reuses `/F3` with `2 Tr`
+but allocates a brand-new subset code for every character, including ones already in
+that subset, which is the glyph-to-subset mismatch. Ours reuses the existing codes
+`0001..0008` and adds only genuinely new ones. Recorded so nobody re-derives it.
 
 ### #2394 - the app crashes on Open Local File, Save and Save As
 
