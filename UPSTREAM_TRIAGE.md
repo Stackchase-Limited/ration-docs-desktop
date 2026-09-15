@@ -380,6 +380,7 @@ tests.
 | #2195 | A symbolic retry lost its `+ 0xF000`, so Wingdings and Symbol text inside EMF/WMF metafiles was drawn in a substituted font (core half only) | `core` |
 | #2202 | A failed `fork` or `execve` returned 0, so a save reported success for a conversion that never ran and the document was marked clean over lost work | `desktop-sdk` |
 | #2268 | Two AI providers reported every failure as "Invalid URL", sending users to correct an address that was right (the CORS root cause is untouched) | `desktop-sdk` |
+| #1364 | Copying one cell whose displayed text is empty replaced the system clipboard with an item carrying **no text flavour at all** - a falsy test where the contract is presence (the in-app half of the report is not explained by this; see the commit) | `sdkjs` |
 | #1018 | AutoFit on a few columns froze the app: the scan walked the sheet's row extent rather than the column's cells - 4,194,304 visits where 400 were needed (see the approval list, item 9, for the row-height change it makes) | `sdkjs` |
 | #139 | One character XML forbids - pasted, never from a file - made the whole slide it sat on come back blank, because the run-text escaper handled the five entities and nothing else | `core` |
 | #2113 | A pivot table saved to ODS came back as plain cells: we wrote the container and never filled it, and every unset attribute serialised as the literal `--` | `core` |
@@ -2145,6 +2146,24 @@ only `projicons/` and `update-daemon/`.
   picks "Associate selected" - the UI can present a selection nobody made.
 
 ## Latent problems found in passing, not yet fixed
+
+**A styled but empty cell loses its styling in the HTML clipboard flavour.**
+`sdkjs/cell/model/clipboard.js:1492` - `_generateHtmlDocStr` guards the whole
+styling block on `cell.getType() !== null`, so a cell with a fill, borders and a
+width but no value emits a bare `<td>`: no fill, no borders, no width. Invisible
+when pasting back into Ration Docs, because the internal binary flavour wins, and
+plainly visible when pasting into Word or LibreOffice. The same pattern is at
+`:1281` in the DOM variant. Found while root-causing #1364, and directly related to
+that reporter's "everything from style ... gets copied" remark, but not its cause.
+
+**Two copy paths are missing a clamp the third has.** `_getTextFromSheet`
+(`clipboard.js:1815`) and `_generateHtmlDocStr` (`:1444`) use the result of
+`_getRangeMaxRowCol` without the `maxRowCol.col < selectionRange.c1` /
+`.row < .r1` guard that `getBinaryForCopy` applies at `:825`. Select a whole column
+that is entirely empty and `maxCol` comes back below `c1`, so the inner loop never
+runs and both the plain-text and the `<td>` output come out empty. Separate defect
+from #1364, same neighbourhood.
+
 
 **The app bundle ships a stale converter, and the harness prefers it.**
 `desktop-apps/build/Ration Docs.app/Contents/Resources/converter/x2t` is a copy
