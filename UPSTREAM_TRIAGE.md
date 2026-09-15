@@ -2241,6 +2241,21 @@ The same check against the *shipped* `AllFonts.js`, generated before that fix,
 misses 657 - 542 of them `Heiti TC`/`Heiti SC` claiming Big5-derived ranges.
 
 
+**x2t hitting its own 4GiB cap - NOW REPORTED, not fatal.** `765213f176` wraps
+`main` so a `bad_alloc` returns `AVS_FILEUTILS_ERROR_CONVERT_LIMITS` (93) instead
+of reaching `terminate` and dying on SIGABRT. 93 rather than 96 because
+`SUCCEEDED_X2T` counts `CELLLIMITS` as *success* - returning 96 would have
+reported running out of memory as a successful conversion.
+
+**Still open, and needed for this to matter to a desktop user:** `cefview.cpp`
+forwards only x2t open errors 89, 90 and 91 to the renderer. Everything else falls
+through to `LocalFile_End()`, which discards `m_nLocalFileOpenError`, so 93 is
+currently only visible to a CLI or server caller. That is a small change in
+`desktop-sdk` and it is the missing half of this fix.
+
+**The cap itself is unchanged and still parked** - raising or removing it is a
+product decision. What follows is why it is reached so easily:
+
 **x2t caps itself at 4GiB and cannot survive hitting the cap.** This is the other
 half of #1359, and it is the half that explains the reporter's own 85MB file.
 `core/X2tConverter/src/main.cpp:101` applies `X2T_MEMORY_LIMIT` (default 4GiB)
@@ -2270,15 +2285,27 @@ serialises it, but nothing consumes it - `sdkjs/cell/model/Serialize.js` defines
 produces a 271MB `Editor.bin`. Not removed: it changes the on-disk binary format,
 and on its own it would not lift the 4GiB cliff for the reporter's file.
 
-**Five more unguarded subscripts of the same table**, at
-`core/TxtFile/Source/TxtFormat/TxtFile.cpp:99,197` and `File.cpp:89,112,146`. They
-could not be made to fire through x2t's txt path with 65001 or 1252 - every
-attempt returned exit 0 with correct text - so they are recorded rather than
-changed on spec. They are the reason #1359 was fixed in the header.
+**The five other subscripts - FIXED, and the claim above was wrong about two of
+them.** Landed in `core` as `765213f176`. `File.cpp`'s three sites were genuinely
+unguarded and now go through `GetEncodingIndex`; nothing in core calls them, so
+that is defence in depth and the test says so rather than inventing a
+reproduction. But `TxtFile.cpp:99` and `:197` were **already range-checked**. What
+they did instead was route every value outside 0..53 - every Windows code page our
+own API documents - into a fallback that ignored the requested encoding, one of
+them handing this table's row number 46 to an overload that takes a code page.
 
-**A tautology in the `sep=` handling.** `CSVReader.cpp:310` reads
-`(sFileDataW[5] != L'\r' || sFileDataW[5] != L'\n')`, which is always true.
-Harmless today because a surrogate check guards it.
+And that one **is** reachable, contrary to the earlier attempt that could not fire
+it. A windows-1252 `.txt` converted to `.docx` on the pre-fix binary gives exit 0,
+a file on disk, and raw 0xE9 bytes inside `word/document.xml` - a part no XML
+parser will read. Same shape as #139, and silent.
+
+**The `sep=` tautology - FIXED** in `765213f176`. It only ever bit on Windows,
+where `wchar_t` is 2 bytes, when a lone high surrogate preceded a CR or LF in a
+file opening with `sep=` - the newline then became part of the delimiter and every
+later `<surrogate, newline>` pair split a cell and ate a row break. Proved by
+compiling the extracted block both natively and with `-fshort-wchar`: the baseline
+passes natively, confirming the change is a no-op off Windows, and fails under
+`-fshort-wchar` on exactly the two lone-surrogate cases.
 
 
 **A styled but empty cell losing its styling, and the missing clamp - BOTH FIXED.**

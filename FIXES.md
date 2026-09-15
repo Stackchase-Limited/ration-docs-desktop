@@ -11,7 +11,7 @@ nothing here can claim a test that is not on disk.
 - **82 issues** with at least one fix commit
 - **46** have a test artifact in `fork-fix-tests/`
 - **36** do not - the fix is asserted by its commit message only
-- **19** fix commits carry no issue number (defects found in passing)
+- **20** fix commits carry no issue number (defects found in passing)
 
 A row here means a commit exists. It does **not** mean the fix was verified;
 that is what the Test column is for. See the verification status section of
@@ -116,6 +116,7 @@ They have not been demonstrated.
 
 | Where | Commit | Landed | What |
 |---|---|---|---|
+| core | `765213f176` | 2026-09-15 | Report running out of memory instead of dying on a signal, and guard the txt encodings |
 | sdkjs | `ec823d0ce6` | 2026-09-15 | Stop the HTML clipboard flavour discarding a blank cell's formatting |
 | desktop-apps | `2edb2ba035` | 2026-09-15 | Stop setup_paths from moving the user's data directory when it runs twice |
 | core | `ee2677f68d` | 2026-09-14 | fix(fonts): a charmap that lacks the character must not erase one that has it |
