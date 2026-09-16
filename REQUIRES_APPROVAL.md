@@ -227,35 +227,22 @@ key (`id_ed25519`) is now in that account's `authorized_keys`. Retire the box or
 rotate the password and remove the key when it is no longer needed - recorded here
 so it is not forgotten, the same as item 1.
 
-**It cannot build anything as provisioned.** Measured, not estimated:
+**Sizing and bring-up are done** (2026-09-16). The box was grown to 6 cores,
+7.6 GB RAM and 78 GB disk, and `build_tools/make.py platform=linux_arm64` now
+completes: the payload loads with no undefined symbols, `DesktopEditors` starts,
+and x2t converts csv to xlsx to pdf. Sixteen fixes across `build_tools`, `core`
+and `desktop-apps` were needed; `build_tools/ARM64_DESKTOP_BUILD.md` records them
+and the packages the machine needs.
 
-| | Has | `ARM64_DESKTOP_BUILD.md` requires |
-|---|---|---|
-| Disk free | 8.6 GB | **100 GB** |
-| RAM | 3.9 GB | 8 GB minimum |
-| Swap | 3.3 GB | 4 GB |
-| CPU | 2 cores | - (2 cores means a many-hour build) |
-| Toolchain | none: no `git`, `gcc`, `g++`, `cmake`, `qmake`, `node` | full stack, ~2-3 GB |
+Two of those fixes were **our own win-linux changes that had never compiled**,
+because macOS builds `desktop-apps/macos` and never touches that directory. That
+makes this box part of the verification path rather than an experiment: a
+win-linux change reviewed on a Mac is unverified until this box has built it.
 
-Where 100 GB goes: source without git history is ~10 GB, of which
-`core/Common/3dParty` is 4.6 GB and Linux arm64 needs its **own** set fetched (CEF
-dominates); build output ~3.7 GB; and the intermediate object tree, which on macOS
-is the single largest consumer.
-
-**And the bring-up has never been done.** `ARM64_DESKTOP_BUILD.md` says so itself:
-*"This path is not currently runnable as written, and has not been verified."*
-`tools/linux/build-desktop-arm64-docker.sh` has never existed in this repository,
-nor has the `automate.py` it is said to invoke. The plausible route is pointing
-`build_tools/make.py` at `platform=linux_arm64` the way the macOS build does, but
-that has not been tried, so this is a first-ever build bring-up rather than a
-provisioning task.
-
-**Needed:** a decision to resize (suggested 100 GB disk / 16 GB RAM / 8 cores), at
-which point the toolchain install and the first `linux_arm64` build attempt can
-proceed. That work also unblocks the ~19 fixes currently unverifiable on Linux,
-which is worth more than the release artifact itself.
-
-**2026.1.0 therefore ships macOS arm64 only** unless that decision comes first.
+**So the credentials question is now live rather than theoretical.** The box is
+useful, which means either it stops being a throwaway with a pasted password, or
+it is rebuilt properly. Either way the password needs rotating and my key
+removing when this session's work is done.
 
 ## 12. `build_tools` is not pinned by the superproject
 
@@ -278,3 +265,34 @@ not wired in.
 **Needed:** a decision to add `build_tools` as a proper submodule, so a release
 commit pins the tooling that built it. Low risk; it is already on lab02 with the
 right branch.
+
+## 13. The Linux app still carries ONLYOFFICE identity
+
+macOS was renamed in desktop-apps `e829d0d7d`: `PRODUCT_NAME` became "Ration
+Docs" and the bundle identifier `com.stackchase.rationdocs`. Linux and Windows
+had no equivalent, and nobody noticed because neither had been built.
+
+What is still upstream's, in `desktop-apps/win-linux/src/defines.h`:
+
+    APP_TITLE               "ONLYOFFICE"
+    APP_DATA_PATH           "/ONLYOFFICE/DesktopEditors"
+    WINDOW_NAME             "ONLYOFFICE"
+    APP_SIMPLE_WINDOW_TITLE "ONLYOFFICE Editor"
+    RELEASE_NOTES           github.com/ONLYOFFICE/DesktopEditors/...
+
+and in `desktop-apps/package`: `COMPANY_NAME`/`PRODUCT_NAME` default to
+ONLYOFFICE/Desktop Editors, which set the package name (`onlyoffice-desktopeditors`),
+the install prefix (`/opt/onlyoffice/desktopeditors`), the `.desktop` entries, the
+icons and the `oo-office` scheme handler.
+
+The build tree is therefore complete and runnable but **named as somebody else's
+product**. A Linux artifact published in that state would carry ONLYOFFICE's name
+and icons out of our fork, which is the trademark problem the macOS rename existed
+to avoid.
+
+**Needed:** the Linux/Windows equivalent of the macOS rename - the names,
+the data path (it decides where existing users' settings live, so changing it
+later strands them), the support and release-notes URLs, and the scheme handler.
+These are product decisions, not mechanical ones.
+
+Until then: the Linux build is for **verification**, not distribution.
