@@ -221,11 +221,16 @@ crash does not wedge the document** - your own marker is recognised and ignored.
 
 ## 11. Linux arm64 box: credentials to retire, and sizing before it is useful
 
-**Credentials in the transcript.** `172.16.84.144`, user `administrator`, password
-pasted into this session on 2026-09-15. Described as a throwaway box. My SSH public
-key (`id_ed25519`) is now in that account's `authorized_keys`. Retire the box or
-rotate the password and remove the key when it is no longer needed - recorded here
-so it is not forgotten, the same as item 1.
+**Credentials in the transcript.** The build box's address, account name and
+password were pasted into the session on 2026-09-15; it was described as a
+throwaway. My SSH public key (`id_ed25519`) is in that account's
+`authorized_keys`. Retire the box, or rotate the password and remove the key, when
+it is no longer needed - recorded here so it is not forgotten, the same as item 1.
+
+The address and account name are deliberately not written down here. This file is
+part of the repository that is going to GitHub, and an internal address with a
+matching account name is worth nothing to a reader and something to a scanner.
+They are in the session transcript if needed.
 
 **Sizing and bring-up are done** (2026-09-16). The box was grown to 6 cores,
 7.6 GB RAM and 78 GB disk, and `build_tools/make.py platform=linux_arm64` now
