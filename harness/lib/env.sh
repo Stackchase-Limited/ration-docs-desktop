@@ -8,6 +8,7 @@
 RD_ROOT="${RD_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
 if [ -z "${RD_APP:-}" ]; then
 	for candidate in \
+		"$RD_ROOT/desktop-apps/macos/build/Release/Ration Docs.app" \
 		"$RD_ROOT/desktop-apps/build/Ration Docs.app" \
 		"/Applications/Ration Docs.app" \
 		"$HOME/Applications/Ration Docs.app" \
@@ -38,7 +39,6 @@ rd_x2t() {
 		fi
 	done
 	for candidate in \
-		"$RD_ROOT/desktop-apps/build/Ration Docs.app/Contents/Resources/converter/x2t" \
 		"$RD_APP/Contents/Resources/converter/x2t" \
 		"$RD_ROOT/build_tools/out/mac_arm64/onlyoffice/desktopeditors/converter/x2t"
 	do
@@ -64,7 +64,7 @@ rd_ensure_doctrenderer() {
 	local dir; dir="$(dirname "$x2t")"
 	[ -f "$dir/DoctRenderer.config" ] && [ -e "$dir/../editors" ] && return 0
 
-	local editors="${RD_EDITORS:-$RD_ROOT/desktop-apps/build/Ration Docs.app/Contents/Resources/editors}"
+	local editors="${RD_EDITORS:-$RD_APP/Contents/Resources/editors}"
 	# Take the PACKAGED config, not desktop-apps/common/converter/DoctRenderer.config.
 	# The in-tree one is a stale schema - per-product <DoctSdk>/<PpttSdk>/<XlstSdk>
 	# file lists - while doctrenderer now reads <sdkjs>, <allfonts> and
