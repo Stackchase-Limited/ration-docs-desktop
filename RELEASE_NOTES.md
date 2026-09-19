@@ -26,6 +26,34 @@ why.
 
 ## Fixes
 
+**84 upstream issues** have at least one fix commit, and **26 further defects** were
+found and fixed while working on them - 110 in all. 48 of the 84 have a test in
+`fork-fix-tests/` that fails against the commit before the fix; the remaining 36
+rest on their commit message, and `UPSTREAM_TRIAGE.md` says which is which rather
+than blurring the two.
+
+### Where the work landed
+
+| Repository | Upstream issues | With a test | Found in passing |
+|---|---|---|---|
+| [`sdkjs`](https://github.com/Stackchase-Limited/ration-docs-sdkjs) | 29 | 18 | 7 |
+| [`core`](https://github.com/Stackchase-Limited/ration-docs-core) | 22 | 13 | 4 |
+| [`desktop-apps`](https://github.com/Stackchase-Limited/ration-docs-desktop-apps) | 22 | 11 | 4 |
+| [`desktop-sdk`](https://github.com/Stackchase-Limited/ration-docs-desktop-sdk) | 10 | 4 | 7 |
+| [`web-apps`](https://github.com/Stackchase-Limited/ration-docs-web-apps) | 3 | 1 | 1 |
+| [`build_tools`](https://github.com/Stackchase-Limited/ration-docs-build-tools) | 2 | 2 | 3 |
+| `onlyoffice.github.io` (plugins, not forked) | 1 | 0 | 0 |
+
+The repository column sums to more than 84 because a single issue often spans two:
+a spreadsheet bug fixed in `sdkjs` with the save path corrected in `core`, or a
+dialog in `desktop-apps` whose CEF side is in `desktop-sdk`. The 84 is the count of
+distinct issues.
+
+`FIXES.md` is the full registry, one row per issue, generated from git history and
+the contents of `fork-fix-tests/` rather than kept by hand - the hand-kept list in
+`UPSTREAM_TRIAGE.md` had drifted eight entries behind its own commits by the time
+that was noticed.
+
 ### Data loss and corruption (24)
 
 - `HYPERLINK()` cells lost their link when copied to another application. ([#2256](https://github.com/ONLYOFFICE/DesktopEditors/issues/2256))

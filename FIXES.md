@@ -11,7 +11,7 @@ nothing here can claim a test that is not on disk.
 - **84 issues** with at least one fix commit
 - **48** have a test artifact in `fork-fix-tests/`
 - **36** do not - the fix is asserted by its commit message only
-- **20** fix commits carry no issue number (defects found in passing)
+- **26** fix commits carry no issue number (defects found in passing)
 
 A row here means a commit exists. It does **not** mean the fix was verified;
 that is what the Test column is for. See the verification status section of
@@ -118,9 +118,15 @@ They have not been demonstrated.
 
 | Where | Commit | Landed | What |
 |---|---|---|---|
+| desktop-sdk | `65b9b0f8be` | 2026-09-19 | Stop stamping ONLYOFFICE into the documents users save |
+| desktop-apps | `ef7f02f7a1` | 2026-09-16 | Stop hiding a static C++ runtime that the app cannot start without |
+| build_tools | `3c0d637bd2` | 2026-09-16 | Stop ICU's LDFLAGS patch compounding on every retry |
+| build_tools | `1391a3a3af` | 2026-09-16 | Stop ICU emitting a dangling linker flag when packaging its data library |
 | core | `765213f176` | 2026-09-15 | Report running out of memory instead of dying on a signal, and guard the txt encodings |
 | sdkjs | `ec823d0ce6` | 2026-09-15 | Stop the HTML clipboard flavour discarding a blank cell's formatting |
+| desktop-apps | `54d1ff926a` | 2026-09-15 | Stop a square outline being drawn around the start page's left-menu icons |
 | desktop-apps | `2edb2ba035` | 2026-09-15 | Stop setup_paths from moving the user's data directory when it runs twice |
+| build_tools | `ddf4bf5f89` | 2026-09-15 | Ship one AI plugin, not two |
 | core | `ee2677f68d` | 2026-09-14 | fix(fonts): a charmap that lacks the character must not erase one that has it |
 | desktop-sdk | `2d8dcfc0d1` | 2026-09-14 | fix(videoplayer): stop Key_P falling through into Key_Escape |
 | core | `15eb3eac95` | 2026-09-13 | fix(fonts): do not answer a Unicode lookup from a legacy charmap |

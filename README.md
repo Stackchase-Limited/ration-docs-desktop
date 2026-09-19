@@ -42,10 +42,23 @@ and how, and what is known to be broken.
 ## What is different from upstream
 
 This fork exists to fix things, not to add features. 2026.1.0 carries **84 upstream
-issue fixes plus 20 problems found while working on them**, weighted towards data
-loss and crashes. `UPSTREAM_TRIAGE.md` records each one, `FIXES.md` indexes them,
-and `fork-fix-tests/` holds the tests - each pinned to the commit before its fix so
-it demonstrably fails without it.
+issue fixes plus 26 defects found while working on them** - 110 in all, weighted
+towards data loss and crashes:
+
+| Repository | Upstream issues | With a test | Found in passing |
+|---|---|---|---|
+| `sdkjs` | 29 | 18 | 7 |
+| `core` | 22 | 13 | 4 |
+| `desktop-apps` | 22 | 11 | 4 |
+| `desktop-sdk` | 10 | 4 | 7 |
+| `web-apps` | 3 | 1 | 1 |
+| `build_tools` | 2 | 2 | 3 |
+
+The column sums past 84 because one issue often spans two repositories. 48 of the
+84 have a test in `fork-fix-tests/` pinned to the commit before the fix, so it
+demonstrably fails without it; the other 36 rest on their commit message, and
+`UPSTREAM_TRIAGE.md` says which is which rather than blurring the two. `FIXES.md`
+is the registry, generated from git history rather than kept by hand.
 
 Beyond the fixes:
 
