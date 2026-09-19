@@ -1,84 +1,119 @@
-[![License](https://img.shields.io/badge/License-GNU%20AGPL%20V3-green.svg?style=flat)](https://www.gnu.org/licenses/agpl-3.0.en.html)
-![Platforms Windows | macOS | Linux](https://img.shields.io/badge/Platforms-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg?style=flat) [![Release](https://img.shields.io/github/v/tag/ONLYOFFICE/DesktopEditors?sort=semver&style=flat&label=Release&color=blue)](https://github.com/ONLYOFFICE/DesktopEditors/tags)
+# Ration Docs Desktop
 
-## Welcome to the ONLYOFFICE Desktop Editors repo!
+[![Licence](https://img.shields.io/badge/Licence-GNU%20AGPL%20v3-green.svg?style=flat)](https://www.gnu.org/licenses/agpl-3.0.en.html)
+![Platforms macOS | Linux](https://img.shields.io/badge/Platforms-macOS%20%7C%20Linux-lightgrey.svg?style=flat)
+[![Release](https://img.shields.io/badge/Release-2026.1.0-blue.svg?style=flat)](https://github.com/Stackchase-Limited/ration-docs-desktop/releases/tag/v2026.1.0)
 
-[ONLYOFFICE Desktop Editors](https://www.onlyoffice.com/desktop.aspx?utm_source=github&utm_medium=cpc&utm_campaign=GitHubDesktop) is a free office suite that combines text, spreadsheet, presentation, and PDF editors & Diagram Viewer. The application allows creating, viewing and editing documents stored on your Windows/Linux PC or Mac without an Internet connection. It is fully compatible with Office Open XML formats: .docx, .xlsx, .pptx.
+An offline office suite - documents, spreadsheets, presentations and PDFs - that
+runs on your own machine and talks to no one unless you ask it to.
 
-![ONLYOFFICE Desktop Editors](./screenshots/ONLYOFFICE%20Desktop%20Editors.png)
+Ration Docs is a **modified version of ONLYOFFICE Desktop Editors**, originally
+developed by Ascensio System SIA, forked at release 9.4.0 and maintained by
+Stackchase Limited. It is not produced by, endorsed by, or affiliated with
+Ascensio System SIA.
 
-## Features you'll love ✨
+![Ration Docs](./screenshots/ration-docs-home.png)
 
-Take advantage of the powerful editors included in ONLYOFFICE Desktop Editors:
+## Download
 
-* [ONLYOFFICE Document Editor](https://www.onlyoffice.com/document-editor.aspx?utm_source=GitHub&utm_medium=social&utm_campaign=GitHubDesktop)
-* [ONLYOFFICE Spreadsheet Editor](https://www.onlyoffice.com/spreadsheet-editor.aspx?utm_source=GitHub&utm_medium=social&utm_campaign=GitHubDesktop)
-* [ONLYOFFICE Presentation Editor](https://www.onlyoffice.com/presentation-editor.aspx?utm_source=GitHub&utm_medium=social&utm_campaign=GitHubDesktop)
-* [ONLYOFFICE Form Creator](https://www.onlyoffice.com/form-creator.aspx?utm_source=GitHub&utm_medium=social&utm_campaign=GitHubDesktop)
-* [ONLYOFFICE PDF Editor](https://www.onlyoffice.com/pdf-editor.aspx?utm_source=GitHub&utm_medium=social&utm_campaign=GitHubDesktop)
-* [ONLYOFFICE Diagram Viewer](https://www.onlyoffice.com/diagram-viewer.aspx?utm_source=GitHub&utm_medium=social&utm_campaign=GitHubDesktop)
+Current release: **[2026.1.0](https://github.com/Stackchase-Limited/ration-docs-desktop/releases/tag/v2026.1.0)**
 
-The suite empowers you to create, edit, save, and export text documents, spreadsheets, presentations, PDFs, fill out PDF forms, open diagrams, all while offering additional advanced features such as:
+| Platform | File |
+|---|---|
+| macOS, Apple Silicon | [`RationDocs-2026.1.0-arm64.dmg`](https://github.com/Stackchase-Limited/ration-docs-desktop/releases/download/v2026.1.0/RationDocs-2026.1.0-arm64.dmg) |
+| Linux arm64, Debian/Ubuntu | [`ration-docs_2026.1.0-1_arm64.deb`](https://github.com/Stackchase-Limited/ration-docs-desktop/releases/download/v2026.1.0/ration-docs_2026.1.0-1_arm64.deb) |
+| Linux arm64, other | [`ration-docs-2026.1.0-1-aarch64.tar.xz`](https://github.com/Stackchase-Limited/ration-docs-desktop/releases/download/v2026.1.0/ration-docs-2026.1.0-1-aarch64.tar.xz) |
+| Offline help | [`ration-docs-help-2026.1.0-1-any.tar.xz`](https://github.com/Stackchase-Limited/ration-docs-desktop/releases/download/v2026.1.0/ration-docs-help-2026.1.0-1-any.tar.xz) |
 
-* Connection to the cloud (ONLYOFFICE, Moodle, Nextcloud, ownCloud, Seafile, Liferay, kDrive) for [real-time collaboration](https://www.onlyoffice.com/seamless-collaboration.aspx?utm_source=github&utm_medium=cpc&utm_campaign=GitHubDesktop) ☁️
-* [AI-powered assistants](https://www.onlyoffice.com/ai-assistants.aspx?utm_source=github&utm_medium=cpc&utm_campaign=GitHubDesktop) 🤖
-* Digital signatures ✍️🔏
-* Password protection 🔒🔑
-* Scalable UI options (including dark mode 🌓)
+Checksums are published beside the files. **Neither build is signed**: on macOS,
+Gatekeeper will refuse the first launch until you clear the quarantine attribute,
+and on Linux the packages carry no repository signature. That means you are
+trusting the source of the file and nothing else is vouching for it.
 
-## Localization 🌐
+    # Linux
+    sudo apt install ./ration-docs_2026.1.0-1_arm64.deb
 
-ONLYOFFICE is constantly improving localization of the editors to make the suite accessible to all users, all over the world.
+    # macOS, after dragging the app to /Applications
+    xattr -dr com.apple.quarantine "/Applications/Ration Docs.app"
 
-* Interface available in 46 languages
-* RTL support
-* Hieroglyph support 🈴
+`RELEASE_NOTES.md` has the full list of what is in this release, what was verified
+and how, and what is known to be broken.
 
-## Plugins 🧩
+## What is different from upstream
 
-ONLYOFFICE Desktop Editors offer support for plugins allowing developers to add specific features to the editors that are not directly related to the OOXML format. For more information, see [our API](https://api.onlyoffice.com/docs/plugin-and-macros/get-started/overview/) or visit the [GitHub plugins repo](https://github.com/ONLYOFFICE/onlyoffice.github.io).
+This fork exists to fix things, not to add features. 2026.1.0 carries **84 upstream
+issue fixes plus 20 problems found while working on them**, weighted towards data
+loss and crashes. `UPSTREAM_TRIAGE.md` records each one, `FIXES.md` indexes them,
+and `fork-fix-tests/` holds the tests - each pinned to the commit before its fix so
+it demonstrably fails without it.
 
-Would like to explore the existing plugins in details? You are welcome to visit our [Marketplace](https://www.onlyoffice.com/app-directory?utm_source=github&utm_medium=cpc&utm_campaign=GitHubDesktop).
+Beyond the fixes:
 
-## Components 📦
+- **Linux arm64 builds**, which took sixteen fixes to the build tooling. Two of
+  our own earlier fixes to the Linux application turned out never to have been
+  compiled, because macOS builds `desktop-apps/macos` and never touches
+  `win-linux/`. `build_tools/ARM64_DESKTOP_BUILD.md` records the bring-up.
+- **The product is named as itself** on every platform - window title, settings
+  path, URL scheme, single-instance mutex, package name. The mutex mattered most:
+  sharing ONLYOFFICE's would have made a machine with both installed treat them as
+  one application.
+- **Documents record their real producer.** Files saved by this build report
+  `Ration Docs/2026.1.0.0` in their properties, not somebody else's name.
+- **No calls home to ONLYOFFICE.** The update feed, the help centre link and the
+  cloud-signup page have been removed rather than repointed, because we do not run
+  those services. The editors still connect to an ONLYOFFICE, Nextcloud or ownCloud
+  server that *you* run, if you ask them to.
 
-ONLYOFFICE Desktop Editors contain the following components:
+## Repository layout
 
-* [desktop-apps](https://github.com/ONLYOFFICE/desktop-apps) - the frontend for ONLYOFFICE Desktop Editors which is used to build the program interface for the operating system selected.
-* [desktop-sdk](https://github.com/ONLYOFFICE/desktop-sdk) - SDK which is a core part of ONLYOFFICE Desktop Editors.
-* [core](https://github.com/ONLYOFFICE/core) - server core components for [ONLYOFFICE Document Server][2] which is a part of ONLYOFFICE Desktop Editors and is used to enable the conversion between the most popular office document formats (DOC, DOCX, ODT, RTF, TXT, PDF, HTML, EPUB, XPS, DjVu, XLS, XLSX, ODS, CSV, PPT, PPTX, ODP).
-* [sdkjs](https://github.com/ONLYOFFICE/sdkjs) - JavaScript SDK for the [ONLYOFFICE Document Server][2] which is a part of ONLYOFFICE Desktop Editors and contains API for all the included components client-side interaction.
-* [web-apps](https://github.com/ONLYOFFICE/web-apps) - the frontend for [ONLYOFFICE Document Server][2] which is a part of ONLYOFFICE Desktop Editors that allows the user to create, edit, save and export text, spreadsheet and presentation documents using the common interface of a document editor.
-* [dictionaries](https://github.com/ONLYOFFICE/dictionaries) - the dictionaries of various languages used for spellchecking in ONLYOFFICE Desktop Editors.
+The suite is one superproject and six submodules, mirroring upstream's split:
 
-## Easy installation options
+| Submodule | What lives there |
+|---|---|
+| [`core`](https://github.com/Stackchase-Limited/ration-docs-core) | C++ document core: file formats, conversion (`x2t`), spell engine |
+| [`sdkjs`](https://github.com/Stackchase-Limited/ration-docs-sdkjs) | Editor engine in JavaScript: cell, word and slide logic |
+| [`web-apps`](https://github.com/Stackchase-Limited/ration-docs-web-apps) | Editor user interface: menus, dialogs, plugin manager |
+| [`desktop-apps`](https://github.com/Stackchase-Limited/ration-docs-desktop-apps) | The application shell and start page; macOS and Windows/Linux frontends |
+| [`desktop-sdk`](https://github.com/Stackchase-Limited/ration-docs-desktop-sdk) | CEF integration between the shell and the editors |
+| [`dictionaries`](https://github.com/Stackchase-Limited/ration-docs-dictionaries) | Spellcheck dictionaries |
+| [`build_tools`](https://github.com/Stackchase-Limited/ration-docs-build-tools) | The build: fetches dependencies, compiles, assembles the payload |
 
-Get set up quickly with deb, rpm, exe, or dmg packages from our [official website️](https://www.onlyoffice.com/download-desktop.aspx?utm_source=GitHub&utm_medium=social&utm_campaign=GitHubDesktop).
+    git clone --recursive https://github.com/Stackchase-Limited/ration-docs-desktop.git
 
-Prefer other methods? Snap, Flatpak, or AppImage are all available!
+## Building
 
-* Snap package. Get on [snapcraft.io](https://snapcraft.io/onlyoffice-desktopeditors). The official [source code](https://github.com/ONLYOFFICE/snap-desktopeditors) for ONLYOFFICE Desktop Editors Snap package.
-* Flatpak. Get on [flathub.org](https://flathub.org/apps/details/org.onlyoffice.desktopeditors). The official [source code](https://github.com/flathub/org.onlyoffice.desktopeditors) for ONLYOFFICE Desktop Editors Flatpak.
-* AppImage.  Get on [AppImageHub](https://appimage.github.io/ONLYOFFICE/). The official [source code](https://github.com/ONLYOFFICE/appimage-desktopeditors) for ONLYOFFICE Desktop Editors AppImage.
+Expect a long first build: it fetches and compiles v8, CEF, ICU, boost and OpenSSL
+before it reaches any of our code. Budget 100 GB of disk.
 
-## License 📄
+    cd build_tools
+    python3 configure.py --module desktop --platform mac_arm64 --qt-dir /opt/homebrew/opt/qt@5
+    python3 make.py
 
-ONLYOFFICE Desktop Editors is licensed under the GNU Affero Public License, version 3.0, ensuring its transparency and commitment to the open-source community.
+On Linux arm64 the same two commands with `--platform linux_arm64 --qt-dir /usr`.
 
-See [LICENSE](https://onlyo.co/38YZGJh) for more information.
+The result lands in `build_tools/out/<platform>/onlyoffice/desktopeditors`. On
+Linux, `desktop-apps/package` then produces the deb and tarball; on macOS,
+`desktop-apps/macos` is an Xcode project and `appdmg` builds the disk image.
 
-## How to build 🛠
+`build_tools/ARM64_DESKTOP_BUILD.md` covers the Linux arm64 path in detail,
+including the packages the machine needs and the failures that do not say what
+they mean.
 
-You can find the detailed instructions for building ONLYOFFICE Desktop Editors in [build_tools](https://github.com/ONLYOFFICE/build_tools#desktop-editors).
+## Licence and attribution
 
-## 💡 Need help? User feedback and support
+Ration Docs is distributed under the **GNU Affero General Public License v3**
+together with the additional terms supplied with the original program; both are in
+[`LICENSE`](./LICENSE). Illustrations, icon sets and documentation content are
+licensed under **CC BY-SA 4.0**.
 
-If you face any issues or have questions about ONLYOFFICE Desktop Editors, please visit our official forum: [forum.onlyoffice.com][1].
+    Copyright (C) Ascensio System SIA, 2009-2026
+    Copyright (C) Stackchase Limited, 2026
 
-You are also welcome to ask and answer ONLYOFFICE development questions on [Stack Overflow][3], as well as share your thoughts and suggestions on [feedback.onlyoffice.com](https://feedback.onlyoffice.com/forums/966080-your-voice-matters).
+Ration Docs is a modified version of ONLYOFFICE Desktop Editors. The original
+software was developed by Ascensio System SIA; modifications are by Stackchase
+Limited, 2026. **ONLYOFFICE is a trademark of Ascensio System SIA**, used here only
+to identify the software this product is based on. No trademark rights are granted
+by the licence, and none are claimed.
 
-Join [our Discord community](https://discord.gg/Hcgtf5n4uF) for connecting with fellow developers.
-
-  [1]: https://forum.onlyoffice.com
-  [2]: https://github.com/ONLYOFFICE/DocumentServer
-  [3]: https://stackoverflow.com/questions/tagged/onlyoffice
+The corresponding source for any released binary is this repository at the matching
+tag, including its submodules - `v2026.1.0` for the current release.
