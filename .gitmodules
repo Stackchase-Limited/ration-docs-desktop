@@ -1,18 +1,18 @@
 [submodule "desktop-apps"]
 	path = desktop-apps
-	url = https://lab02.ration.works/ration/ration-docs-desktop-apps.git
+	url = https://github.com/Stackchase-Limited/ration-docs-desktop-apps.git
 [submodule "desktop-sdk"]
 	path = desktop-sdk
-	url = https://lab02.ration.works/ration/ration-docs-desktop-sdk.git
+	url = https://github.com/Stackchase-Limited/ration-docs-desktop-sdk.git
 [submodule "core"]
 	path = core
-	url = https://lab02.ration.works/ration/ration-docs-core.git
+	url = https://github.com/Stackchase-Limited/ration-docs-core.git
 [submodule "sdkjs"]
 	path = sdkjs
-	url = https://lab02.ration.works/ration/ration-docs-sdkjs.git
+	url = https://github.com/Stackchase-Limited/ration-docs-sdkjs.git
 [submodule "dictionaries"]
 	path = dictionaries
-	url = https://lab02.ration.works/ration/ration-docs-dictionaries.git
+	url = https://github.com/Stackchase-Limited/ration-docs-dictionaries.git
 [submodule "web-apps"]
 	path = web-apps
-	url = https://lab02.ration.works/ration/ration-docs-web-apps.git
+	url = https://github.com/Stackchase-Limited/ration-docs-web-apps.git

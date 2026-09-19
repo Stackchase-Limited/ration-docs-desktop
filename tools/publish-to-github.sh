@@ -61,11 +61,11 @@ for entry in $REPOS; do
 	run "git -C '$dir' remote add github 'https://github.com/$ORG/$name.git'"
 	# Only our branch. The upstream branches (61 to 134 of them per repository) are
 	# ONLYOFFICE's to publish and add nothing to the source offer.
-	run "git -C '$dir' push github '$branch'"
+	run "git -C '$dir' -c credential.helper= push github '$branch'"
 	run "gh repo edit '$ORG/$name' --default-branch '$branch'"
 	# The tag is what /source points at: the exact revision the binaries came from.
 	run "git -C '$dir' tag -f '$TAG' HEAD"
-	run "git -C '$dir' push -f github '$TAG'"
+	run "git -C '$dir' -c credential.helper= push -f github '$TAG'"
 done
 
 say ""
