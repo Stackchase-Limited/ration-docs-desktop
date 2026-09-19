@@ -134,6 +134,21 @@ why.
 
 ## Installing
 
+### Linux (arm64)
+
+    sudo apt install ./ration-docs_2026.1.0-1_arm64.deb
+
+Installs to `/opt/ration/docs` with a launcher at `/usr/bin/ration-docs` and a
+`ration-docs.desktop` entry. The tarball is the same payload for distributions
+where the deb does not apply; unpack it at `/` and it lands in the same places.
+
+Verify the download first:
+
+    sha256sum ration-docs_2026.1.0-1_arm64.deb
+
+### macOS (Apple Silicon)
+
+
 **This build is not signed or notarised.** There is no Apple Developer ID behind
 it, so macOS Gatekeeper will refuse to open it on first launch - typically
 *"Ration Docs can't be opened because Apple cannot check it for malicious
@@ -163,28 +178,60 @@ An unsigned build means **you are trusting the source of the file**, and nothing
 else is vouching for it. If that is not acceptable for your use, wait for a signed
 build.
 
-## The artifact
+## The artifacts
+
+Two platforms, one commit, one version. Both were rebuilt from a clean object tree
+so that every binary carries the same version stamp.
+
+### macOS (Apple Silicon)
 
 | | |
 |---|---|
 | File | `RationDocs-2026.1.0-arm64.dmg` |
-| Size | 760 MB |
-| SHA-256 | `babe877641a24d8b662e12e022d0ae7391e3f5a44a043c7cfe8c8f999208f16f` |
+| Size | 761 MB (798,458,195 bytes) |
+| SHA-256 | `4735f25999b67c1ff64c6cc34b0f386f7f83250e2e3ce75a92dc955adc969bc0` |
 | Application | `Ration Docs.app`, 1.6 GB installed |
-| Bundle id | `com.stackchase.rationdocs` |
+| Bundle id | `com.stackchase.rationdocs`, ad-hoc signed |
 | Requires | macOS on Apple Silicon |
 
-Built from this repository at the commit this file is tagged on, with
-`build_tools/make.py` (115,188 log lines, zero errors) followed by an unsigned
-`xcodebuild` of the `ONLYOFFICE-arm` scheme.
+### Linux (arm64)
 
-**The shipped converter was tested, not assumed.** The build does not relink
-`x2t` when only a library changed, so a green build is not by itself evidence
-that the binary carries a fix. Five end-to-end tests were run against the
-converter *inside the built application* - #2187, #1359 (two of them), #139 and
-#2113 - and all five pass. The JS fixes were confirmed present in the packaged
-editor bundles the same way. The application was launched from the mounted DMG
-and started normally.
+| | |
+|---|---|
+| Package | `ration-docs_2026.1.0-1_arm64.deb` |
+| Size | 368 MB (385,931,372 bytes) |
+| SHA-256 | `c990fd679038a0f962540d8c947be08896b0f6aa15d40759390398208009f731` |
+| Tarball | `ration-docs-2026.1.0-1-aarch64.tar.xz`, 490 MB |
+| SHA-256 | `37198fa907ea1ee3084593ce6f8954c0e57c03209a7cd01c99470de2e3240a1b` |
+| Offline help | `ration-docs-help-2026.1.0-1-any.tar.xz`, 210 MB |
+| SHA-256 | `d709342df26bbedcad71ecbaad7ea3457445b971cfb5609f471bacccd3758424` |
+| Installs to | `/opt/ration/docs`, launcher `/usr/bin/ration-docs` |
+| Requires | aarch64, glibc and libstdc++ at least as new as Ubuntu 24.04's |
+
+The deb was installed on a clean machine and launched from `/usr/bin/ration-docs`;
+the screenshots in this release are of that installed copy, not of a build tree.
+
+**Linux is new in this release**, and it took sixteen fixes to the build to get
+there - the tooling assumed an x86 host in four separate places, and two of our own
+earlier fixes to the Linux application had never been compiled, because macOS
+builds `desktop-apps/macos` and never touches `win-linux/`.
+`build_tools/ARM64_DESKTOP_BUILD.md` records all of it.
+
+### What was checked in the artifacts themselves
+
+Not in the build tree - in the shipped files:
+
+- The DMG was mounted and the application inside it inspected: bundle identifier,
+  signature, version, start page. An earlier attempt at this release was caught
+  this way, carrying a four-day-old application because `appdmg.json` pointed at a
+  stale copy rather than at the build output.
+- A document was converted with the `x2t` inside each artifact, with
+  `APPLICATION_NAME` and `COMPANY_NAME` unset, and its `docProps/app.xml` read
+  back. Both report `<Application>Ration Docs/2026.1.0.0</Application>`.
+- `ldd -r` over the Linux payload: no undefined symbols.
+  `check_symbol_closure.py`: clean on both.
+- The help media in the macOS bundle is deduplicated into 182 relative symlinks;
+  all 182 were verified to resolve.
 
 ## Start page
 
@@ -210,15 +257,28 @@ selection, so configuring one configures the other.
 
 ## Known limitations
 
-- **macOS Apple Silicon only.** There is no Intel, Linux or Windows build in
-  2026.1.0. Intel would ship untested; the Linux arm64 build path has never been
-  run in this fork (`build_tools/ARM64_DESKTOP_BUILD.md` says so), and no suitable
-  machine is available yet.
-- **Not signed, not notarised** - see above.
-- **Around 19 fixes are verified on macOS only.** They address Linux-specific
-  behaviour (GTK, Wayland, file dialogs, AppImage) and were written against the
-  code with tests, but have never run on Linux. They are listed in
-  `UPSTREAM_TRIAGE.md`.
+- **Apple Silicon and Linux arm64 only.** No Intel and no Windows build in
+  2026.1.0. Intel would ship untested; Windows is the next platform to be built,
+  and until it is, `updmodule` stays off - it pointed at ONLYOFFICE's update
+  appcast, which would have offered their installer as an update to this product.
+- **Not signed, not notarised** - see above. The Linux packages are unsigned too:
+  no repository signing key exists yet, so `apt` will report the deb as untrusted
+  if you add it to a repository rather than installing the file directly.
+- **The Linux application segfaults on SIGTERM.** Observed headlessly: after a
+  full start-up, `SIGTERM` (what a logout or `pkill` sends) ends the process with
+  signal 11 rather than a clean exit. Closing the window normally is unaffected,
+  and documents are written to disk on save, but a logout while the editor is open
+  may skip the shutdown path. Not yet diagnosed; recorded rather than left for
+  someone to find.
+- **Translations fall back to English for six strings.** The strings that named
+  the old product are removed from all 45 translation files, so `welWelcome` and
+  five others now show in English in every locale. The right name in the wrong
+  language rather than the wrong name in the right one; a translation pass is
+  owed.
+- **Around 19 fixes were written against Linux-specific behaviour** (GTK, Wayland,
+  file dialogs) and are only now buildable there. Two of them turned out never to
+  have compiled at all, and were fixed in this release; the rest are listed in
+  `UPSTREAM_TRIAGE.md` and have not been exercised by hand on Linux.
 - **One deliberate behaviour change.** Auto-fitting a column no longer resizes
   rows that contain no cell in that column. This removes a freeze - the old code
   measured up to 1,048,576 rows per column and created a record for each - but it
