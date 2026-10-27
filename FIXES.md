@@ -8,10 +8,10 @@ behind its own commits when this was written, and several commit messages cite
 test directories that have never existed. Nothing here is typed in by hand, so
 nothing here can claim a test that is not on disk.
 
-- **84 issues** with at least one fix commit
-- **48** have a test artifact in `fork-fix-tests/`
-- **36** do not - the fix is asserted by its commit message only
-- **26** fix commits carry no issue number (defects found in passing)
+- **90 issues** with at least one fix commit
+- **52** have a test artifact in `fork-fix-tests/`
+- **38** do not - the fix is asserted by its commit message only
+- **34** fix commits carry no issue number (defects found in passing)
 
 A row here means a commit exists. It does **not** mean the fix was verified;
 that is what the Test column is for. See the verification status section of
@@ -21,6 +21,10 @@ that is what the Test column is for. See the verification status section of
 
 | Issue | Where | Commit | Test | Landed |
 |---|---|---|---|---|
+| [#2527](https://github.com/ONLYOFFICE/DesktopEditors/issues/2527) | desktop-apps | `bbf04bc6d9` | `issue-2527-cmdline-flag-without-equals` | 2026-10-27 |
+| [#2526](https://github.com/ONLYOFFICE/DesktopEditors/issues/2526) | core | `0456c70f94` | `issue-2526-redact-straight-cubic` | 2026-10-27 |
+| [#2507](https://github.com/ONLYOFFICE/DesktopEditors/issues/2507) | core | `a3c904494a` | `issue-2507-numbering-lvl-order` | 2026-10-27 |
+| [#2482](https://github.com/ONLYOFFICE/DesktopEditors/issues/2482) | core | `e56c05efdd` | `issue-2482-comment-paraid` | 2026-10-27 |
 | [#2445](https://github.com/ONLYOFFICE/DesktopEditors/issues/2445) | build_tools | `176b23eee3` | `issue-2445-symbol-closure` | 2026-09-14 |
 | [#2443](https://github.com/ONLYOFFICE/DesktopEditors/issues/2443) | sdkjs | `ea70b2855c` | `issue-2443-recalc-lock-test.js` | 2026-09-14 |
 | [#2434](https://github.com/ONLYOFFICE/DesktopEditors/issues/2434) | desktop-apps | `8944f201c3` | `issue-2434-loopback-bind` | 2026-09-14 |
@@ -77,6 +81,8 @@ They have not been demonstrated.
 
 | Issue | Where | Commit | Test | Landed |
 |---|---|---|---|---|
+| [#2521](https://github.com/ONLYOFFICE/DesktopEditors/issues/2521) | desktop-apps, desktop-sdk, web-apps | `f735edd652` `47db1505ee` `3c472ce8e4` | - | 2026-10-27 |
+| [#2479](https://github.com/ONLYOFFICE/DesktopEditors/issues/2479) | core | `362883df08` | - | 2026-10-27 |
 | [#2444](https://github.com/ONLYOFFICE/DesktopEditors/issues/2444) | desktop-sdk | `69e66b984f` | - | 2026-09-13 |
 | [#2435](https://github.com/ONLYOFFICE/DesktopEditors/issues/2435) | desktop-sdk | `5016ab558b` | - | 2026-09-14 |
 | [#2430](https://github.com/ONLYOFFICE/DesktopEditors/issues/2430) | core | `768b27a140` `9fa8cfaf56` | - | 2026-09-14 |
@@ -118,6 +124,14 @@ They have not been demonstrated.
 
 | Where | Commit | Landed | What |
 |---|---|---|---|
+| web-apps | `52091f33cc` | 2026-10-17 | feat(api): host actions in the File menu — Duplicate, Email, Move to trash |
+| web-apps | `c9b503d06a` | 2026-10-10 | feat(mobile): let the mobile editors edit in the open-source build |
+| desktop-apps | `7cd9fea4d0` | 2026-10-09 | Point the Fastlane release lane at the Ration Docs app |
+| desktop-apps | `c2414b22c6` | 2026-10-07 | fix(mac): fix bug 77053 |
+| web-apps | `09d9f41dc1` | 2026-10-01 | fix(embed): fix bug 83802 |
+| web-apps | `74c61f6e8f` | 2026-10-01 | fix(main): fix bug 83842 encode image parameter for user to avoid xss atack |
+| web-apps | `ca2e82fcfa` | 2026-09-26 | fix(main): fix bug 83831 |
+| web-apps | `fe71bd5543` | 2026-09-26 | fix(main): fix bug 83842 |
 | desktop-sdk | `65b9b0f8be` | 2026-09-19 | Stop stamping ONLYOFFICE into the documents users save |
 | desktop-apps | `ef7f02f7a1` | 2026-09-16 | Stop hiding a static C++ runtime that the app cannot start without |
 | build_tools | `3c0d637bd2` | 2026-09-16 | Stop ICU's LDFLAGS patch compounding on every retry |

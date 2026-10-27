@@ -1506,6 +1506,14 @@ If anyone still reproduces it, suspect Wayland client-side decorations: check
 
 ## Deliberate behaviour - product decision, not a defect
 
+### #2470 - the "A4" slide size is 275.2 x 190.5 mm, not 210 x 297 mm
+
+Not a defect. The preset is PowerPoint's "A4 Paper (210x297 mm)" *slide* size,
+which PowerPoint itself defines as 10.83 x 7.5 in (27.52 x 19.05 cm), landscape:
+a slide sized to fit on A4 paper with margins, not the A4 page. Matching it keeps
+decks interchangeable with PowerPoint. A true 210 x 297 mm slide is a custom size.
+(2026-10-27)
+
 ### #1568 - highlight and font colour not captured by "update style"
 Highlight is stripped on purpose. `Paragraph.prototype.GetStyleFromFormatting`
 (`sdkjs/word/Editor/Paragraph.js:15732`) clears `TextPr.HighLight` with the
@@ -1582,6 +1590,21 @@ xls. The reporter's actual ask is an override - "open this in Spreadsheet
 anyway". Not investigated in depth.
 
 ## Not reproducible or not testable here
+
+### #2474 - Ctrl+. crashes the editor on Linux
+
+Not reproducible on macOS, and nothing in our shell handles Ctrl+. - neither
+desktop-apps nor desktop-sdk's key handling sees the combination. On GNOME,
+Ctrl+. is IBus's emoji-picker shortcut, and the XCB BadMatch errors before the
+segfault point at the input-method path inside Chromium (CEF 109), not at our
+code. Needs a Linux box with IBus and a backtrace. (2026-10-27)
+
+### #2446 - numbered-list font and size not saved
+
+The maintainer could not reproduce it on 9.4 or 10; not tried here. Possibly
+related to #2507 (numbering.xml written out of schema order, fixed) if the file
+is then opened in another application. Waiting for a file.
+(2026-10-27)
 
 ### #2443 - spreadsheet unable to save after adjusting table structure
 
