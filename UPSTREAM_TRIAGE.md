@@ -2287,7 +2287,7 @@ browser that never closes, or `launchAppClose()` declining to quit
 No quick fix: releasing the port early lets a second primary start beside the dying one, sharing
 cache_path, and the old process's `EndTmpDirectory()` deletes `<cache>/work_temp` under the new one's x2t.
 Next steps: a backtrace of the resident process on Linux; an acknowledgement on the instance message so
-an unanswered second launch reports to stderr and exits non-zero. Separately: a relative path is resolved
+an unanswered second launch reports to stderr and exits non-zero. Separately (FIXED, desktop-apps #2523 commit): a relative path was resolved
 against the primary's working directory, not the caller's (`QDir::current()` in handleInputCmd,
 cascapplicationmanagerwrapper.cpp:~1122) - not the cause here (both reporters use absolute paths).
 
@@ -2302,8 +2302,8 @@ Worksheet.updatePivotTable (cell/model/Workbook.js:10869) clears the report rang
 rewrites it, which marks that cell changed. A recalculation lock left on by an exception gives stale
 values too, but re-entering the formula then goes blank, and the reporter says re-entering fixes it.
 The reporter's file went to ONLYOFFICE privately; parked until we have one.
-Latent, not fixed: the pivot refresh paths in cell/api.js take the recalculation lock without
-try/finally (asc_refreshAllPivots :7692/:7706, _changePivotWithLockExt :7771-7773,
+Latent, now FIXED (sdkjs #2485 commit; fork-fix-tests/issue-2485-pivot-recalc-lock-test.js): the pivot refresh
+paths in cell/api.js took the recalculation lock without try/finally (asc_refreshAllPivots :7692/:7706, _changePivotWithLockExt :7771-7773,
 _changePivotAndConnectedByPivotCacheWithLock :7809-7811) - a throw there would freeze recalculation for
 the session, the #2443 failure mode.
 
@@ -2330,8 +2330,9 @@ visible-but-unsaved behaviour lives in closed code. Every insertion path our bui
 through a headless editor and the real desktop save (changes0.json replayed by x2t): PasteHtml with
 tables, PasteText, ReplaceTextSmart, callCommand builder Push/InsertContent, and the old public
 InsertStreamedContent - all survive save and TXT export.
-Side finding, not data loss: because the method is missing, the plugin's streaming generateDocx
-inserts nothing in Ration Docs (common/plugins.js:1684 ignores unknown methods). Making it work means
+Side finding, now FIXED (sdkjs #2525 commit, InsertStreamedContent and word group actions restored;
+fork-fix-tests/issue-2525-ai-streamed-insert-test.js): because the method was missing, the plugin's streaming generateDocx
+inserted nothing in Ration Docs (common/plugins.js:1684 ignores unknown methods). Making it work means
 restoring InsertStreamedContent and removing the previous partial chunk, which upstream does with the
 Enterprise group actions.
 
@@ -2381,9 +2382,12 @@ raised nothing. Pasting into a workbook WITHOUT a styles part did crash (`Font.i
 Normal font, cell/model/WorkbookElems.js) - fixed (sdkjs, #2459 commit; test
 fork-fix-tests/issue-2459-normal-font-null-test.js). The reporter's target has a styles part, so their
 trigger is still unknown; needs the original file.
-Seen in the harness, not fixed (wrong results, not crashes): a pasted cross-sheet VLOOKUP kept its
-original row; pasted structured references show #NAME? until recalculation; a table column name with `[`
-raises FrmlAnotherParsingError (-305).
+Seen in the harness, since FIXED (sdkjs #2459 commits): a pasted cross-sheet VLOOKUP kept its original row
+(no external link is created for a sheet missing in the target - same as upstream); a table column name
+with `[ ] # ' @` raised FrmlAnotherParsingError (-305). Pasted structured references showing #NAME? did not
+reproduce once formulas are stored as Excel writes them (Table1[[#This Row],[Col]]); what was seen came from
+the UI shorthand stored in a test file, from the `[` bug, and from cells depending on the VLOOKUP case.
+Still open: formula autocomplete inserts the raw (unescaped) column name (WorkbookView.insertInCellEditor).
 
 ### #2452 - textbox does not fit text
 "Go!" (Textfeld 8) has spAutoFit, 110 pt text and exact line spacing 57.99 pt. Its saved height (828399

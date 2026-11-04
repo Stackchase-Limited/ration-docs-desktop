@@ -20,6 +20,15 @@ Fix.  setupSessionManagement() in that file turns the fallback off and answers
 commitDataRequest itself: veto only when AscAppManager::hasUnsavedChanges(),
 otherwise let the session end.
 
+Follow-up (user's decision).  A silent veto left the user wondering why the logout
+did not happen.  Now, when the logout is vetoed, the handler also starts the app's
+normal quit close - AscAppManager::closeAppWindows(), the close queue that asks
+"save changes?" per document - deferred with QTimer::singleShot so the session
+manager callback returns first, after raising the main window.  It starts at most
+once per logout attempt: a repeated commitDataRequest while that close is still
+scheduled or running (close queue not empty, or the main window isAboutToClose())
+only vetoes again.  Saving/discarding everything then quits as on any quit.
+
 What this runs.  The REAL Qt 5 (Homebrew qt@5, offscreen platform plugin):
 a QApplication, a shown top-level widget whose closeEvent is the real
 CMainWindow::closeEvent body extracted from cmainwindow.cpp, the real
@@ -28,14 +37,23 @@ QGuiApplicationPrivate::commitData() - the very function Qt's XSMP backend calls
 on "save yourself".  Only the platform session manager underneath QSessionManager
 is replaced by a recorder (allowsInteraction() = true, as KDE grants it; cancel()
 recorded), because there is no XSMP server on this host.  AscAppManager is a stub:
-closeQueue().enter() is counted and hasUnsavedChanges() is set by the scenario.
+closeQueue() records enter()/cancel() and answers empty(), hasUnsavedChanges() is
+set by the scenario, closeAppWindows() is counted and enters the main window into
+the queue as the real one does, and bringToTop()/isAboutToClose() on the window
+are recorded/set by the scenario.
 
 Baseline (BASELINE=1, sources from BASE_REF via git show): setupSessionManagement
 does not exist, so nothing is installed - which is precisely what a KDE session
 got (the GNOME branch is not taken there).  Scenario A must then FAIL: the logout
 is cancelled with nothing to save, and the close queue is entered.
+Against the parent of the follow-up commit (the default BASE_REF; the integrator
+re-pins it after cherry-picking) A passes but B/C must FAIL: the logout is vetoed
+silently - no close is started, no window raised, no dialog would appear.
 
-NOT claimed: no KDE/XSMP session was driven; the "die" phase after a successful
+NOT claimed: no KDE/XSMP session was driven; the save dialogs themselves are not
+shown (closeAppWindows and the close queue are stubs - that the queue prompts for
+modified documents is the app's existing quit path, not re-tested here); window
+raising is only checked as a bringToTop() call, not on a real window manager; the "die" phase after a successful
 commit (Qt sends a Quit event, the close queue closes the windows) is not run;
 Qt 6 builds (no fallback there) are not exercised; GNOME's D-Bus path is unchanged.
 """
@@ -46,7 +64,7 @@ import tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.environ.get('RD_REPO') or os.path.normpath(os.path.join(HERE, '..', '..', 'desktop-apps'))
-BASE_REF = os.environ.get('BASE_REF', 'e467dbac54^')
+BASE_REF = os.environ.get('BASE_REF', 'bb8dcab024^')
 BASELINE = bool(os.environ.get('BASELINE'))
 QT = os.environ.get('QT5_DIR', '/opt/homebrew/opt/qt@5')
 
@@ -103,6 +121,7 @@ PROGRAM = r'''
 #include <QWidget>
 #include <QCloseEvent>
 #include <QSessionManager>
+#include <QTimer>
 #include <QtCore/private/qobject_p.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qsessionmanager_p.h>
@@ -114,22 +133,47 @@ PROGRAM = r'''
 #define CLOSE_QUEUE_WIN_TYPE_MAIN 1
 struct sWinTag { int type; size_t ptr; };
 static int  g_queueEntered = 0;
+static int  g_queued = 0;            /* windows waiting in the close queue */
+static int  g_closeAppWindows = 0;
+static int  g_raised = 0;
 static bool g_unsaved = false;
-struct CloseQueue { void enter(const sWinTag &) { ++g_queueEntered; } };
+static bool g_aboutToClose = false;
+struct CloseQueue {
+    void enter(const sWinTag &) { ++g_queueEntered; ++g_queued; }
+    void cancel() { g_queued = 0; }
+    bool empty() { return g_queued == 0; }
+};
 struct AppManagerStub {
     CloseQueue q;
     CloseQueue &closeQueue() { return q; }
 };
+class CMainWindow;
 namespace AscAppManager {
     static AppManagerStub &getInstance() { static AppManagerStub s; return s; }
     static bool hasUnsavedChanges() { return g_unsaved; }
+    static CMainWindow *mainWindow();
+    static void closeAppWindows();
 }
 
 /* ---- a top-level window with the real CMainWindow::closeEvent ---------- */
 class CMainWindow : public QWidget {
+public:
+    bool isAboutToClose() const { return g_aboutToClose; }
+    void bringToTop() { ++g_raised; }
 protected:
 %(close_event)s
 };
+
+static CMainWindow *g_main = nullptr;
+namespace AscAppManager {
+    static CMainWindow *mainWindow() { return g_main; }
+    /* as the real one: the visible main window goes into the close queue */
+    static void closeAppWindows() {
+        ++g_closeAppWindows;
+        if (g_main && g_main->isVisible())
+            getInstance().closeQueue().enter(sWinTag{CLOSE_QUEUE_WIN_TYPE_MAIN, size_t(g_main)});
+    }
+}
 
 /* ---- the real fix (or nothing, on baseline) ---------------------------- */
 %(setup)s
@@ -168,6 +212,7 @@ int main(int argc, char **argv)
     %(call)s
     CMainWindow w;
     w.show();
+    g_main = &w;
     Recorder rec;
 
     printf("fallback session management: %%s\n",
@@ -180,11 +225,38 @@ int main(int argc, char **argv)
     check(!cancelledA, "the logout is NOT vetoed");
 
     printf("\nB - logout with an unsaved document\n");
-    g_unsaved = true; g_queueEntered = 0;
+    g_unsaved = true; g_queueEntered = 0; g_queued = 0; g_closeAppWindows = 0; g_raised = 0;
     bool cancelledB = endSession(app, rec);
-    printf("    logout cancelled: %%s, close queue entered: %%d\n", cancelledB ? "yes" : "no", g_queueEntered);
+    printf("    logout cancelled: %%s, close queue entered during the callback: %%d\n",
+           cancelledB ? "yes" : "no", g_queueEntered);
     check(cancelledB, "the logout IS vetoed (no data loss)");
-    check(g_queueEntered == 0, "and the windows are left open, not closed behind the veto");
+    check(g_queueEntered == 0 && g_closeAppWindows == 0, "nothing is closed inside the session-manager callback");
+    QCoreApplication::processEvents();
+    printf("    after the callback: closeAppWindows() %%d time(s), main window raised %%d time(s)\n",
+           g_closeAppWindows, g_raised);
+    check(g_closeAppWindows == 1, "then the normal quit close (save dialogs) is started");
+    check(g_raised >= 1, "and the main window is raised so the dialog is seen");
+    check(g_queueEntered == 1, "the main window is in the close queue (it will prompt)");
+
+    printf("\nC - the session manager asks again during the same logout\n");
+    g_closeAppWindows = 0; g_raised = 0;
+    bool cancelledC1 = endSession(app, rec);     /* queue still busy: dialog is up */
+    QCoreApplication::processEvents();
+    g_queued = 0; g_aboutToClose = true;         /* queue moved on to CMainWindow::close() */
+    bool cancelledC2 = endSession(app, rec);
+    QCoreApplication::processEvents();
+    printf("    logout cancelled: %%s/%%s, closeAppWindows() again: %%d time(s)\n",
+           cancelledC1 ? "yes" : "no", cancelledC2 ? "yes" : "no", g_closeAppWindows);
+    check(cancelledC1 && cancelledC2, "the repeated requests are vetoed too");
+    check(g_closeAppWindows == 0, "but no second close / second dialog is started");
+
+    printf("\nD - two requests before the deferred close has run, then a new logout\n");
+    g_aboutToClose = false; g_queued = 0; g_closeAppWindows = 0;   /* user pressed Cancel */
+    endSession(app, rec);
+    endSession(app, rec);
+    QCoreApplication::processEvents();
+    printf("    closeAppWindows(): %%d time(s)\n", g_closeAppWindows);
+    check(g_closeAppWindows == 1, "one close for back-to-back requests, and a new logout prompts again");
 
     printf("\n%%s\n", failures ? "FAILED" : "ok");
     return failures ? 1 : 0;
