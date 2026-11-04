@@ -1606,6 +1606,18 @@ related to #2507 (numbering.xml written out of schema order, fixed) if the file
 is then opened in another application. Waiting for a file.
 (2026-10-27)
 
+### #2473 - date filter "All dates in the period -> October" shows nothing
+
+Not reproduced, and left. The reporter confirmed it works after updating to
+10.0 and upstream closed it; no commit between v9.4.0.131 and v10.0.0.176
+names it. Read on our tree: the October entry in `AutoFilterDialog.js` sends
+`c_oAscDynamicAutoFilter.m10` (8 - the enum is in alphabetical order, m1, m10,
+m11, m12, m2...), and `DynamicFilter.prototype.isHideValue` maps m10 to month
+index 9 and compares `getUTCMonth()` of the cell's date, the same path as every
+other month. Nothing month-10-specific found. Needs a file and the locale
+(German UI, dates typed DD.MM.YYYY from a CSV) before anyone looks again.
+(2026-11-04)
+
 ### #2443 - spreadsheet unable to save after adjusting table structure
 
 **Not reproduced**, and it cannot be from what is on the thread: there is no
