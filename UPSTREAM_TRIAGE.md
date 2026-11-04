@@ -2342,6 +2342,62 @@ Driven in a headless editor: text and cell-selection sources, cursor-only source
 click targets, cell->cell / cell->text / text->cell - font, size and bold all carried over. Upstream
 could not reproduce on 10.0 either. Needs the reporter's file.
 
+### #2460 - filling a form: clicking a Signature field does nothing
+Not a bug in the fixable sense: in our 9.4 tree signature fields are an unimplemented stub.
+sdkjs/pdf/src/forms/signature.js:83-86 - CSignatureField.onMouseDown/onMouseUp are empty, Draw/SetValue
+are no-ops; document.js:1735 excludes signature fields from the form-focus path. Upstream v10.0.0.176
+signature.js is byte-identical: the 10.0 "signature dialog" is a new feature built on push-button fields
+tagged isOOSignature (pushbutton.js IsOOSignature / asc_OnShowSignature -> asc_onShowFieldSignature,
+handled in web-apps pdfeditor DocumentHolderExt.js and forms ApplicationController.js), created by the
+editor's own CreateSignatureField. None of that exists in 9.4, and even in 10.0 a real AcroForm /FT /Sig
+field from a third-party PDF still does nothing; signing one needs a PKCS#7 signing service.
+Backporting means taking the whole v10 signature feature (sdkjs + web-apps dialog).
+
+### #2496 - spelling language detection not being saved
+10.0-only; not in our tree. The 10.0 start page was rewritten (desktop-apps v10.0.0.176
+common/loginpage/src/routes/settings/general/index.jsx:83): it offers auto/enabled/disabled and sends
+`spellcheckdetect: "disabled"`, but the native side accepts only "off" (win-linux
+cascapplicationmanagerwrapper.cpp maps anything else to "default"; macOS ASCEventsController to "1"), so
+"Disabled" is stored as Auto and keyboard retagging stays on - upstream bug 84571. That is also why
+"Disabled" did nothing for the #2543 and #2503 reporters on 10.0. Our 9.4 panelsettings.js:265 sends
+auto/off, which matches. fork-fix-tests/issue-2543-spellcheck-detect-off-live step 2b shows
+`<spell-check-input-mode>0</spell-check-input-mode>` written and read back. The remaining 9.4 defect -
+open documents not told - is fixed under #2543. If we ever take the 10.0 start page, map "disabled" to "off".
+Correction to the #2337 note: retagging is not only on a space - CDocument EnterText sets
+CheckLanguageOnTextAdd for every letter typed (sdkjs/word/Editor/Document.js:10191).
+
+### #2453 - red underline cannot be removed
+Not a formatting underline. The attached deck has no `u=` anywhere in slide, layouts or master. The line
+under "Let’s" is the spell-check mark: the run is `<a:rPr lang="de-CH">`, an English word tagged Swiss
+German (hunspell de_CH flags "Let", en_US accepts it). Set the text language to English in the status
+bar, use Ignore, or turn spell checking off. By design.
+
+### #2459 - Onlyoffice crashes while editing the file - PARTLY FIXED, reporter's trigger unknown
+Spreadsheet editor. The screencast shows a table (style, totals row, two-line headers, conditional
+fills) copied from a "Stundenzettel" xlsx and pasted into a new workbook; EditingError ("Speichern
+als...") follows within seconds. The source file never reached the issue. In a headless cell-sdk harness
+the same paste into a new workbook, then clicks, column resize, undo/redo, autosave and change saving,
+raised nothing. Pasting into a workbook WITHOUT a styles part did crash (`Font.isNormalXfColor`, null
+Normal font, cell/model/WorkbookElems.js) - fixed (sdkjs, #2459 commit; test
+fork-fix-tests/issue-2459-normal-font-null-test.js). The reporter's target has a styles part, so their
+trigger is still unknown; needs the original file.
+Seen in the harness, not fixed (wrong results, not crashes): a pasted cross-sheet VLOOKUP kept its
+original row; pasted structured references show #NAME? until recalculation; a table column name with `[`
+raises FrmlAnotherParsingError (-305).
+
+### #2452 - textbox does not fit text
+"Go!" (Textfeld 8) has spAutoFit, 110 pt text and exact line spacing 57.99 pt. Its saved height (828399
+EMU = one 57.99 pt line + 3.6 pt insets) is how PowerPoint autofits, and we keep the same box. With
+exact spacing below the font size the glyphs overflow the line box (Recalculate_LineGap, linerule_Exact,
+scales ascent/descent down), and "Geomanist Black" is substituted. The box size is not a bug; only the
+vertical position of the overflowing text could differ from PowerPoint, which needs a PowerPoint check
+first. (The slideshow clipping of such text is fixed under #2554.)
+
+### #2502 - font size all over the place in presentations - PARTLY BY DESIGN
+Fixed: deleting all text in a shape replaced the paragraph with a fresh one, so typed text fell back to
+the list-style default size and lost bullets/spacing, and an emptied paragraph saved its end-run size
+(sdkjs, #2502 commit). By design: "set 30 pt, shows 27 pt" is the shape's normAutofit shrinking text to fit.
+
 ## Latent problems found in passing, not yet fixed
 
 **An ODS-round-tripped form control lands at a nonsense row.** `controlPr/anchor`
