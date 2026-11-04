@@ -37,6 +37,10 @@ than by a stub pretending to be one.
 
   ./extract_and_run.py              -> passes
   BASELINE=1 ./extract_and_run.py   -> fails, at git HEAD
+
+Run it as an ordinary user.  As root (euid 0, e.g. in a container) the 0444
+target opens for writing anyway, so the locker with no descriptor cannot be
+produced and the test SKIPs instead of reporting meaningless failures.
 """
 import os
 import re
@@ -56,6 +60,11 @@ LOCKER_H = 'ChromiumBasedEditors/lib/src/filelocker.h'
 # and the test passes forever while testing nothing.
 BASE_REF = os.environ.get('BASE_REF', '26887f3267^')
 BASELINE = bool(os.environ.get('BASELINE'))
+
+if hasattr(os, 'geteuid') and os.geteuid() == 0:
+    print('SKIP #2202: running as root - a 0444 document still opens for writing, so the\n'
+          '  "locker with no descriptor" this test needs cannot be produced. Run as a normal user.')
+    sys.exit(0)
 
 
 def read(rel):
@@ -267,7 +276,10 @@ with open(main_cpp, 'w') as f:
                        'null_guard': 'true' if HAS_NULL_GUARD else 'false'})
 
 exe = os.path.join(d, 'harness')
-cmd = ['clang++', '-std=c++14', '-D_MAC', '-D_LINUX',
+# On Linux build as the Linux app does: -D_LINUX alone (filelocker.cpp then
+# compiles its GIO locker), no CoreFoundation.
+MAC = sys.platform == 'darwin'
+cmd = ['clang++', '-std=c++14'] + (['-D_MAC'] if MAC else []) + ['-D_LINUX',
        # Directory.cpp/File.cpp assume a Linux toolchain's transitive includes
        # under _LINUX; supply the two headers it leans on rather than edit core.
        '-include', 'sys/stat.h', '-include', 'stdlib.h', '-include', 'unistd.h',
@@ -278,8 +290,13 @@ cmd = ['clang++', '-std=c++14', '-D_MAC', '-D_LINUX',
        os.path.join(CORE, 'DesktopEditor/common/SystemUtils.cpp'),
        os.path.join(CORE, 'DesktopEditor/common/StringBuilder.cpp'),
        os.path.join(CORE, 'DesktopEditor/common/Base64.cpp'),
-       # filelocker.cpp asks CoreFoundation whether a file is iCloud-synced (#2547)
-       '-framework', 'CoreFoundation']
+       ]
+if MAC:
+    # filelocker.cpp asks CoreFoundation whether a file is iCloud-synced (#2547)
+    cmd += ['-framework', 'CoreFoundation']
+else:
+    cmd += subprocess.run(['pkg-config', '--cflags', '--libs', 'gio-2.0', 'gio-unix-2.0'],
+                          capture_output=True, text=True, check=True).stdout.split()
 c = subprocess.run(cmd, capture_output=True, text=True)
 if c.returncode != 0:
     sys.stderr.write(c.stdout + c.stderr)

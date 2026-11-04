@@ -2383,11 +2383,17 @@ Normal font, cell/model/WorkbookElems.js) - fixed (sdkjs, #2459 commit; test
 fork-fix-tests/issue-2459-normal-font-null-test.js). The reporter's target has a styles part, so their
 trigger is still unknown; needs the original file.
 Seen in the harness, since FIXED (sdkjs #2459 commits): a pasted cross-sheet VLOOKUP kept its original row
-(no external link is created for a sheet missing in the target - same as upstream); a table column name
+(since fixed further: a sheet missing in the target becomes an external reference to the source workbook, as in Excel); a table column name
 with `[ ] # ' @` raised FrmlAnotherParsingError (-305). Pasted structured references showing #NAME? did not
 reproduce once formulas are stored as Excel writes them (Table1[[#This Row],[Col]]); what was seen came from
 the UI shorthand stored in a test file, from the `[` bug, and from cells depending on the VLOOKUP case.
-Still open: formula autocomplete inserts the raw (unescaped) column name (WorkbookView.insertInCellEditor).
+Also fixed since: autocomplete inserts escaped column names; a pasted table keeps its totals row when the
+source omits showColumnStripes; redo keeps the totals label; table refs never saved with `$` (and healed on
+open); totals-row toggles and row deletes keep autoFilter/sortState on the data rows, and deleting rows past
+a table's end removes its totals row instead of overwriting the last data row.
+Still open (pre-existing, found 2026-11-04): a sort writes its sortCondition over the whole column including
+header/totals and conditions never move with ref changes; a second sort sets a one-column sortState covering
+header and totals (autofilters.js ~2493/~2534).
 
 ### #2452 - textbox does not fit text
 "Go!" (Textfeld 8) has spAutoFit, 110 pt text and exact line spacing 57.99 pt. Its saved height (828399

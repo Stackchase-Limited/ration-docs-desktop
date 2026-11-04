@@ -18,7 +18,9 @@ Three defects on that read path, all of them ending in "the file is free":
      return value was never checked, so the untouched structure was read as "no
      lock".  macOS ships this locker (filelocker.cpp:1030-1042 sends _MAC to
      CFileLockerFCNTL), so PART 1 below reproduces it for real on this host, with
-     a real child process holding a real fcntl lock.
+     a real child process holding a real fcntl lock.  (On Linux, where 0 is
+     F_RDLCK, that write lock is seen even on the baseline - PART 1 passes there,
+     and the output says which of the two cases the host is.)
 
   2. The same function returned LockType::ltNone the moment open() failed.  On a
      samba share that is precisely the peer we needed to detect: CFileLockerWin
@@ -336,10 +338,16 @@ int main()
     check(got == LockType::ltNone, "an unlocked file is still reported free");
     unlink(path);
 
-    if (!GETLK_FIXED)
+    if (!GETLK_FIXED && F_RDLCK != 0 && F_WRLCK != 0 && F_UNLCK != 0)
         printf("\n  F_GETLK is asked with a memset-zeroed flock.  l_type 0 is not a lock\n"
                "  type on this host, so fcntl answers EINVAL, leaves the structure alone,\n"
                "  and the untouched structure is read as 'no lock' (#1362).\n");
+    else if (!GETLK_FIXED && F_RDLCK == 0)
+        printf("\n  F_GETLK is asked with a memset-zeroed flock.  l_type 0 is F_RDLCK on this\n"
+               "  host, so fcntl does answer - but the question is whether a READ lock\n"
+               "  could be placed: the write lock above conflicts and is seen, a peer's\n"
+               "  read lock would not be, and the return value is still unchecked.  The\n"
+               "  EINVAL failure that hides every lock is macOS's (l_type 0 invalid) (#1362).\n");
 
     /* ---------------- PART 2: the samba peer ----------------------------- */
     printf("\nPART 2 - a peer on a samba share, over modelled CIFS syscalls\n");

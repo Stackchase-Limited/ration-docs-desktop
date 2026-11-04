@@ -27,26 +27,26 @@ that is what the Test column is for. See the verification status section of
 | [#2546](https://github.com/ONLYOFFICE/DesktopEditors/issues/2546) | core | `47c38a34cd` | `issue-2546-csv-utf8-fallback` | 2026-11-04 |
 | [#2545](https://github.com/ONLYOFFICE/DesktopEditors/issues/2545) | sdkjs | `7557345509` | `issue-2545-ru-seconds-symbol-test.js` | 2026-11-04 |
 | [#2543](https://github.com/ONLYOFFICE/DesktopEditors/issues/2543) | desktop-sdk | `2c10dedf61` | `issue-2543-spellcheck-detect-off-live` | 2026-11-04 |
-| [#2542](https://github.com/ONLYOFFICE/DesktopEditors/issues/2542) | core, sdkjs | `49e0ac9b11` `a48ed236a1` | `issue-2542-hangul-legacy-cmap` | 2026-11-04 |
+| [#2542](https://github.com/ONLYOFFICE/DesktopEditors/issues/2542) | core, sdkjs | `49e0ac9b11` `733baa7bec` `a48ed236a1` | `issue-2542-hangul-legacy-cmap` | 2026-11-04 |
 | [#2537](https://github.com/ONLYOFFICE/DesktopEditors/issues/2537) | desktop-apps | `10b49fdd23` `c946559b75` | `issue-2537-dark-theme-type-message` | 2026-11-04 |
 | [#2533](https://github.com/ONLYOFFICE/DesktopEditors/issues/2533) | dictionaries | `27dae48927` | `issue-2533-sr-latn-hyphenation` | 2026-11-04 |
 | [#2527](https://github.com/ONLYOFFICE/DesktopEditors/issues/2527) | desktop-apps | `bbf04bc6d9` | `issue-2527-cmdline-flag-without-equals` | 2026-10-27 |
 | [#2526](https://github.com/ONLYOFFICE/DesktopEditors/issues/2526) | core | `0456c70f94` | `issue-2526-redact-straight-cubic` | 2026-10-27 |
-| [#2525](https://github.com/ONLYOFFICE/DesktopEditors/issues/2525) | sdkjs | `425850a934` | `issue-2525-ai-streamed-insert-test.js` | 2026-11-04 |
+| [#2525](https://github.com/ONLYOFFICE/DesktopEditors/issues/2525) | sdkjs | `aa1e8ff9aa` `425850a934` | `issue-2525-group-actions-owner-test.js` | 2026-11-04 |
 | [#2523](https://github.com/ONLYOFFICE/DesktopEditors/issues/2523) | desktop-apps | `831fd6f334` | `issue-2523-second-instance-relative-path` | 2026-11-04 |
 | [#2517](https://github.com/ONLYOFFICE/DesktopEditors/issues/2517) | sdkjs | `07f0989ffd` | `issue-2517-paste-button-deselect-test.js` | 2026-11-04 |
 | [#2507](https://github.com/ONLYOFFICE/DesktopEditors/issues/2507) | core | `a3c904494a` | `issue-2507-numbering-lvl-order` | 2026-10-27 |
-| [#2506](https://github.com/ONLYOFFICE/DesktopEditors/issues/2506) | core | `a1e8e1c060` | `issue-2506-jpx-gray-colorspace` | 2026-11-04 |
+| [#2506](https://github.com/ONLYOFFICE/DesktopEditors/issues/2506) | core, sdkjs | `a1e8e1c060` `7f89b00088` | `issue-2506-jpx-gray-colorspace` | 2026-11-04 |
 | [#2503](https://github.com/ONLYOFFICE/DesktopEditors/issues/2503) | desktop-sdk | `c430d3b140` `58801fea59` | `issue-2503-xkb-region-adjective` | 2026-11-04 |
 | [#2502](https://github.com/ONLYOFFICE/DesktopEditors/issues/2502) | sdkjs | `d303d6b9f0` | `issue-2502-empty-shape-text-pr-test.js` | 2026-11-04 |
 | [#2490](https://github.com/ONLYOFFICE/DesktopEditors/issues/2490) | core | `003448ba5a` | `issue-2490-freetype-export-gaps` | 2026-11-04 |
 | [#2485](https://github.com/ONLYOFFICE/DesktopEditors/issues/2485) | sdkjs | `d2d908d3b7` | `issue-2485-pivot-recalc-lock-test.js` | 2026-11-04 |
 | [#2482](https://github.com/ONLYOFFICE/DesktopEditors/issues/2482) | core | `e56c05efdd` | `issue-2482-comment-paraid` | 2026-10-27 |
-| [#2480](https://github.com/ONLYOFFICE/DesktopEditors/issues/2480) | desktop-sdk | `565af3d1d5` | `issue-2480-gio-save-overwrite` | 2026-11-04 |
+| [#2480](https://github.com/ONLYOFFICE/DesktopEditors/issues/2480) | desktop-sdk | `17e125e137` `565af3d1d5` | `issue-2480-gio-save-overwrite` | 2026-11-04 |
 | [#2476](https://github.com/ONLYOFFICE/DesktopEditors/issues/2476) | desktop-sdk | `6bdcae56e2` | `issue-2476-ondestroywindow-null-cookies` | 2026-11-04 |
 | [#2471](https://github.com/ONLYOFFICE/DesktopEditors/issues/2471) | core | `bf09d8ce1c` `8aca22e449` `2a38ea99f3` | `issue-2471-cid-subset-tag` | 2026-11-04 |
 | [#2467](https://github.com/ONLYOFFICE/DesktopEditors/issues/2467) | sdkjs | `0c13033452` | `issue-2467-formula-bar-home-alt-enter-test.js` | 2026-11-04 |
-| [#2459](https://github.com/ONLYOFFICE/DesktopEditors/issues/2459) | sdkjs | `63ec31f34d` `63a5856996` `46a524f72c` | `issue-2459-paste-formula-offset-test.js` | 2026-11-04 |
+| [#2459](https://github.com/ONLYOFFICE/DesktopEditors/issues/2459) | sdkjs | `65f035c329` `3412e6b3bd` `8d79c79bb1` | `issue-2459-totals-row-autofilter-test.js` | 2026-11-04 |
 | [#2455](https://github.com/ONLYOFFICE/DesktopEditors/issues/2455) | sdkjs | `23b782f0a4` | `issue-2455-gradient-stop-alpha-test.js` | 2026-11-04 |
 | [#2448](https://github.com/ONLYOFFICE/DesktopEditors/issues/2448) | sdkjs | `6957873dd2` | `issue-2448-placeholder-idx-test.js` | 2026-11-04 |
 | [#2445](https://github.com/ONLYOFFICE/DesktopEditors/issues/2445) | build_tools | `176b23eee3` | `issue-2445-symbol-closure` | 2026-09-14 |

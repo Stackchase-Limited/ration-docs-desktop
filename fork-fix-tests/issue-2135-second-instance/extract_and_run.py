@@ -41,11 +41,16 @@ Four things get measured:
 
 BASELINE: set BASELINE=1 to re-read filelocker.{h,cpp} from BASE_REF, which
 defaults to the commit BEFORE #1362 landed (6cd9fdd6, the parent of 679ebd74).
-There, B must FAIL - the pre-fix IsLockedInternal asks F_GETLK with a
-memset-zeroed flock, which macOS rejects with EINVAL, and reports the file free
-even while a real child process holds a real F_WRLCK.  That failure is what
-proves this harness is running the shipped function and not a convenient copy of
-it.  C and D are measurements, not guards, and read the same either way.  Never
+The expectation there depends on the platform:
+  macOS  B must FAIL - the pre-fix IsLockedInternal asks F_GETLK with a
+         memset-zeroed flock, which macOS rejects with EINVAL, and reports the
+         file free even while a real child process holds a real F_WRLCK.  That
+         failure is what proves this harness is running the shipped function and
+         not a convenient copy of it.
+  Linux  B PASSES and the baseline run exits 0 - l_type 0 is F_RDLCK in glibc,
+         a valid query that the child's write lock conflicts with.  The baseline
+         proves nothing on Linux; run it on macOS.
+The run prints which of the two this host is.  C and D are measurements, not guards, and read the same either way.  Never
 point BASE_REF at HEAD: once a fix is committed HEAD stops differing and the
 check silently passes forever while testing nothing.
 
@@ -368,6 +373,13 @@ int main()
     printf("    verdict: %%s\n", name_of(b));
     check(b == LockType::ltLocked,
           "a second process is refused - it opens read-only");
+    if (!FIXED)
+        printf("    BASELINE expectation on this host: %%s\n", F_RDLCK == 0
+               ? "B PASSES - l_type 0 is F_RDLCK here, a valid query the write lock\n"
+                 "      conflicts with; the pre-#1362 failure is macOS's (EINVAL), so this\n"
+                 "      baseline run proves nothing on this host"
+               : "B must FAIL - l_type 0 is not a lock type here, fcntl answers EINVAL\n"
+                 "      and the file is reported free");
     kill(holder, SIGKILL);
     waitpid(holder, NULL, 0);
 
