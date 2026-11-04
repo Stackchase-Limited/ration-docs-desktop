@@ -1545,6 +1545,11 @@ Three complaints, none of them a defect against Excel.
   date/time formatting and a decision about round-tripping negative serials,
   which Excel cannot read.
 
+### #2486 - cannot undo the footer repeating on every page
+By design: a footer repeats for its section. Different first page, different odd/even pages, and
+Next-Page section breaks with "Link to previous" off give per-page or per-part footers; all exist in
+our 9.4 editor. No code change.
+
 ## Feature requests, not defects
 
 ### #1959 - MyAnimeList XML opens in the document editor
@@ -2103,7 +2108,7 @@ through to the system FreeType 2.13, which then reads a face laid out by 2.10.4.
 Emoji only, and font-dependent - which is exactly why a clean VM was fine and
 the reporter's host was not.
 
-**Demonstrated**, not just argued: `fork-fix-tests/issue-2136-emoji-folder-crash/`
+**Demonstrated**, not just argued: `fork-fix-tests/issue-2490-freetype-export-gaps/` (an earlier note named an `issue-2136-emoji-folder-crash/` test that was never committed; this one checks the same version script against the real exported symbol set)
 builds a system-FreeType stub with the new layout and COLRv1, a libgraphics stub
 with the 2.10.4 layout and no colour API, and a cairo stub, linked flat to get
 ELF's rules. As shipped, a plain name exits 0 and an emoji name dies with
@@ -2240,6 +2245,102 @@ only `projicons/` and `update-daemon/`.
   (`_code.iss:346`) while setting `AudioExtEnabled[i] := True` (`:347`), so
   `ChlbAudioClickCheck` (`:265-274`) re-checks every box the first time the user
   picks "Associate selected" - the UI can present a selection nobody made.
+
+### #2529 - formula bar: Ctrl+A, Ctrl+V over a long formula pastes a list of references
+The reporter (10.0, Windows) retested on a reduced synthetic workbook and could not reproduce it, nor
+could the assignee; there is no sample file. In our code the formula-bar paste is native:
+`asc_IsFocus()` is false while `cellEditor.isTopLineActive` (cell/api.js:4341), so clipboard_base
+`_private_onpaste` returns early, the textarea pastes by itself, and `_onInputTextArea`
+(CellEditorView.js:3297) calls `replaceText(0, end, input.value)`. In cell-edit mode copy writes plain
+text only (cell/model/clipboard.js:327). Nothing on either path emits references one per line.
+Parked until a file is attached.
+
+### #2551 - sheet content and headers go blank until a new sheet is added (Windows, 10.0)
+No reproduction steps, Windows only. Row/column headers vanish too, so the whole worksheet canvas is
+blank while the model is intact; adding a sheet forces `wb.showWorksheet()` -> `drawWorksheet()`, a
+full repaint, which brings it back. Most likely a lost 2D canvas context in Chromium on Windows (GPU
+reset, sleep/resume, RDP, display change): sdkjs has no `contextlost`/`contextrestored` handling in
+cell/ or common/. Candidate fix: on `contextrestored` of the worksheet canvases call
+`wb.showWorksheet()`. Not committed - cannot be verified without a Windows reproduction.
+
+### #2490 - segfault in the GTK file chooser when a name contains an emoji (Linux)
+Same defect as #2136 (and #2355/#2394), closed by core 382bf81452's `graphics.version`: the reporter's
+account (190 exported FT_* from the bundled FreeType 2.10.4, cairo binding to it on the colour-glyph
+path) is exactly that one. zlib and the static heif/de265/x265 are already hidden on Linux by
+base.pri's -fvisibility=hidden and --exclude-libs,ALL; FreeType escapes them only through FT_EXPORT's
+explicit default visibility. The remaining gap - FreeType names outside the FT_* glob (15 FTC_*,
+TT_New_Context, TT_RunIns) - is now localised too (core, #2490 commit; test
+fork-fix-tests/issue-2490-freetype-export-gaps). Not verified on a real Linux link.
+
+### #2523 / #2532 - Linux: opening a file while Desktop Editors is running does nothing (exit 0)
+Our single-instance path is identical to v10.0.0.176 (platform_linux/singleapplication.cpp,
+update-daemon csocket.cpp, main.cpp's `!app.isPrimary()` block, the `receivedMessage` handler), so this
+is not a v10 regression. The second process sends a UDP datagram to 127.<uid>.1:13012 (matches the
+strace in #2532); `sendMessage()` succeeds whenever anything is bound there, and main.cpp returns 0 -
+the datagram is never acknowledged. The primary closes that port only in ~SingleApplication, at the very
+end of main(), after app.exec(), CloseApplication() and CefShutdown. A process that is shutting down or
+stuck in shutdown (#2523: resident, no windows) still owns the port; its CSocket thread receives the
+path and queues it to an event loop that never runs again. Measured with the real csocket.cpp on macOS:
+`sendMessage()=1`, datagram delivered to the dying primary, no window. `DestroyCefView(-1)` waiting on a
+browser that never closes, or `launchAppClose()` declining to quit
+(cascapplicationmanagerwrapper.cpp:1640-1664, 655-695), give the same silence.
+No quick fix: releasing the port early lets a second primary start beside the dying one, sharing
+cache_path, and the old process's `EndTmpDirectory()` deletes `<cache>/work_temp` under the new one's x2t.
+Next steps: a backtrace of the resident process on Linux; an acknowledgement on the instance message so
+an unanswered second launch reports to stderr and exits non-zero. Separately: a relative path is resolved
+against the primary's working directory, not the caller's (`QDir::current()` in handleInputCmd,
+cascapplicationmanagerwrapper.cpp:~1122) - not the cause here (both reporters use absolute paths).
+
+### #2485 - GETPIVOTDATA is not recalculated after refreshing a Pivot Table
+Not reproduced in our tree. Ran the real sdkjs headlessly in docbuilder: build pivot -> GETPIVOTDATA on
+another sheet (plain, and inside IF(ISERROR(..)) as the reporter has it) -> change source ->
+Api.RefreshAllPivots() -> read. Covered date grouping by months/quarters/years+months/years+quarters
+(the "Datum";4 case), two pivots on one sheet, a page filter, field headers off, and xlsx save+reopen.
+Every case updated (e.g. GPD 7000 -> 103999). Our pivot code is identical to upstream release/v9.4.0,
+which the reporter runs. Why it works: the formula listens to its anchor cell, and
+Worksheet.updatePivotTable (cell/model/Workbook.js:10869) clears the report range with cleanAll and
+rewrites it, which marks that cell changed. A recalculation lock left on by an exception gives stale
+values too, but re-entering the formula then goes blank, and the reporter says re-entering fixes it.
+The reporter's file went to ONLYOFFICE privately; parked until we have one.
+Latent, not fixed: the pivot refresh paths in cell/api.js take the recalculation lock without
+try/finally (asc_refreshAllPivots :7692/:7706, _changePivotWithLockExt :7771-7773,
+_changePivotAndConnectedByPivotCacheWithLock :7809-7811) - a throw there would freeze recalculation for
+the session, the #2443 failure mode.
+
+### #2512 - PDF export fails ("This file cannot be saved or created") when a print area is defined
+Not present in our code. x2t + doctrenderer on our sdkjs: xlsx->pdf and Editor.bin->pdf succeed with a
+print area (Sheet1!$A$1; and a 3-sheet workbook with 'Blatt N'!$A$1:$B$3 each), with no JSON params and
+with desktop-style m_sJsonParams (spreadsheetLayout.sheetsProps[*].pageSetup.printArea). The PDFs hold
+only the print-area cells. The reporter's standalone-x2t "TypeError ... fatal V8" is what x2t prints with
+no AllFonts.js, so it proves nothing. All three commenters fixed it by deleting ~/.local/share/onlyoffice
+and ~/.config/onlyoffice: stale app data from an older version. Linux 10.0-only; nothing to fix.
+
+### #2545 - TEXT(A1;"ГГГГ-ДД-ММ ччммсс") returns garbage (10.0, Russian locale)
+The 10.0 regression is not in our tree: x2t with LCID 1049 gives TEXT(A1,"ГГГГ-ДД-ММ ччммсс") ->
+"2026-31-10 125333" (ДД-ММ is day then month) and "ГГГГ-ММ-ДД чч:мм:сс" -> "2026-10-31 12:53:33". Codes come
+from ParseLocalFormatSymbol (common/NumFormat.js). Running it found a separate, older defect: uppercase
+"СС" (seconds) was the Latin C in that table, so "ЧЧ:ММ:СС" gave "12:53:С С". Fixed (sdkjs, #2545 commit;
+test fork-fix-tests/issue-2545-ru-seconds-symbol-test.js).
+
+### #2525 - AI-inserted text disappears after saving DOCX (10.0)
+Not present in our tree. The 10.0 AI plugin streams generated text through the plugin method
+InsertStreamedContent plus Enterprise "GroupActions"; neither exists in any public sdkjs (upstream
+removed InsertStreamedContent in 5dde32b68f; group actions are stubs, common/apiBase.js:6092), so the
+visible-but-unsaved behaviour lives in closed code. Every insertion path our build does have was run
+through a headless editor and the real desktop save (changes0.json replayed by x2t): PasteHtml with
+tables, PasteText, ReplaceTextSmart, callCommand builder Push/InsertContent, and the old public
+InsertStreamedContent - all survive save and TXT export.
+Side finding, not data loss: because the method is missing, the plugin's streaming generateDocx
+inserts nothing in Ration Docs (common/plugins.js:1684 ignores unknown methods). Making it work means
+restoring InsertStreamedContent and removing the previous partial chunk, which upstream does with the
+Enterprise group actions.
+
+### #2456 - 'Copy Style' from/within table cells loses the font
+Cannot reproduce in our code. Format painter copies GetDirectTextPr and applies it via
+Paragraph.PasteFormatting -> ParaRun.Apply_Pr/Set_RFonts2, with no table-specific loss of RFonts.
+Driven in a headless editor: text and cell-selection sources, cursor-only source, selected and
+click targets, cell->cell / cell->text / text->cell - font, size and bold all carried over. Upstream
+could not reproduce on 10.0 either. Needs the reporter's file.
 
 ## Latent problems found in passing, not yet fixed
 

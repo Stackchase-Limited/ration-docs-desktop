@@ -277,7 +277,9 @@ cmd = ['clang++', '-std=c++14', '-D_MAC', '-D_LINUX',
        os.path.join(CORE, 'DesktopEditor/common/Directory.cpp'),
        os.path.join(CORE, 'DesktopEditor/common/SystemUtils.cpp'),
        os.path.join(CORE, 'DesktopEditor/common/StringBuilder.cpp'),
-       os.path.join(CORE, 'DesktopEditor/common/Base64.cpp')]
+       os.path.join(CORE, 'DesktopEditor/common/Base64.cpp'),
+       # filelocker.cpp asks CoreFoundation whether a file is iCloud-synced (#2547)
+       '-framework', 'CoreFoundation']
 c = subprocess.run(cmd, capture_output=True, text=True)
 if c.returncode != 0:
     sys.stderr.write(c.stdout + c.stderr)
