@@ -396,6 +396,12 @@ tests.
 | #1855 | A PDF carrying an outline opened with the bookmarks pane shut - the catalog was pinned to `/UseNone` (core half) | `core` |
 | - | *No upstream issue.* Our own #2056 flush did not compile on Linux: `G_IS_FILE_DESCRIPTOR_BASED` needs a header in `gio-unix-2.0`, which the build never asked for | `desktop-sdk` |
 | - | *No upstream issue.* A zero-length converter result was reported as a successful save, because `StartWrite()` cannot answer whether the locker ever locked | `desktop-sdk` |
+| #2524 | AI agent with Mistral: a reopened thread (or a switch to Mistral) that contained a tool turn was rebuilt as assistant(toolCalls) with no tool answers, so every later request failed with 400/3230 | `desktop-sdk` (ai-agent) |
+| #2461 | AI agent with Ollama: tool arguments sent whole in one delta were shown but forwarded to the MCP server as `{}`; also a call in the same chunk as `finish_reason` was dropped, and parallel calls were merged or left unanswered | `desktop-sdk` (ai-agent) |
+| #2508 | The OS cursor-blink setting was never passed to the editors; every caret (cell, document, slide, PDF, sheet shapes) blinked on a fixed 500 ms timer | `desktop-apps` + `sdkjs` |
+| #1470 | On Linux the CJK punctuation fallback took a Traditional Chinese/HK face (Noto Sans CJK HK, AR PL) and drew 。 centred; no Linux Simplified Chinese family was in the font priority list | `core` |
+| #1947 | Linux only: a landscape document printed shrunk onto a portrait sheet - Qt sends CUPS an empty `landscape` option, which CUPS reads as `nolandscape`; the job now goes out portrait with landscape pages turned by us, as quick print already did (Windows half not reproduced) | `desktop-apps` |
+| #2480 | Follow-up: a replace that broke between the server's remove and rename left the content only in a hidden temp (and the next lock created an empty document); the rename is retried, the temp kept and logged until it can be put back, and stale save temps are cleaned | `desktop-sdk` |
 
 Two defects in our own tooling were fixed alongside: CEF remote debugging was
 pinned to a hardcoded port 8080 that could not be overridden, and CEF failures
@@ -1596,6 +1602,21 @@ anyway". Not investigated in depth.
 
 ## Not reproducible or not testable here
 
+### #2475 - Printing pages upside down (duplex long edge)
+Checked our Linux print path (ceditortools.cpp, cprintdata.cpp, gtkprintdialog.cpp, qascprinter.cpp - SetPageOrientation
+is a no-op - and fileprinter.cpp CheckPrintRotate, which rotates only 0/90 by page size). Reproduced in Docker (Qt 5.15 +
+CUPS + generic PS PPD with Duplex, QPrinter set up as ceditortools does): a portrait long-edge job goes out as
+`sides=two-sided-long-edge Duplex=DuplexNoTumble`, final PS `<</Duplex true/Tumble false>>`, every page 595x842 upright;
+short edge gives Tumble true. Qt 5.9.9 (shipped) has the same CUPS option code. Nothing of ours flips alternate pages; the
+printer or driver applies the wrong tumble. Needs the reporter's printer model, PPD and a CUPS debug log. The suspected
+IPP-only duplex loss in the GTK dialog was run too and does not happen: driverless printers get a temporary queue with a
+PPD, and on a queue without one Qt refuses duplex whatever we pass.
+
+### #1947 - Landscape prints portrait (Windows half)
+The Linux half is fixed (see the Fixed table). Windows: our side maps A4 + landscape to DMPAPER_A4 / DMORIENT_LANDSCAPE
+(printdialog.cpp); the "User defined" paper the reporter sees for landscape is not reproducible here and needs a Windows
+check with the reporter's printer (Epson L565, driver 2.43).
+
 ### #2474 - Ctrl+. crashes the editor on Linux
 
 Not reproducible on macOS, and nothing in our shell handles Ctrl+. - neither
@@ -2391,9 +2412,10 @@ Also fixed since: autocomplete inserts escaped column names; a pasted table keep
 source omits showColumnStripes; redo keeps the totals label; table refs never saved with `$` (and healed on
 open); totals-row toggles and row deletes keep autoFilter/sortState on the data rows, and deleting rows past
 a table's end removes its totals row instead of overwriting the last data row.
-Still open (pre-existing, found 2026-11-04): a sort writes its sortCondition over the whole column including
-header/totals and conditions never move with ref changes; a second sort sets a one-column sortState covering
-header and totals (autofilters.js ~2493/~2534).
+Since fixed too (2026-11-05): a sort writes its sortState and sortCondition over the data rows only, a second
+sort keeps the full-width sortState, conditions follow row/column inserts and deletes, resizes and header
+toggles (a resize that removes the sorted column drops its condition; undo restores it), and asking for a
+totals/header row the table already has is a no-op instead of growing the table.
 
 ### #2452 - textbox does not fit text
 "Go!" (Textfeld 8) has spAutoFit, 110 pt text and exact line spacing 57.99 pt. Its saved height (828399

@@ -87,6 +87,15 @@ if at == -1:
 ob = src.index('{', at + len(SIG) - 1)
 utf8_fn = src[at:match_braces(src, ob) + 1]
 
+# #2546 made utf8_2_unicode fall back to utf8_2_unicode_lenient on a bad
+# sequence; lift that too when the source has it (it needs <vector>).
+LENIENT_SIG = 'std::wstring utf8_2_unicode_lenient(const unsigned char* data, DWORD data_size)'
+at = src.find(LENIENT_SIG)
+if at != -1:
+    utf8_fn = src[at:match_braces(src, src.index('{', at + len(LENIENT_SIG) - 1)) + 1] + '\n' + utf8_fn
+elif 'utf8_2_unicode_lenient' in utf8_fn:
+    raise SystemExit('utf8_2_unicode_lenient is called but was not found - the extractor needs updating')
+
 # ---- 2. the real end-of-data block ---------------------------------------
 # Select it by what it does, not by position: it is the only `if` in the file
 # guarded on `nStartCell != nSize && !bMsLimit`.  Take its `else` too, since
