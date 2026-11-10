@@ -8,8 +8,8 @@ behind its own commits when this was written, and several commit messages cite
 test directories that have never existed. Nothing here is typed in by hand, so
 nothing here can claim a test that is not on disk.
 
-- **124 issues** with at least one fix commit
-- **86** have a test artifact in `fork-fix-tests/`
+- **128 issues** with at least one fix commit
+- **90** have a test artifact in `fork-fix-tests/`
 - **38** do not - the fix is asserted by its commit message only
 - **34** fix commits carry no issue number (defects found in passing)
 
@@ -65,6 +65,7 @@ that is what the Test column is for. See the verification status section of
 | [#2334](https://github.com/ONLYOFFICE/DesktopEditors/issues/2334) | desktop-apps | `2e1dc0d274` | `issue-2334-tab-undock-threshold` | 2026-09-15 |
 | [#2328](https://github.com/ONLYOFFICE/DesktopEditors/issues/2328) | sdkjs | `e3091262fc` | `issue-2328-cf-locale-formula-test.js` | 2026-09-14 |
 | [#2324](https://github.com/ONLYOFFICE/DesktopEditors/issues/2324) | sdkjs | `7a755fccc5` | `issue-2324-heading-order-test.js` | 2026-09-15 |
+| [#2318](https://github.com/ONLYOFFICE/DesktopEditors/issues/2318) | sdkjs | `0f18391e82` | `issue-2318-wingdings-opensymbol-test.js` | 2026-11-10 |
 | [#2301](https://github.com/ONLYOFFICE/DesktopEditors/issues/2301) | core | `80e5c0ead3` `80e5c0ead3` | `issue-2301-csv-hex` | 2026-09-14 |
 | [#2296](https://github.com/ONLYOFFICE/DesktopEditors/issues/2296) | sdkjs | `8ad35f24cc` | `issue-2296-date-format-test.js` | 2026-09-15 |
 | [#2274](https://github.com/ONLYOFFICE/DesktopEditors/issues/2274) | build_tools, desktop-apps | `3bde9a8b96` `f26bd0673a` | `issue-2274-qt-library-closure` | 2026-09-14 |
@@ -85,14 +86,17 @@ that is what the Test column is for. See the verification status section of
 | [#2161](https://github.com/ONLYOFFICE/DesktopEditors/issues/2161) | desktop-apps | `4ab3fb37ec` | `issue-2161-landscape-print-margins` | 2026-09-15 |
 | [#2147](https://github.com/ONLYOFFICE/DesktopEditors/issues/2147) | desktop-apps | `2441a039db` | `issue-2147-color-printing` | 2026-09-15 |
 | [#2113](https://github.com/ONLYOFFICE/DesktopEditors/issues/2113) | core | `4a3252194b` `4a3252194b` | `issue-2113-ods-pivot-table` | 2026-09-15 |
+| [#2110](https://github.com/ONLYOFFICE/DesktopEditors/issues/2110) | desktop-sdk | `c5fa6b67af` | `issue-2110-mac-slide-print-fit` | 2026-11-10 |
+| [#2107](https://github.com/ONLYOFFICE/DesktopEditors/issues/2107) | desktop-sdk, onlyoffice.github.io | `ad09162aca` `34ab06d141` | `issue-2107-plugin-remove-native` | 2026-11-10 |
 | [#2105](https://github.com/ONLYOFFICE/DesktopEditors/issues/2105) | desktop-apps | `2241a8a0e6` | `issue-2105-wayland-no-x` | 2026-09-14 |
 | [#2095](https://github.com/ONLYOFFICE/DesktopEditors/issues/2095) | sdkjs | `74d274f7d2` | `issue-2095-drop-document-opens-tab-test.js` | 2026-11-10 |
 | [#2071](https://github.com/ONLYOFFICE/DesktopEditors/issues/2071) | sdkjs | `b98bcb7c01` | `issue-2071-unhide-all-rows-test.js` | 2026-09-15 |
 | [#2056](https://github.com/ONLYOFFICE/DesktopEditors/issues/2056) | desktop-sdk | `6cd7c621ee` | `issue-2056-flush-before-success` | 2026-09-12 |
+| [#2031](https://github.com/ONLYOFFICE/DesktopEditors/issues/2031) | desktop-apps | `fb27173cb1` | `issue-2031-installer-assoc-selection` | 2026-11-10 |
 | [#2022](https://github.com/ONLYOFFICE/DesktopEditors/issues/2022) | core | `b398371970` | `issue-2022-csv-last-row` | 2026-09-15 |
 | [#1947](https://github.com/ONLYOFFICE/DesktopEditors/issues/1947) | desktop-apps | `f205870618` | `issue-1947-linux-landscape-print` | 2026-11-05 |
 | [#1855](https://github.com/ONLYOFFICE/DesktopEditors/issues/1855) | core | `4116fbeb76` | `issue-1855-pdf-outline-pagemode` | 2026-09-15 |
-| [#1672](https://github.com/ONLYOFFICE/DesktopEditors/issues/1672) | sdkjs | `c32ac680e4` | `issue-1672-hidden-slides-pdf-print-test.js` | 2026-11-10 |
+| [#1672](https://github.com/ONLYOFFICE/DesktopEditors/issues/1672) | sdkjs, web-apps | `e88d90ee71` `c32ac680e4` `73d504525b` | `issue-1672-hidden-slides-pdf-print-test.js` | 2026-11-10 |
 | [#1570](https://github.com/ONLYOFFICE/DesktopEditors/issues/1570) | sdkjs | `fdbbb561c4` `fdbbb561c4` | `issue-1570-verdana-substitution-test.js` | 2026-09-15 |
 | [#1568](https://github.com/ONLYOFFICE/DesktopEditors/issues/1568) | sdkjs | `85cc0673e2` | `issue-1568-style-from-selection-highlight-test.js` | 2026-11-10 |
 | [#1491](https://github.com/ONLYOFFICE/DesktopEditors/issues/1491) | desktop-sdk, sdkjs | `eb97eb93a8` `33fa495f48` | `issue-1491-slideshow-video-keys` | 2026-11-10 |

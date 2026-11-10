@@ -406,6 +406,11 @@ tests.
 | #1568 | "Update style" / "New style from selection" dropped the selection's highlight on purpose; now carried into the style as Word does (font colour already worked) | `sdkjs` |
 | #2095 | Drag half: a document (docx/xlsx/pdf/csv...) dropped on an open editor was refused - now opens in a new tab via the start page's DropOfficeFiles route. The paste half (the issue's title) is triaged below | `sdkjs` |
 | #1491 | Linux/Windows: a clicked video in a slide show kept every key (arrows scrubbed, Escape stopped it); in a show the player now keeps only M and hands the rest to the slide show. macOS was never affected | `sdkjs`, `desktop-sdk` |
+| #1672 | Follow-up: the Windows/Linux print screen previewed every slide, hidden ones included, numbered by slide; it now previews exactly the slides that print. The web PDF of an all-hidden deck had 0 pages; now one blank page | `sdkjs`, `web-apps` |
+| #2107 | Removing a plugin deleted file by file, ignored failures and reported success (half-removed plugin, lost files); now one rename or nothing, and the plugin manager reports a failed removal and shows a revealed system plugin as installed | `desktop-sdk`, `onlyoffice.github.io` (local clone only - see note under #2107) |
+| #2318 | Wingdings on Linux (substituted by OpenSymbol) drew blank or a stray glyph: the remap table had 10 codes (now 139, each checked against both fonts) and the shaper remapped only the first symbol of a run | `sdkjs` |
+| #2110 | macOS: slides printed at 100% from the corner and were cut off on the right - the editor type that forces fit-to-paper was only ever set by the Windows/Linux app | `desktop-sdk` |
+| #2031 | Windows (Inno EXE): .docx/.pptx/.xlsx/.pdf were always associated on Windows 10/11, whatever the user ticked, overwriting another vendor's default; proven under Wine. The MSI is triaged below | `desktop-apps` |
 
 Two defects in our own tooling were fixed alongside: CEF remote debugging was
 pinned to a hardcoded port 8080 that could not be overridden, and CEF failures
@@ -1162,70 +1167,22 @@ a narrower alternative - carrying unknown-but-present parts through the round tr
 way Excel and LibreOffice do - which would fix a whole class of silent loss rather
 than this one control type.
 
-### #2148 - PDF print: chain traced end to end, symptom not reproduced
+### #2148 - PDF print drops objects added in the PDF editor - does not reproduce on 9.4
+Reproduced the reporter's exact case with their PDF (Account-Inhaberwechsel.pdf): a headless PDF
+editor (our sdkjs + pdf wasm) added a text box and a TextArt, the real `_printDesktop` captured the
+changes, and a driver repeated the desktop's native steps on our PdfFile (LoadFromFile, EditPdf,
+AddToPdfFromBinary, reopen). The objects are in the edited PDF and are drawn by the raster renderer
+(macOS print) and by the real `qrenderer.cpp`/`qascprinter.cpp` into a Qt PdfFormat printer (Linux
+print to file) - pdftotext finds the text. Upstream marked it fixed (their bug 79346); 9.4 has it.
+Not covered: a real CUPS printer.
 
-The reporter has Expected and Actual swapped in the issue form; the title is the
-claim: objects added in the PDF editor are not printed.
-
-**The changes do reach the printer.** `PDFEditorApi._printDesktop`
-(`sdkjs/pdf/api.js:4955`) calls `viewer.Save()` and passes the binary as the third
-argument of `AscDesktopEditor.Print`. The renderer binding
-(`client_renderer_wrapper.cpp:1836`) writes it to a temp file and puts the path on
-the `print` message; `cefview.cpp:2977` stores it as `m_sNativePrintChangesFile`;
-`:7364` hands it to `CAscNativePrintDocument::Open`, which calls `EditPdf()` to
-build `<recoveryDir>/PdfFileWithChanges.bin`, replays the changes with
-`AddToPdfFromBinary()`, and reopens that file to print. So the plumbing is intact
-and the obvious hypothesis - "print ignores the edits" - is wrong.
-
-**What is actually wrong there, and is fixed:** `m_sFileWithChanges` was never
-assigned, so the destructor's cleanup was unreachable and every such print left a
-full copy of the edited document in the recovery directory. Fixed; it is not the
-reported symptom.
-
-**Where to look next, in order:**
-
-1. `EditPdf()` failing. The `if (EditPdf(sTempFile))` block is skipped **in
-   silence** on failure, and the print then proceeds from the unedited PDF - which
-   is exactly the reported symptom. Same silent-skip shape as #2278. Instrument
-   that branch first.
-2. `bIsNativePrint`. The switch at `cefview.cpp:7322` creates the native printer for
-   PDF, PDFA, XPS and DJVU only. `AVS_OFFICESTUDIO_FILE_DOCUMENT_OFORM_PDF` is not
-   in it, and the `m_sOriginalFileNameCrossPlatform` override just above replaces
-   `sLocalFileSrc` without updating `nLocalFileSrcFormat`. Either could route a
-   session down the non-native path at `:7370`.
-3. Only then look at the renderer fallback.
-
-`GetPrintPage` is a red herring: it is the print *preview* path
-(`word/Drawing/printpreview.js:192`), not printing.
-
-### #2110 - slide PDF export crops the right side
-
-`CPrintData::FitToPage` (`desktop-sdk/.../fileprinter.cpp:499`) is correct - a plain
-aspect-preserving fit with centring. Presentations force `pmFit` with
-`ZoomEnable` at `:527`, so the suspect is the rotate branch at `:648-677`: when the
-slide and the paper disagree on orientation it swaps `fPrintWidthMM` and
-`fPrintHeightMM`, calls `FitToPage` in that rotated space, then converts with
-`dWidthPix = nPrintDpiX * fFitWidth`, mixing the rotated extent with the unrotated
-axis's DPI, and centres against `nPrintWidthPix`/`nPrintHeightPix`, which are also
-unrotated. That is consistent with content overflowing one edge.
-
-**Tested by hand, 2026-09-12, and it mostly does not reproduce.** Ademola ran the
-export and could not see a problem *except when the content is almost bleeding off
-the edge of the slide*. That reframes the issue and lowers its priority:
-
-- `FitToPage` is given the **slide** dimensions (`fPageWidth`/`fPageHeight`), not the
-  bounding box of the content. Anything a user has dragged past the slide edge is
-  outside the page by definition, and cropping it is what PowerPoint does too. For
-  that case this is correct behaviour, not a defect.
-- What is left to explain is only the margin: content that sits *just inside* the
-  edge and still loses a sliver. That would be a rounding or half-pixel error in the
-  mm-to-pixel conversion (`nPrintDpiX * fFitWidth / (10 * ONE_INCH)`, truncating
-  toward zero), not the rotate-branch theory above - which remains unproven and is
-  now the less likely of the two.
-
-**Before spending more on this, get a file that reproduces it.** Without one, the
-honest reading is that #2110 is a near-edge rounding question at worst, and the
-rotate branch should not be touched on suspicion alone.
+### #2110 - slide print crops the right side - FIXED 2026-11-10 (macOS)
+The earlier note here (rotate branch) was wrong. The reporter's PDF shows a 4000 px raster (a 16:9
+slide at 100%) on a 3300 px Letter sheet: nothing was fitted. `CPrintData::CheckPrintRotate` forces
+pmFit only for etPresentation, and the editor type is set only by the Windows/Linux app's
+TABEDITORTYPE handler; the macOS app never set it, so it stayed etUndefined and pm100 applied.
+`cefview.cpp` now sets the type on the view when the renderer reports it. Not checked in a real
+macOS print dialog.
 
 ### #2208 - PDF editor replaces barcodes with their value or a black box
 
@@ -1281,7 +1238,17 @@ new process message with no renderer-side handler so the prompt never fires, and
 it leaves a commented-out duplicate of the function body behind.
 
 
-### #2107 - a plugin installed for all users cannot be uninstalled
+### #2107 - a plugin installed for all users cannot be uninstalled - FIXED 2026-11-10
+
+**Update.** Plugins installed for all users already had no Remove button (`canRemoved=false` in
+`pluginMethod_GetInstalledPlugins`). What was broken: native `RemovePlugin` deleted file by file and
+returned true whatever happened (a read-only folder left an empty plugin dir and lost files), and the
+store treated an empty answer as a cancel. Both fixed; see the Fixed table. **Hosting gap:** the
+store fix lives in `onlyoffice.github.io`, a local clone (excluded from the superproject, origin =
+ONLYOFFICE, push disabled) with no lab02 repository - so it and the earlier #2129 commit reach only
+builds made on this machine.
+
+Earlier note:
 
 Root-caused and confirmed by reading, not by running: this machine has no
 system-plugin install to remove.
@@ -1770,24 +1737,13 @@ literal run-in and run-out of a number format section were being written into th
 as plain text, so an Accounting cell exported as `_ * 8745.00_ `. Fixed; see the Fixed
 table.
 
-### #2318 - some fonts are not rendered properly on Linux
-
-Reproduced and diagnosed in `core`; **not fixed**, because the fix is a data table
-that cannot be validated without building it against the real font.
-
-Converting the reporter's docx with our x2t renders the Wingdings run `U+F0E8 U+F020`
-as `(8) A` where Office shows an arrow. `CFontListNamePicker` substitutes Wingdings
-with OpenSymbol (`core/DesktopEditor/fontengine/ApplicationFonts.h:87`), and OpenSymbol
-has **no U+F0xx coverage at all** - all three of its cmap subtables return glyph 0 for
-both codepoints. So the substitution can never produce the right glyph, whatever else
-is done.
-
-The real fix is a Wingdings-to-Unicode recode table, which is what LibreOffice does:
-about 224 entries, mapping the private-use codepoint to the Unicode character the
-substitute font actually has (OpenSymbol carries U+2794, not U+27A8, so the table has
-to be built against its real coverage rather than copied). Hook it where the substitute
-face is chosen. Not attempted here: 224 unvalidated codepoint mappings is exactly the
-kind of table that looks right and is wrong in a dozen places.
+### #2318 - some fonts are not rendered properly on Linux - FIXED 2026-11-10
+Correction: the fix was in sdkjs, not core. Wingdings is substituted by the bundled OpenSymbol, and
+`ChangeGlyphsMap` (`common/libfont/map.js`) translated only 10 codes; `textshaper.js` also remapped
+only the first symbol of a run. Table built from LibreOffice's aWingDingsTab, filtered to glyphs
+present in OpenSymbol 102.10 and 102.12 and checked by eye (139 codes). Verified with the reporter's
+docx through x2t with Ubuntu fonts. The missing space before "Être" in the same report is a separate
+MS Gothic metric-substitution question, not fixed.
 
 ### #2399 - draw.io plugin: PDF export and print preview fail
 
@@ -2183,65 +2139,22 @@ remove Paste from every text field.
 either implement `OnBeforeContextMenu`/`RunContextMenu` to draw a Qt menu at the
 app's scale, or make the browser's device-scale-factor apply to native menus.
 
-### #2031 - the Windows installer ignores the file-association selection
+### #2031 - the Windows installer ignores the file-association selection - EXE FIXED 2026-11-10
+Inno: `DoPostInstall` honoured `isAssociateExtension`, but `AddContextMenuNewItems` (always called)
+set the default ProgID of .docx/.pptx/.xlsx/.pdf on Windows 10/11 unconditionally, in HKLM and over
+an existing HKCU value. Now gated on the user's choice; ShellNew keys still written. Proven by
+compiling the real script with ISCC under Wine and reading the registry back (fork-fix-tests/
+issue-2031-installer-assoc-selection). Trade-off: an unticked type loses its "New" menu entry.
+Still open: `association.cpp:159-181` offers every extension at first launch, and the page's
+"Associate selected" pre-ticks every box.
 
-Root-caused in both packages; **no patch**, because neither installer language
-can be executed here (no Inno compiler, no Free Pascal, no Advanced Installer,
-no Windows, no registry) and Inno's Pascal Script dialect cannot be faithfully
-re-hosted - a harness would test a translation rather than the shipped script.
-
-**Correction to earlier notes:** these are not NSIS or WiX, and not under
-`win-linux/extras/`. The EXE is **Inno Setup** (`desktop-apps/package/inno/`,
-`common.iss` + `_code.iss`) and the MSI is an **Advanced Installer** project
-(`desktop-apps/package/advinst/DesktopEditors.aip`). `win-linux/extras/` holds
-only `projicons/` and `update-daemon/`.
-
-- **Inno, the decisive defect.** The guard is fine and exists -
-  `isAssociateExtension` at `inno/_code.iss:380-387` - but it is consulted at
-  exactly one site, `:517`. `DoPostInstall` then calls `AddContextMenuNewItems`
-  unconditionally at `:556`, and that procedure's Windows 10/11 branch
-  (`:473-477`) writes the **default ProgID** for `.docx`, `.pptx`, `.xlsx` and
-  `.pdf` with no reference to the user's choice - exactly the four the reporter
-  sees. It also lacks the existing-owner check the gated path has at `:519`,
-  which is why PDF ownership is taken from whatever held it.
-  The write is not simply deletable: Explorer only shows the New-menu entry
-  while `.docx`'s default ProgID is ours (`ShellNew` at `:465-472`), so it must
-  be **gated**, not removed. `isAssociateExtension` takes an index into
-  `AudioExts` (`:178-256`), so gating needs a small by-extension wrapper.
-- **MSI, dead gating for two independent reasons.** Per-extension checkboxes
-  bind to `REGISTER_<EXT>` (`:792-936`) feeding the Condition table
-  (`:671-732`) against feature levels (`:419-483`). But `INSTALLLEVEL` is never
-  authored anywhere, so Advanced Installer's default of 100 makes every
-  `Level=4`/`Level=1` feature install regardless; and the dialog never
-  re-costs - the Next button fires only `NewDialog` (`:977`), no
-  `SetInstallLevel`. So the UI is cosmetic. `REGISTER_*`, `REGISTER_NONE` and
-  `NOASSOCHECK` are also missing from `SecureCustomProperties` (`:53`), so they
-  do not reach a silent install's server-side sequence. Compare
-  `REGISTER_PROTOCOL` (`:412`), which is enforced as a component-level
-  `Condition` and therefore does work - that asymmetry is the whole story.
-- **`NOASSOCHECK` is unrelated to associations** in both packages: it only
-  suppresses the runtime nag (`_code.iss:984-986`; MSI component at `:414`).
-  `REGISTER_NONE` exists only in the dead MSI condition at `:673`; the Inno tree
-  has no `REGISTER_*` at all.
-- **A runtime path must be fixed alongside it.**
-  `win-linux/src/platform_win/association.cpp:159-181` seeds its extension map
-  by enumerating `HKLM\...\Capabilities\FileAssociations` - every extension,
-  regardless of what was chosen at install - then offers to claim each one
-  (`:210-232`). So even a corrected installer would re-offer everything on first
-  launch. Record the install-time selection in its own key and read that.
-- **Next steps, in order.** (1) Gate `_code.iss:473-477` and add an owner check.
-  (2) Give Inno a real `/NOASSOC`. (3) In the `.aip`, move `FA_*` gating to
-  component-level conditions as `REGISTER_PROTOCOL` already does - or author
-  `INSTALLLEVEL` *and* add `SetInstallLevel` to the dialog - plus fix
-  `SecureCustomProperties`. (4) Fix `association.cpp`. (5) Verification needs a
-  Windows VM: `iscc` plus `reg query HKLM\Software\Classes\.docx` after a
-  fresh install, and `msiexec /i ... REGISTER_NONE=1` for the MSI.
-- **Two loose ends found in passing.** `inno/help.iss:15` still includes
-  `..\..\..\win-linux\package\windows\defines.iss`, a path that no longer
-  exists. And the association page creates every checkbox unchecked
-  (`_code.iss:346`) while setting `AudioExtEnabled[i] := True` (`:347`), so
-  `ChlbAudioClickCheck` (`:265-274`) re-checks every box the first time the user
-  picks "Associate selected" - the UI can present a selection nobody made.
+**MSI (`package/advinst/DesktopEditors.aip`) - triaged, no patch.** The .<ext> writes are
+feature-gated correctly (e.g. reg_fa_ext__docx in feature FA_DOCX), but feature selection never
+follows the dialog: FA_* are Level=4 raised by Condition rows `REGISTER_<EXT> = 1`, evaluated only at
+CostFinalize, before FileAssociationsCustomDlg changes REGISTER_*; Next fires only NewDialog (no
+AddLocal/Remove), and REGISTER_* are not in SecureCustomProperties. Fix shape: per-feature
+Remove/AddLocal ControlEvents on Next plus SecureCustomProperties; needs Advanced Installer and
+Windows. The .aip was never Ration-renamed, so the fork does not ship this MSI today.
 
 ### #2529 - formula bar: Ctrl+A, Ctrl+V over a long formula pastes a list of references
 The reporter (10.0, Windows) retested on a reduced synthetic workbook and could not reproduce it, nor
