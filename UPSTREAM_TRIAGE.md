@@ -418,6 +418,8 @@ tests.
 | #2375 | macOS: scrolling a document repainted at most every 40ms (20-25fps on a 120Hz trackpad); a scroll now repaints on the next frame. Presentation, Visio and PDF keep the 40ms loop | `sdkjs` |
 | #1760 | Also #1740: a picture copied in the document or presentation editor reached other apps only as an <img> inside HTML, so Facebook/Messenger/Lens got nothing; it now also goes out as image/png | `sdkjs` |
 | #2131 | An inserted video was a 79.4mm square (sized from the all-black 300x300 placeholder poster), so players letterboxed it and PowerPoint stretched it; the host now reads the mp4/mov track size and the frame takes the video's aspect | `desktop-sdk`, `sdkjs` |
+| #1922 | A video's own mute/volume (p:cMediaNode, set in PowerPoint) never reached the player when opened by selecting/hovering it, and when sent it was unscaled (80000; macOS took 20 as 20x); the player also reset its volume each time it reopened. Fixed in sdkjs and both players | `sdkjs`, `desktop-sdk` |
+| #1655 | macOS: the pivot Group dialog's "By" list (and every multi-select list) only toggled items on Ctrl+click, which macOS turns into a right click; Cmd+click now toggles. The grouping engine was already right | `web-apps` |
 
 Two defects in our own tooling were fixed alongside: CEF remote debugging was
 pinned to a hardcoded port 8080 that could not be overridden, and CEF failures
@@ -1551,6 +1553,30 @@ xls. The reporter's actual ask is an override - "open this in Spreadsheet
 anyway". Not investigated in depth.
 
 ## Not reproducible or not testable here
+
+### #2019 - Horizontal scroll with second mouse wheel not working - not in our JS
+Windows 9.0.4, Logitech MX Master thumb wheel: 3 columns, then horizontal scrolling stops until another
+tab is opened. Real CDP mouseWheel events with deltaX only scroll horizontally on every event in the
+cell editor (Windows and macOS paths), word at 300% and via checkMouseWhell for slide/PDF; no state in
+cell/view/EventsController.js:2103 can stop after one event. "One notch, then nothing until focus
+changes" points at WM_MOUSEHWHEEL delivery to the CEF window (Windows-native, unhandled by our
+shell). Needs Windows + MX Master. macOS two-finger horizontal swipes (deltaX-only) work.
+
+### #2530 - window unmaximized when a presentation ends - 10.0 only
+Our 9.4 shell never un-maximizes the window for a slideshow: win-linux moves the panel into a separate
+widget and showFullScreen()s that, the main window is only hide()n/show(false)n (Qt keeps
+WindowMaximized); macOS full-screens the CEF view and only hides/shows the window. Same code in
+v10.0.0.176; 10.0 changed the Linux window platform layer (thin frame, frame extents), the likely
+culprit. Ran the real CWindowPlatform::show under Xvfb + openbox: stays maximized in all four setups.
+macOS test app, two slideshow cycles: the window comes back to exactly its frame (1024x828 at 1323,411).
+
+### #1845 - Fullscreen triggers oscillatory jumping - not reproduced (Linux, Xfce/LXQt)
+Upstream 9.4.0.129 under Xvfb + xfwm4 (compositor on/off, CPU throttled, 7 maximize/restore cycles)
+always settles at 1920x1052. The reporters' videos show only the Chromium surface alternating sizes,
+so the loop is in CEF X11 child-window sizing: QCefView::UpdateSize (qt_wrapper/src/qcefview.cpp:486-524)
+XConfigureWindow's cef_handle and CEF's own windows on CefGetXDisplay() without XFlush while
+CefWindowX11 resizes the same child from another connection. Needs a real Xfce/LXQt box; first fix to
+test: XFlush in SetWindowSize and stop sizing the grandchild.
 
 ### #2565 - AI Tools getting errors when editing current document - not in our tree
 10.0's new in-editor chat (ONLYOFFICE/onlyoffice-ai-chat) drops the tool result from the Mistral

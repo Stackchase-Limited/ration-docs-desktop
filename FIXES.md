@@ -8,8 +8,8 @@ behind its own commits when this was written, and several commit messages cite
 test directories that have never existed. Nothing here is typed in by hand, so
 nothing here can claim a test that is not on disk.
 
-- **135 issues** with at least one fix commit
-- **97** have a test artifact in `fork-fix-tests/`
+- **137 issues** with at least one fix commit
+- **99** have a test artifact in `fork-fix-tests/`
 - **38** do not - the fix is asserted by its commit message only
 - **34** fix commits carry no issue number (defects found in passing)
 
@@ -101,9 +101,11 @@ that is what the Test column is for. See the verification status section of
 | [#2031](https://github.com/ONLYOFFICE/DesktopEditors/issues/2031) | desktop-apps | `fb27173cb1` | `issue-2031-installer-assoc-selection` | 2026-11-10 |
 | [#2022](https://github.com/ONLYOFFICE/DesktopEditors/issues/2022) | core | `b398371970` | `issue-2022-csv-last-row` | 2026-09-15 |
 | [#1947](https://github.com/ONLYOFFICE/DesktopEditors/issues/1947) | desktop-apps | `f205870618` | `issue-1947-linux-landscape-print` | 2026-11-05 |
+| [#1922](https://github.com/ONLYOFFICE/DesktopEditors/issues/1922) | desktop-sdk, sdkjs | `39b0fd827b` `d97740fb73` `83724834dc` | `issue-1922-video-volume` | 2026-11-11 |
 | [#1855](https://github.com/ONLYOFFICE/DesktopEditors/issues/1855) | core | `4116fbeb76` | `issue-1855-pdf-outline-pagemode` | 2026-09-15 |
 | [#1760](https://github.com/ONLYOFFICE/DesktopEditors/issues/1760) | sdkjs | `9f3cc5dd87` | `issue-1760-copy-picture-image-png-test.js` | 2026-11-10 |
 | [#1672](https://github.com/ONLYOFFICE/DesktopEditors/issues/1672) | sdkjs, web-apps | `e88d90ee71` `c32ac680e4` `73d504525b` | `issue-1672-hidden-slides-pdf-print-test.js` | 2026-11-10 |
+| [#1655](https://github.com/ONLYOFFICE/DesktopEditors/issues/1655) | web-apps | `d420245695` | `issue-1655-pivot-group-cmd-click-test.js` | 2026-11-11 |
 | [#1570](https://github.com/ONLYOFFICE/DesktopEditors/issues/1570) | sdkjs | `fdbbb561c4` `fdbbb561c4` | `issue-1570-verdana-substitution-test.js` | 2026-09-15 |
 | [#1568](https://github.com/ONLYOFFICE/DesktopEditors/issues/1568) | sdkjs | `85cc0673e2` | `issue-1568-style-from-selection-highlight-test.js` | 2026-11-10 |
 | [#1491](https://github.com/ONLYOFFICE/DesktopEditors/issues/1491) | desktop-sdk, sdkjs | `eb97eb93a8` `33fa495f48` | `issue-1491-slideshow-video-keys` | 2026-11-10 |
