@@ -268,13 +268,14 @@ public:
 	bool get_IsSelected() { return IsSelected; }
 	bool get_Mute() { return Mute; }
 	int get_Volume() { return Volume; }
+	int get_From() { return 0; } bool get_IsSlideShow() { return false; }
 	int get_FrameBoundsX() { return 10; } int get_FrameBoundsY() { return 10; }
 	int get_FrameBoundsW() { return 320; } int get_FrameBoundsH() { return 180; }
 	int get_ControlRectX() { return 10; } int get_ControlRectY() { return 200; }
 	int get_ControlRectW() { return 320; } int get_ControlRectH() { return 40; }
 };
 }
-class CCefView { public: bool reporter = false; bool IsPresentationReporter() { return reporter; } };
+class CCefView { public: bool reporter = false; bool IsPresentationReporter() { return reporter; } void ExecuteInAllFrames(const std::string&, const bool& = true) {} };
 class CCefViewWrapper {
 public:
 	CCefView* m_pCefView = nullptr;

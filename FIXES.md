@@ -8,8 +8,8 @@ behind its own commits when this was written, and several commit messages cite
 test directories that have never existed. Nothing here is typed in by hand, so
 nothing here can claim a test that is not on disk.
 
-- **137 issues** with at least one fix commit
-- **99** have a test artifact in `fork-fix-tests/`
+- **141 issues** with at least one fix commit
+- **103** have a test artifact in `fork-fix-tests/`
 - **38** do not - the fix is asserted by its commit message only
 - **34** fix commits carry no issue number (defects found in passing)
 
@@ -34,6 +34,7 @@ that is what the Test column is for. See the verification status section of
 | [#2542](https://github.com/ONLYOFFICE/DesktopEditors/issues/2542) | core, sdkjs | `49e0ac9b11` `733baa7bec` `a48ed236a1` | `issue-2542-hangul-legacy-cmap` | 2026-11-04 |
 | [#2537](https://github.com/ONLYOFFICE/DesktopEditors/issues/2537) | desktop-apps | `10b49fdd23` `c946559b75` | `issue-2537-dark-theme-type-message` | 2026-11-04 |
 | [#2533](https://github.com/ONLYOFFICE/DesktopEditors/issues/2533) | dictionaries | `27dae48927` | `issue-2533-sr-latn-hyphenation` | 2026-11-04 |
+| [#2528](https://github.com/ONLYOFFICE/DesktopEditors/issues/2528) | desktop-apps, desktop-sdk | `4b4733b038` `ce7cdbdbe4` | `issue-2528-linux-tab-background` | 2026-11-11 |
 | [#2527](https://github.com/ONLYOFFICE/DesktopEditors/issues/2527) | desktop-apps | `bbf04bc6d9` | `issue-2527-cmdline-flag-without-equals` | 2026-10-27 |
 | [#2526](https://github.com/ONLYOFFICE/DesktopEditors/issues/2526) | core | `0456c70f94` | `issue-2526-redact-straight-cubic` | 2026-10-27 |
 | [#2525](https://github.com/ONLYOFFICE/DesktopEditors/issues/2525) | sdkjs | `aa1e8ff9aa` `425850a934` | `issue-2525-group-actions-owner-test.js` | 2026-11-04 |
@@ -100,7 +101,10 @@ that is what the Test column is for. See the verification status section of
 | [#2056](https://github.com/ONLYOFFICE/DesktopEditors/issues/2056) | desktop-sdk | `6cd7c621ee` | `issue-2056-flush-before-success` | 2026-09-12 |
 | [#2031](https://github.com/ONLYOFFICE/DesktopEditors/issues/2031) | desktop-apps | `fb27173cb1` | `issue-2031-installer-assoc-selection` | 2026-11-10 |
 | [#2022](https://github.com/ONLYOFFICE/DesktopEditors/issues/2022) | core | `b398371970` | `issue-2022-csv-last-row` | 2026-09-15 |
+| [#2010](https://github.com/ONLYOFFICE/DesktopEditors/issues/2010) | sdkjs | `29c78b83b5` | `issue-2010-pdf-outline-page-range-test.js` | 2026-11-11 |
 | [#1947](https://github.com/ONLYOFFICE/DesktopEditors/issues/1947) | desktop-apps | `f205870618` | `issue-1947-linux-landscape-print` | 2026-11-05 |
+| [#1943](https://github.com/ONLYOFFICE/DesktopEditors/issues/1943) | desktop-sdk, sdkjs | `b12cc75a46` `3f9d60fc61` | `issue-1943-presenter-video-sync` | 2026-11-11 |
+| [#1942](https://github.com/ONLYOFFICE/DesktopEditors/issues/1942) | desktop-sdk | `f5635e16ec` | `issue-1942-slideshow-video-controls` | 2026-11-11 |
 | [#1922](https://github.com/ONLYOFFICE/DesktopEditors/issues/1922) | desktop-sdk, sdkjs | `39b0fd827b` `d97740fb73` `83724834dc` | `issue-1922-video-volume` | 2026-11-11 |
 | [#1855](https://github.com/ONLYOFFICE/DesktopEditors/issues/1855) | core | `4116fbeb76` | `issue-1855-pdf-outline-pagemode` | 2026-09-15 |
 | [#1760](https://github.com/ONLYOFFICE/DesktopEditors/issues/1760) | sdkjs | `9f3cc5dd87` | `issue-1760-copy-picture-image-png-test.js` | 2026-11-10 |

@@ -420,6 +420,10 @@ tests.
 | #2131 | An inserted video was a 79.4mm square (sized from the all-black 300x300 placeholder poster), so players letterboxed it and PowerPoint stretched it; the host now reads the mp4/mov track size and the frame takes the video's aspect | `desktop-sdk`, `sdkjs` |
 | #1922 | A video's own mute/volume (p:cMediaNode, set in PowerPoint) never reached the player when opened by selecting/hovering it, and when sent it was unscaled (80000; macOS took 20 as 20x); the player also reset its volume each time it reopened. Fixed in sdkjs and both players | `sdkjs`, `desktop-sdk` |
 | #1655 | macOS: the pivot Group dialog's "By" list (and every multi-select list) only toggled items on Ctrl+click, which macOS turns into a right click; Cmd+click now toggles. The grouping engine was already right | `web-apps` |
+| #2010 | PDF bookmarks from headings were already in 9.4; two leftovers fixed: a page-range "Save as PDF" pointed the bookmarks at the wrong pages (or none), and every title ended with the paragraph mark | `sdkjs` |
+| #1942 | In a slide show the video controls covered the video for the whole show; they now show only while the mouse is over the video and hide after 2 s of a still mouse while playing (macOS and Qt players) | `desktop-sdk` |
+| #1943 | Play/pause/seek in the presenter view's player reached nothing; they now drive the slide show's player (and back), sound only from the slide show | `sdkjs`, `desktop-sdk` |
+| #2528 | Switching tabs flashed light gray in a dark theme on Linux (the X window holding each tab had a fixed light background); on macOS a theme change left open tabs with the old background | `desktop-sdk`, `desktop-apps` |
 
 Two defects in our own tooling were fixed alongside: CEF remote debugging was
 pinned to a hardcoded port 8080 that could not be overridden, and CEF failures
