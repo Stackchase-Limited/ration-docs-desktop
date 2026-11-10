@@ -402,6 +402,10 @@ tests.
 | #1470 | On Linux the CJK punctuation fallback took a Traditional Chinese/HK face (Noto Sans CJK HK, AR PL) and drew 。 centred; no Linux Simplified Chinese family was in the font priority list | `core` |
 | #1947 | Linux only: a landscape document printed shrunk onto a portrait sheet - Qt sends CUPS an empty `landscape` option, which CUPS reads as `nolandscape`; the job now goes out portrait with landscape pages turned by us, as quick print already did (Windows half not reproduced) | `desktop-apps` |
 | #2480 | Follow-up: a replace that broke between the server's remove and rename left the content only in a hidden temp (and the next lock created an empty document); the rename is retried, the temp kept and logged until it can be put back, and stale save temps are cleaned | `desktop-sdk` |
+| #1672 | Hidden slides went into PDF exports (x2t / desktop Save as PDF) and desktop printouts - content the author hid was published; now left out as PowerPoint does, ranges count by slide number | `sdkjs` |
+| #1568 | "Update style" / "New style from selection" dropped the selection's highlight on purpose; now carried into the style as Word does (font colour already worked) | `sdkjs` |
+| #2095 | Drag half: a document (docx/xlsx/pdf/csv...) dropped on an open editor was refused - now opens in a new tab via the start page's DropOfficeFiles route. The paste half (the issue's title) is triaged below | `sdkjs` |
+| #1491 | Linux/Windows: a clicked video in a slide show kept every key (arrows scrubbed, Escape stopped it); in a show the player now keeps only M and hands the rest to the slide show. macOS was never affected | `sdkjs`, `desktop-sdk` |
 
 Two defects in our own tooling were fixed alongside: CEF remote debugging was
 pinned to a hardcoded port 8080 that could not be overridden, and CEF failures
@@ -980,16 +984,14 @@ only `LANG` reports a language the user did not choose. All three are read now, 
 `POSIX` are skipped because they are not languages. The reporter's other symptom, AltGr
 being dead on a French layout under Wayland, is a keyboard matter and is **not** claimed.
 
-**#2337 (spell-check language changes as you type) - deliberately not changed.** The retag
-is intentional and narrowly scoped: `CheckLanguageOnTextAdd` is set true only around
-inserting a **space**, so the language of the word just completed is re-evaluated, which is
-what Word does. The #1179 fix already rejects a LANGID no authority recognises; this
-reporter's layout maps to a valid one, so it retags and the feature is working as designed.
-What they are asking for is a way to turn it off, and **there is no such setting anywhere in
-the tree** - `LanguageDetection`, `languageDetection` and `autoLanguage` return nothing in
-`sdkjs` or `web-apps`. So this is a feature request wearing a bug label, and doing it means
-adding a setting and wiring it through the same five places #2442 needed. Worth doing;
-worth doing deliberately.
+**#2337 (spell-check language changes as you type) - covered by #2543; this note was wrong
+(corrected 2026-11-10).** There IS a switch: "Spelling language detection" (start page Settings,
+auto/off) is stored as `spell-check-input-mode`; Off makes `CAscKeyboardChecker` send -1, and
+sdkjs (`Run.js:1027` `private_CheckLanguageBeforeAdd` via `asc_getKeyboardLanguage`) skips the
+retag on -1 for letters and the space alike. The reporter's real complaint - Off only worked after
+reopening the document (upstream bug 81377) - is the #2543 defect, fixed in desktop-sdk `2c10dedf61`.
+Headless word run on `ration/v10-backports`: de-DE caret, layout 1033 -> "Hallo x" tagged 1033;
+layout -1 -> stays 1031. Retagging while on Auto is by design. No new setting needed.
 
 **#1491 (video swallows the keys that should change slides) - the work is identified.**
 `QAscVideoView::keyPressEvent` handles Left and Right as video scrubbing and always calls
@@ -1327,43 +1329,20 @@ stop offering system plugins for removal, or to report the refusal instead of
 redrawing the list; both are product decisions about what the plugin manager
 promises, so they are parked rather than guessed at.
 
-### #2095 - dragging a file into the editor does nothing for anything but an image
-
-Root-caused; the filter is explicit and one line long.
-
-`sdkjs/common/clipboard_base.js` reduces the incoming item list to images before
-anything else looks at it:
-
-    let checkImages = function (callback) {
-        let items = _clipboard.items;
-        if (null != items && 0 !== items.length && !isDisableRawPaste) {
-            for (var i = 0; i < items.length; ++i) {
-                if (items[i].kind === 'file' && items[i].type.indexOf('image/') !== -1) {
-                    callback(items[i]);
-                }
-            }
-        }
-    };
-
-Every caller of `checkImages` is the only thing that ever looks at `kind === 'file'`,
-so an item that is a file but not an `image/*` is examined once, fails the `type`
-test, and is dropped. Nothing downstream ever sees it.
-
-`text/uri-list` - the flavour a desktop file manager actually puts on the drag for
-a dropped file - is not read anywhere. Confirmed by searching the editor sources
-rather than assuming:
-
-    grep -rn "uri-list" sdkjs/common sdkjs/word sdkjs/cell sdkjs/slide web-apps/apps
-    (no matches)
-
-So there are two independent reasons a dropped `.docx` or `.csv` goes nowhere: the
-item is filtered out for not being an image, and the flavour that would name the
-file on disk is never requested.
-
-**Not fixed** because what *should* happen on such a drop is a product question
-with several defensible answers - open it as a new document, insert it as an OLE
-object, refuse it with a message - and the branch to write depends on which one.
-Parked with that question attached, not with "needs investigation".
+### #2095 - Cannot paste a copied filesystem path (file copied in a file manager)
+Correction: the issue is about **paste**, not drag; the old heading here described the wrong bug.
+Reproduced in rd-linux-verify: an Xlib clipboard owner offering Nemo's flavours
+(gnome-copied-files, text/uri-list, UTF8_STRING=path) and a real Ctrl+V in headed Chromium 108
+and 138 under Xvfb. The paste event carries only types ["Files"]: one kind:'file' item with the
+bare name, and getData() returns "" for text/plain, text/uri-list and the gnome flavour.
+Chromium hides the text when files are on the clipboard, so `clipboard_base.js`
+`_private_onpaste` sees only a non-image file item and does nothing. JS cannot get the path
+(File has a name only), and desktop-sdk has no native clipboard API. Fixing it needs a native
+bridge (NSPasteboard / QClipboard urls) that returns the paths on paste. Not done:
+feature-sized and multi-repo. Side effect: the #676 uri-list branch in
+`getFileManagerImagePaths` is never reached in Chromium >= 108; image files still paste through
+Chromium's image/* File items.
+The drag variant (a document dropped on an open editor did nothing) is fixed - see the Fixed table.
 
 ### #2123 - recent files list - the reported path difference is real but is not the cause
 
@@ -1520,12 +1499,9 @@ a slide sized to fit on A4 paper with margins, not the A4 page. Matching it keep
 decks interchangeable with PowerPoint. A true 210 x 297 mm slide is a custom size.
 (2026-10-27)
 
-### #1568 - highlight and font colour not captured by "update style"
-Highlight is stripped on purpose. `Paragraph.prototype.GetStyleFromFormatting`
-(`sdkjs/word/Editor/Paragraph.js:15732`) clears `TextPr.HighLight` with the
-comment *"В стиль не добавляется HighLight"*. Font colour **is** captured, via
-`fill_TextPr` at `:15781` and `:15785`. Diverging from upstream for Word parity
-is a call for us to make; the reporter's expectation matches Word.
+### #1568 - highlight and font colour not captured by "update style" - FIXED 2026-11-10
+Was deliberate upstream (`GetStyleFromFormatting` cleared `TextPr.HighLight`); we chose Word
+parity and now carry it into the style. Font colour was always captured. See the Fixed table.
 
 ### #1501 - time formats: durations over 9999 hours, negative times
 
@@ -2174,12 +2150,12 @@ applied at `:2059` via `m_oKeyboardChecker.SetEnabled`. Next step: look at how
 the keyboard checker detects the layout on Linux, especially under Wayland,
 and what language it reports when detection fails.
 
-### #1672 - saving a pptx as PDF includes hidden slides
-Not localised. The slide visibility flag exists as `nullable_bool show` in
-`core/OOXML/PPTXFormat/Slide.h:89`. `sdkjs/slide/api.js:7551` does filter on
-`show`, but that is `StartDemonstrationFromBeginning` - the slideshow, not
-export. Next step: trace `show` through the binary presentation format into the
-PDF writer, and check whether the editor's export path filters slides at all.
+### #1672 - saving a pptx as PDF includes hidden slides - FIXED 2026-11-10
+Localised and fixed: `asc_nativeGetPDF` (x2t/doctrenderer, so the desktop's Save as PDF) and the
+desktop branch of `asc_nativePrint` drew every slide; only the slideshow and the web
+`ToRendererPart` honoured `show="0"`. New `getSlidesToPrint` in `sdkjs/slide/api.js`. A 10-slide
+deck with 2 hidden slides: 10 pages before, 8 after, through the app bundle's own x2t. Still open:
+the print preview shows hidden slides. See the Fixed table.
 
 ### #1641 - cannot export a selected spreadsheet range to PDF  [FIXED]
 
