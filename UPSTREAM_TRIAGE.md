@@ -415,6 +415,9 @@ tests.
 | #2560 | macOS: an accent picked from the accent menu (or any letter replacement) doubled in spreadsheet text boxes ("eé") - their typing history was not recognised as typing | `sdkjs` |
 | #2559 | macOS: Portuguese (Portugal) keyboards tagged text pt-BR, and British/Australian/Canadian/Swiss German/Austrian/Serbian lost their country (Serbian lost spell checking). Linux was already fixed by #2503 | `desktop-sdk` |
 | #2556 | Rows hidden down to the end of a sheet came back visible after an .ods save (four converter defects: row folding, ODS writer repeat count, reader skipping hidden runs, a self-comparison typo) | `core` |
+| #2375 | macOS: scrolling a document repainted at most every 40ms (20-25fps on a 120Hz trackpad); a scroll now repaints on the next frame. Presentation, Visio and PDF keep the 40ms loop | `sdkjs` |
+| #1760 | Also #1740: a picture copied in the document or presentation editor reached other apps only as an <img> inside HTML, so Facebook/Messenger/Lens got nothing; it now also goes out as image/png | `sdkjs` |
+| #2131 | An inserted video was a 79.4mm square (sized from the all-black 300x300 placeholder poster), so players letterboxed it and PowerPoint stretched it; the host now reads the mp4/mov track size and the frame takes the video's aspect | `desktop-sdk`, `sdkjs` |
 
 Two defects in our own tooling were fixed alongside: CEF remote debugging was
 pinned to a hardcoded port 8080 that could not be overridden, and CEF failures

@@ -8,8 +8,8 @@ behind its own commits when this was written, and several commit messages cite
 test directories that have never existed. Nothing here is typed in by hand, so
 nothing here can claim a test that is not on disk.
 
-- **132 issues** with at least one fix commit
-- **94** have a test artifact in `fork-fix-tests/`
+- **135 issues** with at least one fix commit
+- **97** have a test artifact in `fork-fix-tests/`
 - **38** do not - the fix is asserted by its commit message only
 - **34** fix commits carry no issue number (defects found in passing)
 
@@ -65,6 +65,7 @@ that is what the Test column is for. See the verification status section of
 | [#2426](https://github.com/ONLYOFFICE/DesktopEditors/issues/2426) | sdkjs | `ede98d9619` | `issue-2426-dynamic-array-respill-test.js` | 2026-09-13 |
 | [#2425](https://github.com/ONLYOFFICE/DesktopEditors/issues/2425) | sdkjs | `86e91fe3a8` | `issue-2425-fill-handle-hit-test.js` | 2026-09-15 |
 | [#2389](https://github.com/ONLYOFFICE/DesktopEditors/issues/2389) | desktop-apps | `865159a5fd` | `issue-2389-assoc-prompt-forever` | 2026-09-15 |
+| [#2375](https://github.com/ONLYOFFICE/DesktopEditors/issues/2375) | sdkjs | `d275009164` | `issue-2375-scroll-paint-rate-test.js` | 2026-11-10 |
 | [#2368](https://github.com/ONLYOFFICE/DesktopEditors/issues/2368) | sdkjs | `7cf9e26ee1` | `issue-2368-duplicate-paraid-test.js` | 2026-09-14 |
 | [#2334](https://github.com/ONLYOFFICE/DesktopEditors/issues/2334) | desktop-apps | `2e1dc0d274` | `issue-2334-tab-undock-threshold` | 2026-09-15 |
 | [#2328](https://github.com/ONLYOFFICE/DesktopEditors/issues/2328) | sdkjs | `e3091262fc` | `issue-2328-cf-locale-formula-test.js` | 2026-09-14 |
@@ -89,6 +90,7 @@ that is what the Test column is for. See the verification status section of
 | [#2187](https://github.com/ONLYOFFICE/DesktopEditors/issues/2187) | core | `b4a57ad44e` `b4a57ad44e` | `issue-2187-shape-macro` | 2026-09-15 |
 | [#2161](https://github.com/ONLYOFFICE/DesktopEditors/issues/2161) | desktop-apps | `4ab3fb37ec` | `issue-2161-landscape-print-margins` | 2026-09-15 |
 | [#2147](https://github.com/ONLYOFFICE/DesktopEditors/issues/2147) | desktop-apps | `2441a039db` | `issue-2147-color-printing` | 2026-09-15 |
+| [#2131](https://github.com/ONLYOFFICE/DesktopEditors/issues/2131) | desktop-sdk, sdkjs | `3c780add0b` `6e140c36ca` | `issue-2131-video-aspect` | 2026-11-10 |
 | [#2113](https://github.com/ONLYOFFICE/DesktopEditors/issues/2113) | core | `4a3252194b` `4a3252194b` | `issue-2113-ods-pivot-table` | 2026-09-15 |
 | [#2110](https://github.com/ONLYOFFICE/DesktopEditors/issues/2110) | desktop-sdk | `c5fa6b67af` | `issue-2110-mac-slide-print-fit` | 2026-11-10 |
 | [#2107](https://github.com/ONLYOFFICE/DesktopEditors/issues/2107) | desktop-sdk, onlyoffice.github.io | `ad09162aca` `34ab06d141` | `issue-2107-plugin-remove-native` | 2026-11-10 |
@@ -100,6 +102,7 @@ that is what the Test column is for. See the verification status section of
 | [#2022](https://github.com/ONLYOFFICE/DesktopEditors/issues/2022) | core | `b398371970` | `issue-2022-csv-last-row` | 2026-09-15 |
 | [#1947](https://github.com/ONLYOFFICE/DesktopEditors/issues/1947) | desktop-apps | `f205870618` | `issue-1947-linux-landscape-print` | 2026-11-05 |
 | [#1855](https://github.com/ONLYOFFICE/DesktopEditors/issues/1855) | core | `4116fbeb76` | `issue-1855-pdf-outline-pagemode` | 2026-09-15 |
+| [#1760](https://github.com/ONLYOFFICE/DesktopEditors/issues/1760) | sdkjs | `9f3cc5dd87` | `issue-1760-copy-picture-image-png-test.js` | 2026-11-10 |
 | [#1672](https://github.com/ONLYOFFICE/DesktopEditors/issues/1672) | sdkjs, web-apps | `e88d90ee71` `c32ac680e4` `73d504525b` | `issue-1672-hidden-slides-pdf-print-test.js` | 2026-11-10 |
 | [#1570](https://github.com/ONLYOFFICE/DesktopEditors/issues/1570) | sdkjs | `fdbbb561c4` `fdbbb561c4` | `issue-1570-verdana-substitution-test.js` | 2026-09-15 |
 | [#1568](https://github.com/ONLYOFFICE/DesktopEditors/issues/1568) | sdkjs | `85cc0673e2` | `issue-1568-style-from-selection-highlight-test.js` | 2026-11-10 |
