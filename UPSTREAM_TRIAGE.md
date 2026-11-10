@@ -411,6 +411,10 @@ tests.
 | #2318 | Wingdings on Linux (substituted by OpenSymbol) drew blank or a stray glyph: the remap table had 10 codes (now 139, each checked against both fonts) and the shaper remapped only the first symbol of a run | `sdkjs` |
 | #2110 | macOS: slides printed at 100% from the corner and were cut off on the right - the editor type that forces fit-to-paper was only ever set by the Windows/Linux app | `desktop-sdk` |
 | #2031 | Windows (Inno EXE): .docx/.pptx/.xlsx/.pdf were always associated on Windows 10/11, whatever the user ticked, overwriting another vendor's default; proven under Wine. The MSI is triaged below | `desktop-apps` |
+| #2561 | An image dragged across an open document without dropping left the drop target armed; the next click split the paragraph (not Windows-only). The target is now cancelled when the drag leaves | `sdkjs` |
+| #2560 | macOS: an accent picked from the accent menu (or any letter replacement) doubled in spreadsheet text boxes ("eé") - their typing history was not recognised as typing | `sdkjs` |
+| #2559 | macOS: Portuguese (Portugal) keyboards tagged text pt-BR, and British/Australian/Canadian/Swiss German/Austrian/Serbian lost their country (Serbian lost spell checking). Linux was already fixed by #2503 | `desktop-sdk` |
+| #2556 | Rows hidden down to the end of a sheet came back visible after an .ods save (four converter defects: row folding, ODS writer repeat count, reader skipping hidden runs, a self-comparison typo) | `core` |
 
 Two defects in our own tooling were fixed alongside: CEF remote debugging was
 pinned to a hardcoded port 8080 that could not be overridden, and CEF failures
@@ -1544,6 +1548,27 @@ xls. The reporter's actual ask is an override - "open this in Spreadsheet
 anyway". Not investigated in depth.
 
 ## Not reproducible or not testable here
+
+### #2565 - AI Tools getting errors when editing current document - not in our tree
+10.0's new in-editor chat (ONLYOFFICE/onlyoffice-ai-chat) drops the tool result from the Mistral
+history, so the first request after any tool call ends in assistant(toolCalls) and Mistral answers
+400/3230. That is the pre-#2524 converter; our ai-agent was fixed in ac6f93e4. Running our
+utils.ts on the reported thread: pre-#2524 fails, now ends in a tool message. Our 9.4 editors ship
+the AI plugin 3.2.3, whose agent loop sends tool messages. Product note: a future chat panel will be
+wired to our own chat module, not ONLYOFFICE's.
+
+### #1428 - Display issue in Spreadsheet on Mac (zh cell-style gallery) - fixed upstream, in 9.4
+The defect is the canvas-drawn cell-style thumbnails (tofu and a Japanese serif face for Chinese
+names), i.e. the CJK fallback range in AllFonts.js. Upstream fixed the Mac ranking after 7.5.1
+(core 95d2939a73 PingFang, e8ecb2cdfb Heiti/Songti), both in our core. Rendering the real gallery
+with this Mac's AllFonts.js for zh/zh-tw/ja/en at 1x and 2x: all CJK maps to Heiti SC, no boxes.
+Forcing the range to Hiragino Mincho reproduces the reported picture.
+
+### #1561 - Printing to PDF has problems (spreadsheet "print selection") - fixed upstream, in 9.4
+"Print to PDF" is a save-as through x2t that reopens Editor.bin + changes; 8.x printed the
+selection stored at open time. Fixed upstream in sdkjs 9b0c27e450 (bug 75637): the live selection
+travels in pageSetup.selection. Ran the real cell sdk + payload x2t: B2:C4 -> 1 page/6 cells,
+B10:J100 -> 2 pages/819 cells, no other sheet, no erased text; asc_Print gives the same counts.
 
 ### #2475 - Printing pages upside down (duplex long edge)
 Checked our Linux print path (ceditortools.cpp, cprintdata.cpp, gtkprintdialog.cpp, qascprinter.cpp - SetPageOrientation

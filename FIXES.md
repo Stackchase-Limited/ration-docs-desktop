@@ -8,8 +8,8 @@ behind its own commits when this was written, and several commit messages cite
 test directories that have never existed. Nothing here is typed in by hand, so
 nothing here can claim a test that is not on disk.
 
-- **128 issues** with at least one fix commit
-- **90** have a test artifact in `fork-fix-tests/`
+- **132 issues** with at least one fix commit
+- **94** have a test artifact in `fork-fix-tests/`
 - **38** do not - the fix is asserted by its commit message only
 - **34** fix commits carry no issue number (defects found in passing)
 
@@ -21,6 +21,10 @@ that is what the Test column is for. See the verification status section of
 
 | Issue | Where | Commit | Test | Landed |
 |---|---|---|---|---|
+| [#2561](https://github.com/ONLYOFFICE/DesktopEditors/issues/2561) | sdkjs | `fe553e8d21` | `issue-2561-drag-leave-drop-target-test.js` | 2026-11-10 |
+| [#2560](https://github.com/ONLYOFFICE/DesktopEditors/issues/2560) | sdkjs | `6e82adabb0` | `issue-2560-shape-accent-replace-test.js` | 2026-11-10 |
+| [#2559](https://github.com/ONLYOFFICE/DesktopEditors/issues/2559) | desktop-sdk | `e9bf91ed44` | `issue-2559-macos-portuguese-layout` | 2026-11-10 |
+| [#2556](https://github.com/ONLYOFFICE/DesktopEditors/issues/2556) | core | `273f1f6558` | `issue-2556-ods-hidden-rows` | 2026-11-10 |
 | [#2554](https://github.com/ONLYOFFICE/DesktopEditors/issues/2554) | sdkjs | `542e927821` | `issue-2554-slideshow-text-clip-test.js` | 2026-11-04 |
 | [#2553](https://github.com/ONLYOFFICE/DesktopEditors/issues/2553) | desktop-apps | `bb8dcab024` `e467dbac54` | `issue-2553-logout-cancelled` | 2026-11-04 |
 | [#2547](https://github.com/ONLYOFFICE/DesktopEditors/issues/2547) | desktop-sdk | `47cbfdfb00` | `issue-2547-icloud-flock` | 2026-11-04 |
