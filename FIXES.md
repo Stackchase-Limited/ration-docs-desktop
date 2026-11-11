@@ -8,8 +8,8 @@ behind its own commits when this was written, and several commit messages cite
 test directories that have never existed. Nothing here is typed in by hand, so
 nothing here can claim a test that is not on disk.
 
-- **169 issues** with at least one fix commit
-- **130** have a test artifact in `fork-fix-tests/`
+- **170 issues** with at least one fix commit
+- **131** have a test artifact in `fork-fix-tests/`
 - **39** do not - the fix is asserted by its commit message only
 - **35** fix commits carry no issue number (defects found in passing)
 
@@ -140,6 +140,7 @@ that is what the Test column is for. See the verification status section of
 | [#706](https://github.com/ONLYOFFICE/DesktopEditors/issues/706) | desktop-apps | `a877e2fc4c` | `issue-706-saveas-dotted-name` | 2026-11-11 |
 | [#676](https://github.com/ONLYOFFICE/DesktopEditors/issues/676) | sdkjs | `d32100e8a1` `d32100e8a1` | `issue-676-nautilus-image-paste-test.js` | 2026-09-15 |
 | [#619](https://github.com/ONLYOFFICE/DesktopEditors/issues/619) | desktop-sdk | `946e4d8f6d` | `issue-619-template-opens-as-new` | 2026-11-11 |
+| [#565](https://github.com/ONLYOFFICE/DesktopEditors/issues/565) | sdkjs | `aa43ce0290` | `issue-0565-accent-dotless-ij-test.js` | 2026-11-11 |
 | [#560](https://github.com/ONLYOFFICE/DesktopEditors/issues/560) | desktop-apps | `27578a09e7` | `issue-0560-mac-paper-size` | 2026-11-11 |
 | [#547](https://github.com/ONLYOFFICE/DesktopEditors/issues/547) | sdkjs | `ba80ae077e` | `issue-0547-plain-save-pdf-layout-test.js` | 2026-11-11 |
 | [#531](https://github.com/ONLYOFFICE/DesktopEditors/issues/531) | sdkjs | `df3a283c13` | `issue-0531-fit-filtered-rows-test.js` | 2026-11-11 |

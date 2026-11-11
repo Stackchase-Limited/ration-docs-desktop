@@ -653,7 +653,37 @@ now do Ctrl+Home/End (word Document.js, slide Presentation.js, CommonController.
 a selected drawing keeps Cmd+arrow as nudge (sdkjs 33475b76ae; test issue-0073-mac-cmd-up-down-test.js).
 PDF form/annotation text not covered.
 
+### #565 - math i/j under an accent (\vec, \dot) blank or a stray glyph - FIXED 2026-11-11
+word/Math/mathText.js private_getCode turns an accented i/j into Cambria Math glyph numbers and Draw
+drew that number in whatever font was loaded - wrong on macOS/Linux (no Cambria Math) and for runs with
+their own w:rFonts. The glyph-number path now applies only when the loaded family is "Cambria Math";
+otherwise a dotless code point the font has (U+1D6A4/1D6A5, else U+0131/U+0237, else the letter)
+(sdkjs aa43ce0290; test issue-0565-accent-dotless-ij-test.js). On-screen editor not GUI-checked.
+Separate, unfixed: the reporter's display equation lands at the right edge in x2t output.
+
 ## Root-caused, not fixed
+
+### #992 - Word picture bullets shown as a Symbol lambda - feature gap
+lvlPicBulletId bullets: x2t drops the bullet images and sdkjs has no picture-bullet support
+(NumberingLvl.js IsImageBullet "TODO"); the Symbol fallback (U+F06C = lambda) is what Word shows
+without the picture. Needs numPicBullet in core binary read/write and sdkjs model/drawing.
+
+### #891 - weights of a variable font missing from the font list - feature gap
+Static multi-weight families list separately (FT_PARAM_TAG_IGNORE_PREFERRED_FAMILY). Variable fonts
+(Bahnschrift, Skia, STIX Two Text) list only the default instance: we enumerate face indices, never
+fvar named instances. Needs instance enumeration, instance index through AllFonts.js, HarfBuzz
+variation coords in the WASM shaper and instanced outlines for PDF embedding. Side finding: Apple
+italic faces without the italic flag (Avenir Next Condensed Heavy Italic) lose their italic slot.
+
+### #643 - fonts activated by FontBase not found (Windows) - not testable here
+We scan HKLM Fonts, CSIDL_FONTS, %LOCALAPPDATA% fonts and CloudFonts, not HKCU\...\Fonts or
+session fonts added with AddFontResource. Needs GDI/DirectWrite enumeration mapped to files, Windows-only.
+
+### #812 - Thai line breaking - feature gap (rendering itself fine in 9.4)
+Tone marks, stacking and the tail-less ฐ render correctly in docx and xlsx. A Thai run has no break
+opportunities (Text.js private_IsSpaceAfter), so long Thai text breaks mid-word at the margin; Word
+segments by dictionary. Needs a Thai word-break dictionary in sdkjs line breaking.
+
 
 ### #1032 - long floating table squeezes the following heading - reproduced, not fixed
 TS2.docx: Word offsets the floating table (tblpPr vertAnchor=text tblpY=1, no tblpX/horzAnchor) ~722tw
@@ -1850,6 +1880,15 @@ xls. The reporter's actual ask is an override - "open this in Spreadsheet
 anyway". Not investigated in depth.
 
 ## Not reproducible or not testable here
+
+### #950 - dot accent position in presentation equations - not reproducible in 9.4
+Headless slide editor: \dot x renders with the italic shift (dot centre 26 px vs letter centre 21), as
+Word; pptx and docx x2t output identical. The 7.1 picture does not occur.
+
+### #415 - Chinese characters not displayed - not reproducible in 9.4
+Chinese in Arial/Calibri/Times/default and several East Asian fonts all render via per-glyph fallback
+(Heiti SC / Arial Unicode MS); no squares. The 5.5.1 report predates the fallback.
+
 
 ### #644 - release notes in an unexpected language (macOS) - appcast authoring, not app code
 Our vendored Sparkle 2.0.0 picks an xml:lang="ru" releaseNotesLink whenever ru is anywhere in
