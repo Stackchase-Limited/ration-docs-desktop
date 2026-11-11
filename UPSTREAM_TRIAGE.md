@@ -580,7 +580,11 @@ v10-sec-bridge-removefile. The PDF-reader/XPS/libxml2 and WMF/EMF fixes reach th
 through sdkjs 4789c97347 (drawingfile + fonts rebuilt from core fc6cea8985; test v10-sec-wasm-renderers;
 test app renders text + image mask). Still open: b6897a441e's 4*w*h overflow guard is size_t = 32 bit
 in wasm32, so a 32768x32769 /ImageMask still traps the viewer module - needs a core guard in
-RendererOutputDev (w > SIZE_MAX/4/h) and another rebuild. Unknown: "DOCX double free", "integer-overflow heap write" (candidate
+RendererOutputDev (w > SIZE_MAX/4/h) and another rebuild - DONE 2026-11-12: core c9d4bbe6c4
+(GetImageBufferSize refuses sizes that do not fit size_t/int stride, in every image path, plus
+CPdfReader::GetButtonIcon; also fixed a DCT soft-mask heap overflow found under ASan), drawingfile
+rebuilt in sdkjs 3c0c7a391c; HtmlFile2 9f33a5b519 ported as core 49f4979807 (outside CSS no longer
+loaded; EPUB ../Images pictures no longer dropped; test v10-sec-htmlfile2-paths). Unknown: "DOCX double free", "integer-overflow heap write" (candidate
 commits already picked). Not ported: HtmlFile2 9f33a5b519 follow-up (heavy conflicts); web-apps
 3f9b9168e4 PDFE right-panel crash (changes panel behaviour; needs a GUI repro). PDF-reader fixes also
 need the drawingfile WASM in sdkjs rebuilt to reach the editors (see core-wasm note). RemoveFile now
@@ -714,6 +718,16 @@ small touchpad deltas were lost (wheelDeltaY 2 never moved; -3 moved 40 of 45 px
 The word editor now carries the fraction to the next event, reset on direction change; mouse notches
 unchanged; slide/visio/PDF/cell opt out (sdkjs aa8e849c33; test issue-1194-touchpad-subpixel-scroll-test.js).
 Real touchpad feel not checked (CDP wheel events carry wheelDeltaY=0).
+
+### RD-0001 - CSV row/cell limits: an extra row kept, csv->xlsx unlimited, cuts silent - FIXED 2026-11-12
+#482 follow-up. x2t kept row 1,048,577; csv->xlsx had no row limit; ASCConverters overwrote the read's
+94/96 with 0; the desktop dropped the code. Now the sheet stops at the limit, csv->xlsx returns 94, and
+the open passes 94/96 to the spreadsheet, which warns that rows / cell text were cut (core 9eed63b760,
+desktop-sdk 95c61da6, web-apps ffc735fa93; tests rd-0001-csv-row-limit, rd-0001-csv-open-limits).
+
+### RD-0002 - macOS showed Sparkle's update prompt and menu with no appcast - FIXED 2026-11-12
+Main.storyboard no longer instantiates SUUpdater or the "Check for Updates..." item (desktop-apps
+09c48fb4e; test rd-0002-mac-no-sparkle-updater-test.js). Needs a full app build to ship.
 
 ## Root-caused, not fixed
 

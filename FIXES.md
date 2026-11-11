@@ -12,7 +12,7 @@ nothing here can claim a test that is not on disk.
 - **138** have a test artifact in `fork-fix-tests/`
 - **39** do not - the fix is asserted by its commit message only
 - **35** fix commits carry no issue number (defects found in passing)
-- **0** defects found by our own testing (RD-NNNN), 0 with a test - counted separately from upstream issues
+- **2** defects found by our own testing (RD-NNNN), 2 with a test - counted separately from upstream issues
 
 A row here means a commit exists. It does **not** mean the fix was verified;
 that is what the Test column is for. See the verification status section of
@@ -207,6 +207,13 @@ They have not been demonstrated.
 | [#1482](https://github.com/ONLYOFFICE/DesktopEditors/issues/1482) | sdkjs | `6392fa067a` | - | 2026-09-12 |
 | [#459](https://github.com/ONLYOFFICE/DesktopEditors/issues/459) | core, sdkjs | `875663096b` `67f4a0c2f3` | - | 2026-09-12 |
 | [#328](https://github.com/ONLYOFFICE/DesktopEditors/issues/328) | sdkjs | `6884d875b3` | - | 2026-11-11 |
+
+## Our own findings (RD-NNNN) - corpus runs and testing
+
+| ID | Where | Commit | Test | Landed | What |
+|---|---|---|---|---|---|
+| RD-0002 | desktop-apps | `09c48fb4e0` | `rd-0002-mac-no-sparkle-updater-test.js` | 2026-11-12 | macOS started Sparkle with no appcast and offered "Check for Updates..."; the up |
+| RD-0001 | core, desktop-sdk, web-apps | `9eed63b760` `ffc735fa93` `95c61da632` | `rd-0001-csv-open-limits` | 2026-11-12 | csv kept one row past 1048576, csv -> xlsx ignored the row limit and said nothin |
 
 ## Defects found in passing - no upstream issue
 

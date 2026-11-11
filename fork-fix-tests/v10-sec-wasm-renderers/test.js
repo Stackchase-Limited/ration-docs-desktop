@@ -48,15 +48,26 @@
  *
  *   RD_REPO=<sdkjs checkout>  default ../../sdkjs relative to this file
  *   BASELINE=1                read the artefacts via `git show $BASE_REF:<path>`;
- *                             must FAIL there (the 2026-11-04 builds)
+ *                             must FAIL there: BASE_REF 4789c97347^ (the
+ *                             2026-11-04 builds) fails every .wasm check,
+ *                             4789c97347 (the default) only the huge mask
+ *
+ * Added with the rebuild from core c9d4bbe6c4 ("v10-sec: PDF image buffer
+ * sizes still wrapped in the wasm32 viewer"): b6897a441e sized the mask buffer
+ * as 4 * (size_t)w * (size_t)h, but size_t is 32 bits in wasm32, so a
+ * 32768 x 32769 /ImageMask asked for 4 GB + 128 KB, got 128 KB, and
+ * drawImageMask wrote all its rows into it: the module died with "memory
+ * access out of bounds" and every later call into it failed. Fixed: an image
+ * whose buffer does not fit size_t is not drawn; the page renders, and the
+ * module still renders the control mask afterwards.
  *
  * NOT claimed: the other fixes compiled in (PdfAnnot/PdfReader/
- * tilingPatternFill sizes, XPS font key, libxml2 valid.c, RedactOutputDev)
- * are not exercised here - the XPS key and libxml2 ones are covered at source
- * level by v10-sec-core-converter; the size_t buffer-size changes of
- * b6897a441e do not protect a wasm32 build, where size_t is 32 bits (see the
- * report of the rebuild). The asm.js variants get the same checks, but only
- * the .wasm variants are required to fail on BASELINE (heap layouts differ).
+ * tilingPatternFill sizes, XPS font key, libxml2 valid.c, RedactOutputDev,
+ * the DCT soft-mask size check of c9d4bbe6c4) are not exercised here - the XPS
+ * key and libxml2 ones are covered at source level by v10-sec-core-converter,
+ * the DCT one was shown under ASan with a native build. The asm.js variants
+ * get the same checks, but only the .wasm variants are required to fail on
+ * BASELINE (heap layouts differ; asm.js has no 4 GB trap to hit).
  * The desktop app's own loaders (ascdesktop:// fetch) are not exercised.
  * Needs Node >= 18 (Response, crypto.getRandomValues).
  */
@@ -69,7 +80,8 @@ const { execFileSync } = require('child_process');
 
 const SDKJS = process.env.RD_REPO || path.resolve(__dirname, '..', '..', 'sdkjs');
 // Pinned to the parent of the commit that rebuilt the artefacts, never HEAD.
-const BASE_REF = process.env.BASE_REF || '4789c97347^';
+// The integrator re-pins it to the parent of the image-size rebuild.
+const BASE_REF = process.env.BASE_REF || '3c0c7a391c^';
 const BASELINE = !!process.env.BASELINE;
 
 function read(rel) {
@@ -139,20 +151,20 @@ function makePdf(objs) {
 // a 100x100 page filled by one red-painted /ImageMask of 100x100 (13 bytes a
 // row, 1300 in all); `mask` is the stream as stored, possibly short
 const N = 100;
-function maskPdf(mask) {
+function maskPdf(mask, w, h) {
 	const content = '1 0 0 rg q ' + N + ' 0 0 ' + N + ' 0 0 cm /Im1 Do Q';
 	return makePdf([
 		'<< /Type /Catalog /Pages 2 0 R >>',
 		'<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
 		'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ' + N + ' ' + N + '] /Resources << /XObject << /Im1 4 0 R >> >> /Contents 5 0 R >>',
-		['<< /Type /XObject /Subtype /Image /Width ' + N + ' /Height ' + N + ' /ImageMask true /Length ' + mask.length + ' >>', mask],
+		['<< /Type /XObject /Subtype /Image /Width ' + (w || N) + ' /Height ' + (h || N) + ' /ImageMask true /Length ' + mask.length + ' >>', mask],
 		['<< /Length ' + content.length + ' >>', Buffer.from(content)],
 	]);
 }
 
-function renderMask(viewer, mask) {
+function renderMask(viewer, mask, w, h) {
 	const file = new viewer.CDrawingFile();
-	const err = file.loadFromData(new Uint8Array(maskPdf(mask)));
+	const err = file.loadFromData(new Uint8Array(maskPdf(mask, w, h)));
 	if (err)
 		throw new Error('open failed, error ' + err);
 	const ptr = file.getPagePixmap(0, N, N, 0xFFFFFF);
@@ -184,6 +196,16 @@ async function pdfChecks(js) {
 	check(r.red === 0, 'mask 4 rows short of its /Height: ' + r.red + ' px painted from memory (want 0)');
 	r = renderMask(viewer, Buffer.alloc(0));
 	check(r.red === 0, 'empty mask stream: ' + r.red + ' px painted from memory (want 0)');
+	// 4 * 32768 * 32769 wraps a 32-bit size_t to 128 KB; the stream is empty, so
+	// every row is filled as "missing" - 4 GB of writes into that buffer
+	let error = null;
+	try { r = renderMask(viewer, Buffer.alloc(0), 32768, 32769); }
+	catch (e) { error = (e && e.message) || String(e); }
+	check(error === null && r.red === 0, '32768x32769 /ImageMask: ' + (error ? 'died: ' + error : r.red + ' px painted'));
+	if (!error) {
+		r = renderMask(viewer, Buffer.alloc(ROW * N, 0x00));
+		check(r.red === N * N, 'module still renders the control mask afterwards: ' + r.red + ' px painted');
+	}
 }
 
 // ---------------------------------------------------------------- WMF / EMF
