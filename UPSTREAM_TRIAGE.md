@@ -460,6 +460,28 @@ now sends the host default plus activeSheet/topLeftCells (sdkjs e2d1b5afd8; test
 added and made active, Ctrl-S path wrote that sheet. Side effect: a plain xlsx Save now also keeps the
 sheet/scroll on screen, as Save As does.
 
+### #706 - Save As cut dotted names ("foo(05.09.21)" offered as "foo(05.09.docx") - FIXED 2026-11-11 (Linux/Windows)
+desktop-apps win-linux cfiledialog.cpp handed the dialog the name cut at the last dot of the whole
+path; Qt's widget dialog and KDE's (the portal backend on Plasma Wayland, default since #2168) then
+replaced what followed that dot with the filter's extension. A name without an extension in a dotted
+folder lost part of the path (/home/u/v1.2/README -> /home/u/v1). After the dialog, a typed extension
+of another offered format was rewritten silently (talk.pdf with DOCX -> talk.docx) and a.docx.pdf
+became a.docx.docx. Now only the file name's extension is cut; portal/Qt dialogs get name + selected
+extension; a corrected name that differs from what the user typed asks first (one new English
+string). desktop-apps a877e2fc4; test issue-706-saveas-dotted-name. KDE/GTK/Windows dialogs not run
+live; macOS save panel unchanged and not GUI-checked for dotted names.
+
+### #790 - On deepin 20.3 I can't save file as chinese filename - reported symptom gone in 9.4; related crash FIXED 2026-11-11
+Report (6.4.2): Chinese could not be typed in the Save As name box on deepin. In 6.4 that box was
+QFileDialog's widget dialog from the bundled Qt, which ships no fcitx platforminputcontext plugin, so
+fcitx input could not reach it (ibus could). 9.4 does not use that dialog on Linux
+(FILEDIALOG_DONT_USE_NATIVEDIALOGS undefined): Save As runs the system GTK chooser (X11) or
+xdg-desktop-portal (Wayland), which use the desktop's IM module. Not re-run on deepin. Found while
+checking: gtkfilechooser.cpp and xdgdesktopportal.cpp passed name/folder/title/filters with
+toLocal8Bit; under a non-UTF-8 locale the portal path aborted the whole app in libdbus (unsaved work
+lost) and the GTK path garbled the name. Now toUtf8 (desktop-apps 7f1090d9c; test
+issue-790-linux-dialog-utf8).
+
 ## Root-caused, not fixed
 
 ### #1343 - "Invalid character in spreadsheet" - nothing is invalid, and nothing is lost
