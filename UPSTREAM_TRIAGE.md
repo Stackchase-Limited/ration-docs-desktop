@@ -1615,7 +1615,7 @@ desktop-apps 2745193bc, onlyoffice.github.io cdfcd7a local only; tests issue-166
 - file:// pages and the bridge read only the app, editor, plugin and user-data folders, not any file.
 - YouTube and plugin store pages no longer load remote scripts into file:// pages.
 - OnFileDialog now overrides the 109 signature (970a438c); override sweep f7f79a14.
-Still open: AVIF images dropped from docx on save; user file:// plugins share the editor origin;
+Still open: user file:// plugins share the editor origin;
 callToolFunction file readers take any path; file:// links in documents opened by the OS; symlinks
 inside allowed folders; renderer sandbox; CEF upgrade.
 - Plugin store (onlyoffice.github.io 683027f, local only; test issue-1664-store-html): every remote
@@ -1624,6 +1624,10 @@ inside allowed folders; renderer sandbox; CEF upgrade.
 - build_tools fetching v1/plugins*.js: already fixed on lab02 by a3a1931 (pinned, checked-in copies;
   test issue-1664-build-plugin-api). Note a3a1931 also drops the plugin manager from desktop deploys
   unless the build config sets desktop-marketplace="1" - a product decision, not yet made.
+- AVIF (and any picture core cannot re-encode) was dropped from docx/xlsx/pptx on every save since
+  before the guard: CImageManager2::GenerateImageExec pointed the rel at a .png it never wrote. Now the
+  original bytes are kept; avif -> image/avif (core 0228100ad6; test issue-1664-avif-save). Not yet
+  GUI-checked; odt/doc/rtf saves not tested.
 - New: desktop-sdk client_renderer_wrapper.cpp:3187-3210 (PluginInstall) downloads plugins.js,
   plugins-ui.js and plugins.css from onlyoffice.github.io into the user v1/ folder at run time on every
   store install, and every user plugin loads them. Not fixed.
