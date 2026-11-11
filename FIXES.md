@@ -12,6 +12,7 @@ nothing here can claim a test that is not on disk.
 - **132** have a test artifact in `fork-fix-tests/`
 - **39** do not - the fix is asserted by its commit message only
 - **35** fix commits carry no issue number (defects found in passing)
+- **0** defects found by our own testing (RD-NNNN), 0 with a test - counted separately from upstream issues
 
 A row here means a commit exists. It does **not** mean the fix was verified;
 that is what the Test column is for. See the verification status section of

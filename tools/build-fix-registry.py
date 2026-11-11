@@ -49,6 +49,8 @@ def tests_by_issue():
     if not os.path.isdir(TESTS):
         return found
     for name in os.listdir(TESTS):
+        for rd in re.findall(r'^rd-(\d{4})', name):
+            found.setdefault('RD-' + rd, []).append(name)
         for num in re.findall(r'issue-(\d+)', name):
             # agents zero-pad short numbers (issue-0182) to sort them; issues are not padded
             found.setdefault(str(int(num)), []).append(name)
@@ -59,6 +61,7 @@ def collect():
     have_test = tests_by_issue()
     rows = OrderedDict()          # issue -> dict
     unnumbered = []               # fixes with no issue number
+    internal = OrderedDict()      # RD-NNNN -> dict: defects we found ourselves (corpus runs, testing)
 
     for repo in SUBMODULES:
         base = upstream_base(repo)
@@ -76,6 +79,17 @@ def collect():
                 continue
             sha, date, subject = parts[0], parts[1], parts[2]
             body = parts[3] if len(parts) > 3 else ''
+            # Our own findings carry an ID of ours instead of an upstream number:
+            # "RD-0001: <what was wrong>; <what now>". Kept apart from upstream issues.
+            m = re.match(r'^(RD-\d{4})\b', subject)
+            if m:
+                r = internal.setdefault(m.group(1), {'issue': m.group(1), 'repos': set(),
+                                                     'commits': [], 'dates': set(), 'subjects': []})
+                r['repos'].add(repo); r['commits'].append('%s:%s' % (repo, sha[:10]))
+                r['dates'].add(date)
+                if subject not in r['subjects']:
+                    r['subjects'].append(subject)
+                continue
             if not FIX_SUBJECT.match(subject):
                 continue
             # An issue is CLAIMED, not merely mentioned. Two forms count: the
@@ -107,11 +121,13 @@ def collect():
                     r['subjects'].append(subject)
     for n, r in rows.items():
         r['tests'] = have_test.get(n, [])
-    return rows, unnumbered
+    for n, r in internal.items():
+        r['tests'] = have_test.get(n, [])
+    return rows, unnumbered, internal
 
 
 def main():
-    rows, unnumbered = collect()
+    rows, unnumbered, internal = collect()
     verified = [r for r in rows.values() if r['tests']]
     unverified = [r for r in rows.values() if not r['tests']]
 
@@ -129,6 +145,9 @@ def main():
     if unnumbered:
         out.append('- **%d** fix commits carry no issue number (defects found in passing)'
                    % len(unnumbered))
+    out.append('- **%d** defects found by our own testing (RD-NNNN), %d with a test - counted'
+               ' separately from upstream issues' % (len(internal),
+                                                     sum(1 for r in internal.values() if r['tests'])))
     out.append('')
     out.append('A row here means a commit exists. It does **not** mean the fix was verified;')
     out.append('that is what the Test column is for. See the verification status section of')
@@ -152,6 +171,18 @@ def main():
     table('Not verified - commit message only', unverified,
           'These are not necessarily wrong; several are plainly right on inspection.\n'
           'They have not been demonstrated.')
+
+    if internal:
+        out.append('## Our own findings (RD-NNNN) - corpus runs and testing\n')
+        out.append('| ID | Where | Commit | Test | Landed | What |')
+        out.append('|---|---|---|---|---|---|')
+        for r in sorted(internal.values(), key=lambda x: x['issue'], reverse=True):
+            t = '`%s`' % r['tests'][0] if r['tests'] else '-'
+            out.append('| %s | %s | %s | %s | %s | %s |' % (
+                r['issue'], ', '.join(sorted(r['repos'])),
+                ' '.join('`%s`' % c.split(':')[1] for c in r['commits'][:3]), t,
+                sorted(r['dates'])[-1], r['subjects'][0].split(':', 1)[-1].strip()[:80]))
+        out.append('')
 
     if unnumbered:
         out.append('## Defects found in passing - no upstream issue\n')
@@ -186,8 +217,8 @@ def main():
         missing = []
 
     open(os.path.join(ROOT, 'FIXES.md'), 'w').write('\n'.join(out))
-    print('FIXES.md: %d issues (%d verified, %d not), %d unnumbered, %d unclaimed'
-          % (len(rows), len(verified), len(unverified), len(unnumbered), len(missing)))
+    print('FIXES.md: %d issues (%d verified, %d not), %d unnumbered, %d unclaimed; %d own findings (RD)'
+          % (len(rows), len(verified), len(unverified), len(unnumbered), len(missing), len(internal)))
 
 
 if __name__ == '__main__':
