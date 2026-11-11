@@ -1617,8 +1617,16 @@ desktop-apps 2745193bc, onlyoffice.github.io cdfcd7a local only; tests issue-166
 - OnFileDialog now overrides the 109 signature (970a438c); override sweep f7f79a14.
 Still open: AVIF images dropped from docx on save; user file:// plugins share the editor origin;
 callToolFunction file readers take any path; file:// links in documents opened by the OS; symlinks
-inside allowed folders; plugin store HTML from remote config/CHANGELOG; build_tools still fetches
-v1/plugins*.js at build time; renderer sandbox; CEF upgrade.
+inside allowed folders; renderer sandbox; CEF upgrade.
+- Plugin store (onlyoffice.github.io 683027f, local only; test issue-1664-store-html): every remote
+  config.json/rating value is escaped, CHANGELOG markdown is rebuilt from allowed tags only, card links
+  must be http(s)/mailto. Not yet GUI-checked in an app build.
+- build_tools fetching v1/plugins*.js: already fixed on lab02 by a3a1931 (pinned, checked-in copies;
+  test issue-1664-build-plugin-api). Note a3a1931 also drops the plugin manager from desktop deploys
+  unless the build config sets desktop-marketplace="1" - a product decision, not yet made.
+- New: desktop-sdk client_renderer_wrapper.cpp:3187-3210 (PluginInstall) downloads plugins.js,
+  plugins-ui.js and plugins.css from onlyoffice.github.io into the user v1/ folder at run time on every
+  store install, and every user plugin loads them. Not fixed.
 
 ### #2238 - IME candidate panel overlaps text in split (snapped) window - not in our page code
 Windows / 9.2.1 / Microsoft Pinyin; "split" = Windows snap (from the attached video). The IME anchor (hidden

@@ -131,7 +131,9 @@ const btn = (text) => ({ textContent: text, onclick: null, classList: { add() {}
 const Utils = Object.assign({
 	getTranslated: (t) => t, getTranslatedMessage: (t) => t, getTranslatedName: (p) => p.name,
 }, eval('({isSamePlugins: ' + method(utils, 'isSamePlugins') + ', convertPluginVersionToNumber: ' +
-	method(utils, 'convertPluginVersionToNumber') + '})'));
+	method(utils, 'convertPluginVersionToNumber') +
+	// _makeActionButtons escapes the guid since #1664 (store HTML); older trees have no escapeHtml
+	(utils.includes('escapeHtml: function') ? ', escapeHtml: ' + method(utils, 'escapeHtml') : '') + '})'));
 const UI = {
 	divMain: { textContent: '' },
 	_makeActionButtons: eval('(' + method(ui, '_makeActionButtons') + ')'),
