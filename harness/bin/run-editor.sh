@@ -40,6 +40,22 @@ suppress_move_alert() {
 	fi
 }
 
+# After the app was killed (pkill), macOS asks whether to reopen its windows on the
+# next launch. That alert is invisible on a terminal launch too: the app stays up
+# with CDP answering but never creates a renderer, and a scripted quit fails with
+# "User cancelled (-128)". Window restoration is a real user preference, so it is
+# switched off only for the test bundle (com.stackchase.rationdocs.test), never for
+# an installed copy.
+suppress_reopen_alert() {
+	local id
+	id="$(rd_bundle_id)"
+	case "$id" in *.test) ;; *) return 0 ;; esac
+	if [ "$(defaults read "$id" ApplePersistenceIgnoreState 2>/dev/null)" != "1" ]; then
+		defaults write "$id" ApplePersistenceIgnoreState -bool YES
+		echo "Suppressed the \"reopen windows?\" alert for $id"
+	fi
+}
+
 if cdp_up; then
 	echo "CDP already listening on port $RD_PORT - reusing the running app"
 else
@@ -58,6 +74,7 @@ else
 	fi
 
 	suppress_move_alert
+	suppress_reopen_alert
 
 	echo "Launching $RD_APP (version $(rd_app_version)) with CDP on $RD_PORT"
 	"$EXE" --ascdesktop-support-debug-info --remote-debugging-port="$RD_PORT" >/tmp/ration-editor.log 2>&1 &

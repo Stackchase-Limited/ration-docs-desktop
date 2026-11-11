@@ -424,6 +424,9 @@ tests.
 | #1942 | In a slide show the video controls covered the video for the whole show; they now show only while the mouse is over the video and hide after 2 s of a still mouse while playing (macOS and Qt players) | `desktop-sdk` |
 | #1943 | Play/pause/seek in the presenter view's player reached nothing; they now drive the slide show's player (and back), sound only from the slide show | `sdkjs`, `desktop-sdk` |
 | #2528 | Switching tabs flashed light gray in a dark theme on Linux (the X window holding each tab had a fixed light background); on macOS a theme change left open tabs with the old background | `desktop-sdk`, `desktop-apps` |
+| #2062 | LaTeX -> Professional froze the editor for good on any spacing command but `\ ` and `\quad` (`\thinsp`, `\nbsp`..., also reached via a Word thick space); `\,` `\:` `\;` stayed as literal text. Keyboard input on Mac layouts was fine | `sdkjs` |
+| #1468 | Linux "auto" interface scaling ignored the desktop's fractional scale whenever the screen-size guesses or physical DPI disagreed (4K at 125/175% came out 200%, 1600x900 at 125% came out 100%); Xft.dpi now wins | `desktop-sdk` |
+| #1967 | Administrators can switch plugins off machine-wide (all, the plugin manager, or listed GUIDs) through the platform's managed settings: Windows HKLM policy, macOS configuration profile, Linux /etc/ration/docs/policy.conf (desktop-apps MANAGED-SETTINGS.md) | `desktop-sdk`, `desktop-apps` |
 
 Two defects in our own tooling were fixed alongside: CEF remote debugging was
 pinned to a hardcoded port 8080 that could not be overridden, and CEF failures
@@ -1557,6 +1560,24 @@ xls. The reporter's actual ask is an override - "open this in Spreadsheet
 anyway". Not investigated in depth.
 
 ## Not reproducible or not testable here
+
+### #2519 - editors_helper.exe left in memory after closing (Windows) - not on macOS
+macOS 9.4 test app, 10 quit cycles (bare, docx, docx+xlsx+PDF, slideshow, AI plugin, AI agent panel): every
+helper gone in 1-5 s; even SIGKILL of the browser takes them down (POSIX suicide-on-channel-error). Windows:
+the normal quit reaches CefShutdown (applicationmanager.cpp:978-995, cefapplication.cpp:639-679); the only
+path that skips it is the _WIN32 early return in CApplicationCEF::Close() (CEF #2703 workaround), and an
+unsandboxed Windows renderer has no kill-on-close job. Not crashpad, not updatesvc. On the Windows x64
+machine: is editors.exe still alive (parent PID)? if so dump it (hang in close); if orphaned, procdump the
+helper; log whether Close() takes the early return.
+
+### #2458 - Linux/GNOME Wayland: ABNT2 dead keys fail; --enable-wayland-ime makes File > Exit hang - not reproduced
+Our Linux host is X11-only (main.cpp:110-111 forces xcb/x11; CEF browsers are X11 children), CEF 109.1.18.
+Our real linux_arm64 libcef under Xvfb with setxkbmap br abnt2 and xdotool dead keys gives "ãéç" with the
+GTK simple context, IBus GTK module and IBus XIM, on Ubuntu 24.04 and Fedora 44 (the reporter's OS); replaying
+Chromium's composition events into the real word editor inserts "ãéç". The failure needs a GNOME Shell
+Wayland session. --ozone-platform=wayland is unsupported (Wayland Chromium under an X11 host); the app quits
+only on CEF_DESTROYWINDOW, so a close that never fires OnBeforeClose leaves it waiting. Possible hardening,
+not done: force --ozone-platform=x11 for CEF. Aside: GTK_IM_MODULE=wayland kills our libcef at start on X11.
 
 ### #2019 - Horizontal scroll with second mouse wheel not working - not in our JS
 Windows 9.0.4, Logitech MX Master thumb wheel: 3 columns, then horizontal scrolling stops until another

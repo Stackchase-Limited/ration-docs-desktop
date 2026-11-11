@@ -62,6 +62,8 @@ BASE_REF = os.environ.get('BASE_REF', 'ad09162a^')
 BASELINE = bool(os.environ.get('BASELINE'))
 SRC = 'ChromiumBasedEditors/lib/src/'
 HEADERS = ['plugins.h', 'utils.h', 'Logger.h']
+# included by plugins.h since #1967 (desktop-sdk df192078); absent at this test's BASE_REF
+OPTIONAL_HEADERS = ['plugins_policy.h']
 
 DRIVER = r'''
 #include "desktop-sdk/ChromiumBasedEditors/lib/src/plugins.h"
@@ -114,6 +116,13 @@ def build(work):
     for h in HEADERS:
         with open(os.path.join(dst, h), 'w', encoding='utf-8') as f:
             f.write(read(SRC + h))
+    for h in OPTIONAL_HEADERS:
+        try:
+            text = read(SRC + h)
+        except (OSError, subprocess.CalledProcessError):
+            continue
+        with open(os.path.join(dst, h), 'w', encoding='utf-8') as f:
+            f.write(text)
     os.symlink(CORE, os.path.join(inc, 'core'))
     cpp = os.path.join(work, 'drv.cpp')
     with open(cpp, 'w') as f:

@@ -8,8 +8,8 @@ behind its own commits when this was written, and several commit messages cite
 test directories that have never existed. Nothing here is typed in by hand, so
 nothing here can claim a test that is not on disk.
 
-- **141 issues** with at least one fix commit
-- **103** have a test artifact in `fork-fix-tests/`
+- **144 issues** with at least one fix commit
+- **106** have a test artifact in `fork-fix-tests/`
 - **38** do not - the fix is asserted by its commit message only
 - **34** fix commits carry no issue number (defects found in passing)
 
@@ -98,10 +98,12 @@ that is what the Test column is for. See the verification status section of
 | [#2105](https://github.com/ONLYOFFICE/DesktopEditors/issues/2105) | desktop-apps | `2241a8a0e6` | `issue-2105-wayland-no-x` | 2026-09-14 |
 | [#2095](https://github.com/ONLYOFFICE/DesktopEditors/issues/2095) | sdkjs | `74d274f7d2` | `issue-2095-drop-document-opens-tab-test.js` | 2026-11-10 |
 | [#2071](https://github.com/ONLYOFFICE/DesktopEditors/issues/2071) | sdkjs | `b98bcb7c01` | `issue-2071-unhide-all-rows-test.js` | 2026-09-15 |
+| [#2062](https://github.com/ONLYOFFICE/DesktopEditors/issues/2062) | sdkjs | `599f986ab7` | `issue-2062-latex-space-hang-test.js` | 2026-11-11 |
 | [#2056](https://github.com/ONLYOFFICE/DesktopEditors/issues/2056) | desktop-sdk | `6cd7c621ee` | `issue-2056-flush-before-success` | 2026-09-12 |
 | [#2031](https://github.com/ONLYOFFICE/DesktopEditors/issues/2031) | desktop-apps | `fb27173cb1` | `issue-2031-installer-assoc-selection` | 2026-11-10 |
 | [#2022](https://github.com/ONLYOFFICE/DesktopEditors/issues/2022) | core | `b398371970` | `issue-2022-csv-last-row` | 2026-09-15 |
 | [#2010](https://github.com/ONLYOFFICE/DesktopEditors/issues/2010) | sdkjs | `29c78b83b5` | `issue-2010-pdf-outline-page-range-test.js` | 2026-11-11 |
+| [#1967](https://github.com/ONLYOFFICE/DesktopEditors/issues/1967) | desktop-apps, desktop-sdk | `daa44229e7` `df19207858` | `issue-1967-managed-plugin-policy` | 2026-11-11 |
 | [#1947](https://github.com/ONLYOFFICE/DesktopEditors/issues/1947) | desktop-apps | `f205870618` | `issue-1947-linux-landscape-print` | 2026-11-05 |
 | [#1943](https://github.com/ONLYOFFICE/DesktopEditors/issues/1943) | desktop-sdk, sdkjs | `b12cc75a46` `3f9d60fc61` | `issue-1943-presenter-video-sync` | 2026-11-11 |
 | [#1942](https://github.com/ONLYOFFICE/DesktopEditors/issues/1942) | desktop-sdk | `f5635e16ec` | `issue-1942-slideshow-video-controls` | 2026-11-11 |
@@ -114,6 +116,7 @@ that is what the Test column is for. See the verification status section of
 | [#1568](https://github.com/ONLYOFFICE/DesktopEditors/issues/1568) | sdkjs | `85cc0673e2` | `issue-1568-style-from-selection-highlight-test.js` | 2026-11-10 |
 | [#1491](https://github.com/ONLYOFFICE/DesktopEditors/issues/1491) | desktop-sdk, sdkjs | `eb97eb93a8` `33fa495f48` | `issue-1491-slideshow-video-keys` | 2026-11-10 |
 | [#1470](https://github.com/ONLYOFFICE/DesktopEditors/issues/1470) | core | `64f592dfbb` | `issue-1470-cjk-fallback-sc-first` | 2026-11-05 |
+| [#1468](https://github.com/ONLYOFFICE/DesktopEditors/issues/1468) | desktop-sdk | `7ec929901a` | `issue-1468-linux-fractional-scaling` | 2026-11-11 |
 | [#1372](https://github.com/ONLYOFFICE/DesktopEditors/issues/1372) | core | `39a34e13b3` | `issue-1372-csv-locale-date-and-numfmt` | 2026-09-15 |
 | [#1364](https://github.com/ONLYOFFICE/DesktopEditors/issues/1364) | sdkjs | `ef815d5784` `ef815d5784` | `issue-1364-single-cell-copy-test.js` | 2026-09-15 |
 | [#1362](https://github.com/ONLYOFFICE/DesktopEditors/issues/1362) | desktop-sdk | `679ebd742f` | `issue-1362-samba-lock` | 2026-09-15 |
