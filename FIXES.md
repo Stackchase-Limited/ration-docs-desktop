@@ -8,8 +8,8 @@ behind its own commits when this was written, and several commit messages cite
 test directories that have never existed. Nothing here is typed in by hand, so
 nothing here can claim a test that is not on disk.
 
-- **172 issues** with at least one fix commit
-- **133** have a test artifact in `fork-fix-tests/`
+- **174 issues** with at least one fix commit
+- **135** have a test artifact in `fork-fix-tests/`
 - **39** do not - the fix is asserted by its commit message only
 - **35** fix commits carry no issue number (defects found in passing)
 - **0** defects found by our own testing (RD-NNNN), 0 with a test - counted separately from upstream issues
@@ -95,6 +95,7 @@ that is what the Test column is for. See the verification status section of
 | [#2161](https://github.com/ONLYOFFICE/DesktopEditors/issues/2161) | desktop-apps | `4ab3fb37ec` | `issue-2161-landscape-print-margins` | 2026-09-15 |
 | [#2147](https://github.com/ONLYOFFICE/DesktopEditors/issues/2147) | desktop-apps | `2441a039db` | `issue-2147-color-printing` | 2026-09-15 |
 | [#2131](https://github.com/ONLYOFFICE/DesktopEditors/issues/2131) | desktop-sdk, sdkjs | `3c780add0b` `6e140c36ca` | `issue-2131-video-aspect` | 2026-11-10 |
+| [#2119](https://github.com/ONLYOFFICE/DesktopEditors/issues/2119) | sdkjs | `ff0514e5b7` | `issue-2119-shift-drag-insert-rows-test.js` | 2026-11-11 |
 | [#2113](https://github.com/ONLYOFFICE/DesktopEditors/issues/2113) | core | `4a3252194b` `4a3252194b` | `issue-2113-ods-pivot-table` | 2026-09-15 |
 | [#2110](https://github.com/ONLYOFFICE/DesktopEditors/issues/2110) | desktop-sdk | `c5fa6b67af` | `issue-2110-mac-slide-print-fit` | 2026-11-10 |
 | [#2107](https://github.com/ONLYOFFICE/DesktopEditors/issues/2107) | desktop-sdk, onlyoffice.github.io | `ad09162aca` `34ab06d141` | `issue-2107-plugin-remove-native` | 2026-11-10 |
@@ -129,6 +130,7 @@ that is what the Test column is for. See the verification status section of
 | [#1359](https://github.com/ONLYOFFICE/DesktopEditors/issues/1359) | core | `af68137e07` `af68137e07` | `issue-1359-x2t-bad-alloc` | 2026-09-15 |
 | [#1323](https://github.com/ONLYOFFICE/DesktopEditors/issues/1323) | core | `b6672e6780` | `issue-1323-docx-zip-entry-order` | 2026-09-15 |
 | [#1297](https://github.com/ONLYOFFICE/DesktopEditors/issues/1297) | core | `1f81e91eca` | `issue-1297-csv-compaction-skip` | 2026-09-15 |
+| [#1167](https://github.com/ONLYOFFICE/DesktopEditors/issues/1167) | desktop-apps | `82e255608f` | `issue-1167-google-doc-link` | 2026-11-11 |
 | [#1031](https://github.com/ONLYOFFICE/DesktopEditors/issues/1031) | core | `9e6c96b316` | `issue-1031-wmf-ansi-codepage` | 2026-11-11 |
 | [#1018](https://github.com/ONLYOFFICE/DesktopEditors/issues/1018) | sdkjs | `26cb022b7c` `26cb022b7c` | `issue-1018-autofit-column-scan-test.js` | 2026-09-15 |
 | [#1004](https://github.com/ONLYOFFICE/DesktopEditors/issues/1004) | desktop-apps | `867bdbe7eb` | `issue-1004-template-associations` | 2026-11-11 |

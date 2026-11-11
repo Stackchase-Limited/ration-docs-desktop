@@ -680,6 +680,19 @@ Also (#927 neighbour): plain-text paste with lone CR became one paragraph and a 
 inserted as a character; _pasteText now normalises CRLF/CR to LF (sdkjs d60507f1e5; test
 issue-927-paste-lone-cr-test.js). Slide/PDF paths share it but were not run.
 
+### #2119 - Shift pressed during a row/column drag did not insert between rows - FIXED 2026-11-11
+Insert-move existed (upstream b8f32d7549) but Shift counted only if held at mousedown on a header:
+_moveRangeHandle sent {ctrlKey, shiftKey} once and changeSelectionMoveRangeHandle stored them once,
+so Excel's gesture (Shift after the drag starts) and border drags never inserted; the insert line also
+lagged one move. Live shiftKey now flows through WorkbookView into colRowMoveProps (sdkjs ff0514e5b7;
+test issue-2119-shift-drag-insert-rows-test.js). Insert-line painting and the dropped data need a GUI check.
+
+### #1167 - a Google Docs link from a Drive mount opened Google's editor in a tab - FIXED 2026-11-11
+On a GNOME Google Drive mount a native Google document is a shortcut to its docs.google.com page, and
+handleInputCmd opened any http(s) argument as a web tab. docs.google.com/drive.google.com links (exact
+host) now go to the system browser (desktop-apps 82e255608; test issue-1167-google-doc-link). Linux
+compiled, Windows not; .gdoc/.gsheet files from Drive for desktop not handled; macOS path untouched.
+
 ## Root-caused, not fixed
 
 ### #1233 - paste of web content with images freezes the editor - root-caused, not fixed
@@ -1652,6 +1665,12 @@ made about the cause.
 
 ## Already fixed in our 9.4 baseline - no action
 
+### #373 - Kubuntu spellchecker stays en-US instead of following the keyboard layout
+Fixed by our #2503 (desktop-sdk c430d3b1): xkb "English (Australian)" now maps to en_AU (the old
+substring match against "Australia" failed and fell back to en_US); issue-2503-xkb-region-adjective
+passes on the main tree.
+
+
 ### #772 - copying an image from Eye of GNOME pastes its file path
 Reproduced EOG's exact clipboard (image targets + file URI as text) under Xvfb with Chromium 109 (=
 our CEF): the paste event offers only the file (image/jpeg); text/plain is empty, and the real
@@ -1929,6 +1948,24 @@ xls. The reporter's actual ask is an override - "open this in Spreadsheet
 anyway". Not investigated in depth.
 
 ## Not reproducible or not testable here
+
+### #2493 - "Paste as plain text" missing (10.0) - not reproducible in 9.4
+In an app clone with real CDP clicks, the Paste split-button shows "Keep source formatting" and "Keep
+text only" for external and in-document copies. A greyed menu appears only when the clipboard read
+fails (no user gesture). Upstream's 10.0 trigger (their 84857) is not in v10.0.0.176. Side finding,
+unfixed: initSpecialPasteData (clipboard_base.js:1663) calls _callback() on null paste_data and then
+dereferences it - a missing return.
+
+### #1005 - Polish translation of the print dialog (Linux) - nothing to translate
+The 2022 screenshot is Qt's QPrintDialog (only qtbase_ru.qm shipped). 9.4 on Linux uses GtkPrintDialog,
+whose labels come from the system gtk30 catalogue; our own strings are in langs/pl.ts. Not shown live
+(no pl locale in the container).
+
+### #2130 - subpixel UI text despite grayscale system antialiasing (Linux) - needs a Linux GUI
+Nothing reads the system setting; the only hook is --disable-lcd-text on ALT Linux (client_app.h).
+Proposed: also add it when Xft.rgba is none / GNOME antialiasing is grayscale / KDE XftSubPixel none,
+once a Linux run confirms CEF 109 ignores GTK's setting.
+
 
 ### #1621 - grey window after Win+Shift+Arrow to another monitor - Windows/GPU only
 Upstream reproduced only on Intel Arc (their 68947), both monitors 150%. Nothing in our code ties
