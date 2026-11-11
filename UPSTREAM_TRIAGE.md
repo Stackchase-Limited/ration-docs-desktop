@@ -729,6 +729,55 @@ desktop-sdk 95c61da6, web-apps ffc735fa93; tests rd-0001-csv-row-limit, rd-0001-
 Main.storyboard no longer instantiates SUUpdater or the "Check for Updates..." item (desktop-apps
 09c48fb4e; test rd-0002-mac-no-sparkle-updater-test.js). Needs a full app build to ship.
 
+### #2463 - a comment added from a macro showed twice in the Comments panel - FIXED 2026-11-12 (backport)
+AddCommentToDocument (word/apiBuilder.js) called sync_AddComment after CDocument.AddComment, which
+already does; backport of upstream 551cb909f3 (bug 83298) (sdkjs 3fae1156fb; test
+issue-2463-macro-comment-twice-test.js). Docbuilder: 2 events before, 1 after.
+
+### #2469 - left column of a 2-column section after a continuous break not drawn - FIXED 2026-11-12 (backport)
+Recalculate_PageColumn's PrevPage|Column branch re-initialised the whole section, so stepping back to the
+right column reset the left one, never laid out again; backport of upstream 0f67b0544a (bug 81956)
+(sdkjs ba6466c2e1; test issue-2469-two-column-left-column-lost-test.js). Reporter's file: 256 -> 493 words.
+
+### #2188 - document macros ran on a click (and custom functions on open) with no warning - FIXED 2026-11-12
+SECURITY. A shape/form button with an assigned macro (it can be styled as a link) ran on one click
+under every macros setting, and custom functions saved in an .xlsx were eval'd while opening. Now a
+click asks (asc_onMacrosRunRequest, same rules as the autostart warning, No default, "remember"), and
+file custom functions wait for consent (#NAME? until then; kept on save) (sdkjs b6a9dee535, web-apps
+f8b289bf97; test issue-2188-macro-click-consent-test.js). Embed/mobile viewers no longer run macro
+clicks. Open: functions saved through the Macros dialog go to localStorage and then run everywhere.
+
+### #2288 - ROW(INDIRECT("2:N")) reported a false circular reference - FIXED 2026-11-12
+recheckCellForCycle flagged any formula whose cell lay inside a saved INDIRECT/OFFSET result, whatever
+consumed it, and the store kept one slot per function name. Now every result is kept (cap 256) and
+ROW/ROWS/COLUMN/COLUMNS discard the one they consumed by identity; unmatched stays saved, so a real cycle
+is never missed (sdkjs c996b1857c; test issue-2288-row-indirect-false-cycle-test.js, docbuilder end to
+end, 5 positional + 6 genuine cycles). Test app: =ROW(INDIRECT("1:3")) in row 1 gives 1.
+
+### #1233 - pasting web content with images froze the editor - FIXED 2026-11-12
+http(s) images now download in one async DownloadFiles batch (BlockInteraction/LoadImage as on the web),
+30 s JS timeout; file:// and data: stay synchronous (sdkjs 3b3a0125ea; test
+issue-1233-paste-image-download-async-test.js). App clone, 3 images x 3 s: paste call 22.7 s -> 4 ms,
+largest main-thread gap 22.9 s -> 0.4 s. Native on_download_files builds JSON unescaped (a URL with "
+never calls back; the timeout covers it).
+
+### #1710 - Flatpak without network: every file opened a new instance - FIXED 2026-11-12 (Linux)
+SingleApplication found the first instance over UDP 127.<uid>.1:13012, which exists per network
+namespace, and --unshare=network gives each flatpak run its own. With a runtime dir it now uses an
+AF_UNIX socket there ($XDG_RUNTIME_DIR/app/$FLATPAK_ID under Flatpak) with an flock, UDP as fallback
+(desktop-apps eecac8e78; test issue-1710-flatpak-single-instance). Old and new instances won't find each
+other during the transition. Real Flatpak not run.
+
+### #1433 - a missing GSettings schema killed the app (AppImage/toolbox) - FIXED 2026-11-12 (Linux)
+We build no AppImage, but cnotification.cpp isNotificationsEnabled called g_settings_new for GNOME/Cinnamon
+notification schemas, which aborts when the schema/key is missing, and unref'd a GVariant with
+g_object_unref. Schema and key are now looked up first (desktop-apps a314de8d2; test
+issue-1433-gsettings-missing-schema).
+
+### RD-0003 - special paste with no clipboard data threw a TypeError - FIXED 2026-11-12
+initSpecialPasteData called _callback() on null paste_data and then dereferenced it; added the return
+(sdkjs 12e566a791; test rd-0003-special-paste-null-data-test.js).
+
 ## Root-caused, not fixed
 
 ### #1233 - paste of web content with images freezes the editor - root-caused, not fixed
@@ -1701,6 +1750,19 @@ made about the cause.
 
 ## Already fixed in our 9.4 baseline - no action
 
+### #2468 - AI agent merged arguments of sequential MCP tool calls
+Our desktop-sdk c865aace + 073ae7ba (#2461) already fix it (upstream bug 84216 has no desktop-sdk commit
+up to v10.0.0.176); issue-2461-ollama-tool-args-test.js fails on c865aace^ with this exact symptom.
+
+### #2367 - "An error has occurred while opening the file" (BrunWater125.xlsx)
+Our sdkjs 08f5a78f76 (#2400) is the same fix as upstream 367e49c9f0/2271967b1a; the reporter's file,
+editing "3. Grain Bill Input"!A6, throws at 08f5a78f76^ and works now. Supersedes the earlier note.
+
+### #1505 - GPO MSI installs in Czech only
+Upstream 4bb17c4b1/459230f49 add language-neutral 0 to the MSI summary; ours (make_advinst.ps1:188-199)
+does, English first. Parsed check only (needs Windows + Advanced Installer + GPO).
+
+
 ### #364 - window cannot be made narrow enough for split screen
 5.5.1 had MAIN_WINDOW_MIN_WIDTH 960 x dpi; upstream dropped it in the 2022 window refactor
 (31ea6ae4c/acd4fffb2). 9.4 uses WINDOW_MIN_WIDTH 520 x dpi (cwindowbase.cpp:80); macOS minSize 518x440.
@@ -1990,6 +2052,19 @@ xls. The reporter's actual ask is an override - "open this in Spreadsheet
 anyway". Not investigated in depth.
 
 ## Not reproducible or not testable here
+
+### #1400 - Debian trixie install appears to fail - not in 9.4
+7.5's postinst called update-desktop-database unguarded; upstream removed it (0cf8f92ca). Our .deb built
+from the real templates installed, upgraded and purged cleanly in debian:trixie (arm64, stub payload).
+
+### #2208 - PDF editor replaces barcodes - not reproducible for embedded TrueType barcode fonts
+"Edit text with origin font from file" (sdkjs d3d730762d, after the reporter's 9.2.1) keeps the embedded
+font: a Code 39 TrueType PDF stays bars while editing and after save. Type3/CFF/CID barcode fonts untested.
+
+### #2126 - debug mode sticks - not reproducible (macOS)
+--ascdesktop-support-debug-info-keep=1 persists via settings.xml and =0 clears it. Windows "Open with"
+not run. Side note: CheckSetting persists every --x=y switch (inert for the debug port).
+
 
 ### #648 - content flickers dark on tab switch (Linux, light theme) - not reproducible here
 The reporter's GIF shows one dark (#3c3c3c) frame over the content per switch; no light-theme colour

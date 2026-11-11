@@ -8,11 +8,11 @@ behind its own commits when this was written, and several commit messages cite
 test directories that have never existed. Nothing here is typed in by hand, so
 nothing here can claim a test that is not on disk.
 
-- **177 issues** with at least one fix commit
-- **138** have a test artifact in `fork-fix-tests/`
+- **184 issues** with at least one fix commit
+- **145** have a test artifact in `fork-fix-tests/`
 - **39** do not - the fix is asserted by its commit message only
 - **35** fix commits carry no issue number (defects found in passing)
-- **2** defects found by our own testing (RD-NNNN), 2 with a test - counted separately from upstream issues
+- **3** defects found by our own testing (RD-NNNN), 3 with a test - counted separately from upstream issues
 
 A row here means a commit exists. It does **not** mean the fix was verified;
 that is what the Test column is for. See the verification status section of
@@ -53,7 +53,9 @@ that is what the Test column is for. See the verification status section of
 | [#2480](https://github.com/ONLYOFFICE/DesktopEditors/issues/2480) | desktop-sdk | `4c58fffa76` `17e125e137` `565af3d1d5` | `issue-2480-gio-save-recovery` | 2026-11-05 |
 | [#2476](https://github.com/ONLYOFFICE/DesktopEditors/issues/2476) | desktop-sdk | `6bdcae56e2` | `issue-2476-ondestroywindow-null-cookies` | 2026-11-04 |
 | [#2471](https://github.com/ONLYOFFICE/DesktopEditors/issues/2471) | core | `bf09d8ce1c` `8aca22e449` `2a38ea99f3` | `issue-2471-cid-subset-tag` | 2026-11-04 |
+| [#2469](https://github.com/ONLYOFFICE/DesktopEditors/issues/2469) | sdkjs | `ba6466c2e1` | `issue-2469-two-column-left-column-lost-test.js` | 2026-06-16 |
 | [#2467](https://github.com/ONLYOFFICE/DesktopEditors/issues/2467) | sdkjs | `0c13033452` | `issue-2467-formula-bar-home-alt-enter-test.js` | 2026-11-04 |
+| [#2463](https://github.com/ONLYOFFICE/DesktopEditors/issues/2463) | sdkjs | `3fae1156fb` | `issue-2463-macro-comment-twice-test.js` | 2026-09-30 |
 | [#2461](https://github.com/ONLYOFFICE/DesktopEditors/issues/2461) | desktop-sdk | `073ae7bae2` `c865aace2a` | `issue-2461-ollama-tool-args-test.js` | 2026-11-05 |
 | [#2459](https://github.com/ONLYOFFICE/DesktopEditors/issues/2459) | sdkjs | `f0aa8ae774` `c5160011f4` `1bb4bdfbe9` | `issue-2459-totals-row-autofilter-test.js` | 2026-11-05 |
 | [#2455](https://github.com/ONLYOFFICE/DesktopEditors/issues/2455) | sdkjs | `23b782f0a4` | `issue-2455-gradient-stop-alpha-test.js` | 2026-11-04 |
@@ -75,6 +77,7 @@ that is what the Test column is for. See the verification status section of
 | [#2318](https://github.com/ONLYOFFICE/DesktopEditors/issues/2318) | sdkjs | `0f18391e82` | `issue-2318-wingdings-opensymbol-test.js` | 2026-11-10 |
 | [#2301](https://github.com/ONLYOFFICE/DesktopEditors/issues/2301) | core | `80e5c0ead3` `80e5c0ead3` | `issue-2301-csv-hex` | 2026-09-14 |
 | [#2296](https://github.com/ONLYOFFICE/DesktopEditors/issues/2296) | sdkjs | `8ad35f24cc` | `issue-2296-date-format-test.js` | 2026-09-15 |
+| [#2288](https://github.com/ONLYOFFICE/DesktopEditors/issues/2288) | sdkjs | `c996b1857c` | `issue-2288-row-indirect-false-cycle-test.js` | 2026-11-12 |
 | [#2274](https://github.com/ONLYOFFICE/DesktopEditors/issues/2274) | build_tools, desktop-apps | `3bde9a8b96` `f26bd0673a` | `issue-2274-qt-library-closure` | 2026-09-14 |
 | [#2271](https://github.com/ONLYOFFICE/DesktopEditors/issues/2271) | desktop-sdk | `ee8f1fdf95` | `issue-2271-new-doc-template-lang` | 2026-11-11 |
 | [#2269](https://github.com/ONLYOFFICE/DesktopEditors/issues/2269) | sdkjs | `280811aeca` | `issue-2269-cf-parent-test.js` | 2026-09-14 |
@@ -91,6 +94,7 @@ that is what the Test column is for. See the verification status section of
 | [#2202](https://github.com/ONLYOFFICE/DesktopEditors/issues/2202) | desktop-sdk | `26887f3267` `f4b4f9906a` | `issue-2202-x2t-spawn-failure` | 2026-09-15 |
 | [#2195](https://github.com/ONLYOFFICE/DesktopEditors/issues/2195) | core | `1269b750a9` | `issue-2195-symbolic-gid-offset` | 2026-09-15 |
 | [#2189](https://github.com/ONLYOFFICE/DesktopEditors/issues/2189) | desktop-apps | `cba281172d` | `issue-2189-mutex-lasterror` | 2026-09-14 |
+| [#2188](https://github.com/ONLYOFFICE/DesktopEditors/issues/2188) | sdkjs, web-apps | `b6a9dee535` `f8b289bf97` | `issue-2188-macro-click-consent-test.js` | 2026-11-12 |
 | [#2187](https://github.com/ONLYOFFICE/DesktopEditors/issues/2187) | core | `b4a57ad44e` `b4a57ad44e` | `issue-2187-shape-macro` | 2026-09-15 |
 | [#2161](https://github.com/ONLYOFFICE/DesktopEditors/issues/2161) | desktop-apps | `4ab3fb37ec` | `issue-2161-landscape-print-margins` | 2026-09-15 |
 | [#2147](https://github.com/ONLYOFFICE/DesktopEditors/issues/2147) | desktop-apps | `2441a039db` | `issue-2147-color-printing` | 2026-09-15 |
@@ -116,6 +120,7 @@ that is what the Test column is for. See the verification status section of
 | [#1922](https://github.com/ONLYOFFICE/DesktopEditors/issues/1922) | desktop-sdk, sdkjs | `39b0fd827b` `d97740fb73` `83724834dc` | `issue-1922-video-volume` | 2026-11-11 |
 | [#1855](https://github.com/ONLYOFFICE/DesktopEditors/issues/1855) | core | `4116fbeb76` | `issue-1855-pdf-outline-pagemode` | 2026-09-15 |
 | [#1760](https://github.com/ONLYOFFICE/DesktopEditors/issues/1760) | sdkjs | `9f3cc5dd87` | `issue-1760-copy-picture-image-png-test.js` | 2026-11-10 |
+| [#1710](https://github.com/ONLYOFFICE/DesktopEditors/issues/1710) | desktop-apps | `eecac8e789` | `issue-1710-flatpak-single-instance` | 2026-11-12 |
 | [#1672](https://github.com/ONLYOFFICE/DesktopEditors/issues/1672) | sdkjs, web-apps | `e88d90ee71` `c32ac680e4` `73d504525b` | `issue-1672-hidden-slides-pdf-print-test.js` | 2026-11-10 |
 | [#1664](https://github.com/ONLYOFFICE/DesktopEditors/issues/1664) | core, desktop-apps, desktop-sdk, onlyoffice.github.io, sdkjs, web-apps | `0228100ad6` `ff6eb2e4e3` `b0a9cfb763` | `issue-1664-no-remote-scripts-test.js` | 2026-11-11 |
 | [#1655](https://github.com/ONLYOFFICE/DesktopEditors/issues/1655) | web-apps | `d420245695` | `issue-1655-pivot-group-cmd-click-test.js` | 2026-11-11 |
@@ -124,12 +129,14 @@ that is what the Test column is for. See the verification status section of
 | [#1491](https://github.com/ONLYOFFICE/DesktopEditors/issues/1491) | desktop-sdk, sdkjs | `eb97eb93a8` `33fa495f48` | `issue-1491-slideshow-video-keys` | 2026-11-10 |
 | [#1470](https://github.com/ONLYOFFICE/DesktopEditors/issues/1470) | core | `64f592dfbb` | `issue-1470-cjk-fallback-sc-first` | 2026-11-05 |
 | [#1468](https://github.com/ONLYOFFICE/DesktopEditors/issues/1468) | desktop-sdk | `7ec929901a` | `issue-1468-linux-fractional-scaling` | 2026-11-11 |
+| [#1433](https://github.com/ONLYOFFICE/DesktopEditors/issues/1433) | desktop-apps | `a314de8d2f` | `issue-1433-gsettings-missing-schema` | 2026-11-12 |
 | [#1372](https://github.com/ONLYOFFICE/DesktopEditors/issues/1372) | core | `39a34e13b3` | `issue-1372-csv-locale-date-and-numfmt` | 2026-09-15 |
 | [#1364](https://github.com/ONLYOFFICE/DesktopEditors/issues/1364) | sdkjs | `ef815d5784` `ef815d5784` | `issue-1364-single-cell-copy-test.js` | 2026-09-15 |
 | [#1362](https://github.com/ONLYOFFICE/DesktopEditors/issues/1362) | desktop-sdk | `679ebd742f` | `issue-1362-samba-lock` | 2026-09-15 |
 | [#1359](https://github.com/ONLYOFFICE/DesktopEditors/issues/1359) | core | `af68137e07` `af68137e07` | `issue-1359-x2t-bad-alloc` | 2026-09-15 |
 | [#1323](https://github.com/ONLYOFFICE/DesktopEditors/issues/1323) | core | `b6672e6780` | `issue-1323-docx-zip-entry-order` | 2026-09-15 |
 | [#1297](https://github.com/ONLYOFFICE/DesktopEditors/issues/1297) | core | `1f81e91eca` | `issue-1297-csv-compaction-skip` | 2026-09-15 |
+| [#1233](https://github.com/ONLYOFFICE/DesktopEditors/issues/1233) | sdkjs | `3b3a0125ea` | `issue-1233-paste-image-download-async-test.js` | 2026-11-12 |
 | [#1194](https://github.com/ONLYOFFICE/DesktopEditors/issues/1194) | sdkjs | `aa8e849c33` | `issue-1194-touchpad-subpixel-scroll-test.js` | 2026-11-11 |
 | [#1167](https://github.com/ONLYOFFICE/DesktopEditors/issues/1167) | desktop-apps | `82e255608f` | `issue-1167-google-doc-link` | 2026-11-11 |
 | [#1031](https://github.com/ONLYOFFICE/DesktopEditors/issues/1031) | core | `9e6c96b316` | `issue-1031-wmf-ansi-codepage` | 2026-11-11 |
@@ -212,6 +219,7 @@ They have not been demonstrated.
 
 | ID | Where | Commit | Test | Landed | What |
 |---|---|---|---|---|---|
+| RD-0003 | sdkjs | `12e566a791` | `rd-0003-special-paste-null-data-test.js` | 2026-11-12 | special paste with no clipboard data threw a TypeError; it now stops after repor |
 | RD-0002 | desktop-apps | `09c48fb4e0` | `rd-0002-mac-no-sparkle-updater-test.js` | 2026-11-12 | macOS started Sparkle with no appcast and offered "Check for Updates..."; the up |
 | RD-0001 | core, desktop-sdk, web-apps | `9eed63b760` `ffc735fa93` `95c61da632` | `rd-0001-csv-open-limits` | 2026-11-12 | csv kept one row past 1048576, csv -> xlsx ignored the row limit and said nothin |
 
