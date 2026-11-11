@@ -693,6 +693,28 @@ handleInputCmd opened any http(s) argument as a web tab. docs.google.com/drive.g
 host) now go to the system browser (desktop-apps 82e255608; test issue-1167-google-doc-link). Linux
 compiled, Windows not; .gdoc/.gsheet files from Drive for desktop not handled; macOS path untouched.
 
+### #1000 - idle document used several times the CPU of an idle spreadsheet - FIXED 2026-11-12
+PaintMessageLoop._animation (sdkjs common/Drawings/WorkEvents.js) requested an animation frame every
+frame forever just to check whether 40 ms had passed, waking renderer and compositor 60-120 times a
+second (word, slide, visio; cell has no such loop). Between engine runs it now sleeps on a timer at the
+same 40 ms cadence; wake() returns to the next frame for scrolling (#2375 kept); hidden views unchanged
+(sdkjs 0bd49ef617; test issue-1000-idle-paint-loop-test.js; issue-2375 test given virtual timers).
+App clone, 40 s idle: docx renderer 5.3% -> 1.5%, GPU 1.6% -> 0%; pptx 3.8% -> 1.1%. Linux/Windows not
+measured; caret blink timer untouched.
+
+### #694 - editor fills only part of its window with QT_SCALE_FACTOR (Linux) - FIXED 2026-11-12
+qcefview.cpp SetWindowSize sized the editor's X windows with Qt logical pixels; with QT_SCALE_FACTOR=2
+(common on 4K) the editor filled a quarter of its panel. Now multiplied by devicePixelRatioF (1 without
+the variable) (desktop-sdk 963c2394; test issue-0694-linux-qt-scale-factor, real Qt 5.15 on Xvfb).
+Drag-and-drop coordinates under QT_SCALE_FACTOR still logical; real Linux app not run.
+
+### #1194 - touchpad scrolling in documents not smooth - FIXED 2026-11-12 (input side)
+The 40 ms repaint gate was #2375. Left: checkMouseWhell truncated each wheel event to whole pixels, so
+small touchpad deltas were lost (wheelDeltaY 2 never moved; -3 moved 40 of 45 px; fling tails stalled).
+The word editor now carries the fraction to the next event, reset on direction change; mouse notches
+unchanged; slide/visio/PDF/cell opt out (sdkjs aa8e849c33; test issue-1194-touchpad-subpixel-scroll-test.js).
+Real touchpad feel not checked (CDP wheel events carry wheelDeltaY=0).
+
 ## Root-caused, not fixed
 
 ### #1233 - paste of web content with images freezes the editor - root-caused, not fixed
@@ -1665,6 +1687,12 @@ made about the cause.
 
 ## Already fixed in our 9.4 baseline - no action
 
+### #364 - window cannot be made narrow enough for split screen
+5.5.1 had MAIN_WINDOW_MIN_WIDTH 960 x dpi; upstream dropped it in the 2022 window refactor
+(31ea6ae4c/acd4fffb2). 9.4 uses WINDOW_MIN_WIDTH 520 x dpi (cwindowbase.cpp:80); macOS minSize 518x440.
+Half of 1600x900 and of 1366x768 at 125% fit. Code/history reading only; Windows spot-check advised.
+
+
 ### #373 - Kubuntu spellchecker stays en-US instead of following the keyboard layout
 Fixed by our #2503 (desktop-sdk c430d3b1): xkb "English (Australian)" now maps to en_AU (the old
 substring match against "Australia" failed and fell back to en_US); issue-2503-xkb-region-adjective
@@ -1948,6 +1976,13 @@ xls. The reporter's actual ask is an override - "open this in Spreadsheet
 anyway". Not investigated in depth.
 
 ## Not reproducible or not testable here
+
+### #648 - content flickers dark on tab switch (Linux, light theme) - not reproducible here
+The reporter's GIF shows one dark (#3c3c3c) frame over the content per switch; no light-theme colour
+matches. The tab's X window was white until #2528 (desktop-sdk ce7cdbdb) gave it the theme colour, and
+upstream tab-flicker fixes since 6.3.1 are in our tree. Likely the system palette or compositor before
+first paint; needs a Linux GUI build with a dark GTK theme + light app theme.
+
 
 ### #2493 - "Paste as plain text" missing (10.0) - not reproducible in 9.4
 In an app clone with real CDP clicks, the Paste split-button shows "Keep source formatting" and "Keep

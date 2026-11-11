@@ -72,9 +72,14 @@ function run(scenario) {
 	/* virtual clock + requestAnimationFrame */
 	let now = 1000000;
 	let rafCb = null;
+	// timers: since #1000 the loop sleeps on a timer between engine runs
+	let timers = [];
+	let timerSeq = 0;
 	const window = {
 		requestAnimationFrame(cb) { rafCb = cb; return 1; },
 		cancelAnimationFrame() { rafCb = null; },
+		setTimeout(cb, ms) { const id = ++timerSeq; timers.push({ id: id, at: now + Math.max(0, ms || 0), cb: cb }); return id; },
+		clearTimeout(id) { timers = timers.filter((t) => t.id !== id); },
 	};
 	const FakeDate = { now: () => Math.floor(now) };
 	const AscCommon = { AscBrowser: { isChrome: true, isSafari: false } };
@@ -83,6 +88,8 @@ function run(scenario) {
 		extract(events, 'function PaintMessageLoop(') + '\n' +
 		extract(events, 'PaintMessageLoop.prototype.Start = function') + ';\n' +
 		extract(events, 'PaintMessageLoop.prototype._animation = function') + ';\n' +
+		extract(events, 'PaintMessageLoop.prototype._sleepEnd = function', true) + ';\n' +
+		extract(events, 'PaintMessageLoop.prototype.wake = function', true) + ';\n' +
 		'return PaintMessageLoop;')(window, AscCommon, FakeDate);
 
 	const api = { isMobileVersion: false, bInit_word_control: true, isLockTargetUpdate: true,
@@ -103,10 +110,19 @@ function run(scenario) {
 	).call(wc, wc, AscCommon);
 
 	wc.paintMessageLoop.Start(wc.onTimerScroll_internal.bind(wc));
+	const start = now;
 	for (let f = 1; f <= 120; f++) {
-		now += FRAME;
+		const frameAt = start + f * FRAME;
+		for (;;) {
+			const due = timers.filter((t) => t.at <= frameAt).sort((x, z) => x.at - z.at || x.id - z.id)[0];
+			if (!due) break;
+			timers = timers.filter((t) => t !== due);
+			now = due.at;
+			due.cb();
+		}
+		now = frameAt;
 		scenario(wc, f);
-		const cb = rafCb; rafCb = null; cb();
+		if (rafCb) { const cb = rafCb; rafCb = null; cb(); }
 	}
 	return stats;
 }
