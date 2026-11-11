@@ -9,8 +9,8 @@ test directories that have never existed. Nothing here is typed in by hand, so
 nothing here can claim a test that is not on disk.
 
 - **166 issues** with at least one fix commit
-- **118** have a test artifact in `fork-fix-tests/`
-- **48** do not - the fix is asserted by its commit message only
+- **127** have a test artifact in `fork-fix-tests/`
+- **39** do not - the fix is asserted by its commit message only
 - **34** fix commits carry no issue number (defects found in passing)
 
 A row here means a commit exists. It does **not** mean the fix was verified;
@@ -134,10 +134,19 @@ that is what the Test column is for. See the verification status section of
 | [#927](https://github.com/ONLYOFFICE/DesktopEditors/issues/927) | sdkjs | `981db8c0e0` | `issue-927-plain-text-line-endings-test.js` | 2026-11-11 |
 | [#925](https://github.com/ONLYOFFICE/DesktopEditors/issues/925) | sdkjs | `49123ea9fe` | `issue-925-french-guillemets-nbsp-test.js` | 2026-11-11 |
 | [#902](https://github.com/ONLYOFFICE/DesktopEditors/issues/902) | sdkjs | `e2d1b5afd8` `e2d1b5afd8` | `issue-902-csv-plain-save-active-sheet-test.js` | 2026-11-11 |
+| [#878](https://github.com/ONLYOFFICE/DesktopEditors/issues/878) | sdkjs | `06157857a8` `78aab3b128` | `issue-0878-slideshow-video-autoplay-test.js` | 2026-11-11 |
 | [#790](https://github.com/ONLYOFFICE/DesktopEditors/issues/790) | desktop-apps | `7f1090d9cf` | `issue-790-linux-dialog-utf8` | 2026-11-11 |
 | [#706](https://github.com/ONLYOFFICE/DesktopEditors/issues/706) | desktop-apps | `a877e2fc4c` | `issue-706-saveas-dotted-name` | 2026-11-11 |
 | [#676](https://github.com/ONLYOFFICE/DesktopEditors/issues/676) | sdkjs | `d32100e8a1` `d32100e8a1` | `issue-676-nautilus-image-paste-test.js` | 2026-09-15 |
+| [#560](https://github.com/ONLYOFFICE/DesktopEditors/issues/560) | desktop-apps | `27578a09e7` | `issue-0560-mac-paper-size` | 2026-11-11 |
+| [#547](https://github.com/ONLYOFFICE/DesktopEditors/issues/547) | sdkjs | `ba80ae077e` | `issue-0547-plain-save-pdf-layout-test.js` | 2026-11-11 |
+| [#531](https://github.com/ONLYOFFICE/DesktopEditors/issues/531) | sdkjs | `df3a283c13` | `issue-0531-fit-filtered-rows-test.js` | 2026-11-11 |
+| [#482](https://github.com/ONLYOFFICE/DesktopEditors/issues/482) | web-apps | `7ddbfa80c2` | `issue-0482-csv-row-limit-warning-test.js` | 2026-11-11 |
+| [#344](https://github.com/ONLYOFFICE/DesktopEditors/issues/344) | sdkjs | `6884d875b3` | `issue-0344-pptx-sym-font-test.js` | 2026-11-11 |
 | [#334](https://github.com/ONLYOFFICE/DesktopEditors/issues/334) | sdkjs | `b7a1614833` | `issue-334-copy-math-justification-test.js` | 2026-11-11 |
+| [#307](https://github.com/ONLYOFFICE/DesktopEditors/issues/307) | sdkjs | `67b7cbe97c` | `issue-0307-wrapped-overflow-valign-test.js` | 2026-11-11 |
+| [#281](https://github.com/ONLYOFFICE/DesktopEditors/issues/281) | desktop-sdk | `c8d2135de6` | `issue-0281-print-oversize-page` | 2026-11-11 |
+| [#182](https://github.com/ONLYOFFICE/DesktopEditors/issues/182) | sdkjs | `2c08a678ee` | `issue-0182-autofit-custom-width-test.js` | 2026-11-11 |
 | [#139](https://github.com/ONLYOFFICE/DesktopEditors/issues/139) | core | `fd679c60c1` `fd679c60c1` | `issue-139-pptx-invalid-xml-chars` | 2026-09-15 |
 
 ## Not verified - commit message only
@@ -184,17 +193,8 @@ They have not been demonstrated.
 | [#1720](https://github.com/ONLYOFFICE/DesktopEditors/issues/1720) | desktop-apps | `b361bdbb93` | - | 2026-09-12 |
 | [#1669](https://github.com/ONLYOFFICE/DesktopEditors/issues/1669) | desktop-apps | `40d7b4b5a7` | - | 2026-09-12 |
 | [#1482](https://github.com/ONLYOFFICE/DesktopEditors/issues/1482) | sdkjs | `6392fa067a` | - | 2026-09-12 |
-| [#878](https://github.com/ONLYOFFICE/DesktopEditors/issues/878) | sdkjs | `06157857a8` `78aab3b128` | - | 2026-11-11 |
-| [#560](https://github.com/ONLYOFFICE/DesktopEditors/issues/560) | desktop-apps | `27578a09e7` | - | 2026-11-11 |
-| [#547](https://github.com/ONLYOFFICE/DesktopEditors/issues/547) | sdkjs | `ba80ae077e` | - | 2026-11-11 |
-| [#531](https://github.com/ONLYOFFICE/DesktopEditors/issues/531) | sdkjs | `df3a283c13` | - | 2026-11-11 |
-| [#482](https://github.com/ONLYOFFICE/DesktopEditors/issues/482) | web-apps | `7ddbfa80c2` | - | 2026-11-11 |
 | [#459](https://github.com/ONLYOFFICE/DesktopEditors/issues/459) | core, sdkjs | `875663096b` `67f4a0c2f3` | - | 2026-09-12 |
-| [#344](https://github.com/ONLYOFFICE/DesktopEditors/issues/344) | sdkjs | `6884d875b3` | - | 2026-11-11 |
 | [#328](https://github.com/ONLYOFFICE/DesktopEditors/issues/328) | sdkjs | `6884d875b3` | - | 2026-11-11 |
-| [#307](https://github.com/ONLYOFFICE/DesktopEditors/issues/307) | sdkjs | `67b7cbe97c` | - | 2026-11-11 |
-| [#281](https://github.com/ONLYOFFICE/DesktopEditors/issues/281) | desktop-sdk | `c8d2135de6` | - | 2026-11-11 |
-| [#182](https://github.com/ONLYOFFICE/DesktopEditors/issues/182) | sdkjs | `2c08a678ee` | - | 2026-11-11 |
 
 ## Defects found in passing - no upstream issue
 

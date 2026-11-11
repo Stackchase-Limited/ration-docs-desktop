@@ -50,7 +50,8 @@ def tests_by_issue():
         return found
     for name in os.listdir(TESTS):
         for num in re.findall(r'issue-(\d+)', name):
-            found.setdefault(num, []).append(name)
+            # agents zero-pad short numbers (issue-0182) to sort them; issues are not padded
+            found.setdefault(str(int(num)), []).append(name)
     return found
 
 
