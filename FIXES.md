@@ -8,9 +8,9 @@ behind its own commits when this was written, and several commit messages cite
 test directories that have never existed. Nothing here is typed in by hand, so
 nothing here can claim a test that is not on disk.
 
-- **152 issues** with at least one fix commit
-- **114** have a test artifact in `fork-fix-tests/`
-- **38** do not - the fix is asserted by its commit message only
+- **166 issues** with at least one fix commit
+- **118** have a test artifact in `fork-fix-tests/`
+- **48** do not - the fix is asserted by its commit message only
 - **34** fix commits carry no issue number (defects found in passing)
 
 A row here means a commit exists. It does **not** mean the fix was verified;
@@ -115,7 +115,7 @@ that is what the Test column is for. See the verification status section of
 | [#1855](https://github.com/ONLYOFFICE/DesktopEditors/issues/1855) | core | `4116fbeb76` | `issue-1855-pdf-outline-pagemode` | 2026-09-15 |
 | [#1760](https://github.com/ONLYOFFICE/DesktopEditors/issues/1760) | sdkjs | `9f3cc5dd87` | `issue-1760-copy-picture-image-png-test.js` | 2026-11-10 |
 | [#1672](https://github.com/ONLYOFFICE/DesktopEditors/issues/1672) | sdkjs, web-apps | `e88d90ee71` `c32ac680e4` `73d504525b` | `issue-1672-hidden-slides-pdf-print-test.js` | 2026-11-10 |
-| [#1664](https://github.com/ONLYOFFICE/DesktopEditors/issues/1664) | core, desktop-apps, desktop-sdk, onlyoffice.github.io, sdkjs, web-apps | `0228100ad6` `b0a9cfb763` `14505e17aa` | `issue-1664-no-remote-scripts-test.js` | 2026-11-11 |
+| [#1664](https://github.com/ONLYOFFICE/DesktopEditors/issues/1664) | core, desktop-apps, desktop-sdk, onlyoffice.github.io, sdkjs, web-apps | `0228100ad6` `ff6eb2e4e3` `b0a9cfb763` | `issue-1664-no-remote-scripts-test.js` | 2026-11-11 |
 | [#1655](https://github.com/ONLYOFFICE/DesktopEditors/issues/1655) | web-apps | `d420245695` | `issue-1655-pivot-group-cmd-click-test.js` | 2026-11-11 |
 | [#1570](https://github.com/ONLYOFFICE/DesktopEditors/issues/1570) | sdkjs | `fdbbb561c4` `fdbbb561c4` | `issue-1570-verdana-substitution-test.js` | 2026-09-15 |
 | [#1568](https://github.com/ONLYOFFICE/DesktopEditors/issues/1568) | sdkjs | `85cc0673e2` | `issue-1568-style-from-selection-highlight-test.js` | 2026-11-10 |
@@ -128,12 +128,16 @@ that is what the Test column is for. See the verification status section of
 | [#1359](https://github.com/ONLYOFFICE/DesktopEditors/issues/1359) | core | `af68137e07` `af68137e07` | `issue-1359-x2t-bad-alloc` | 2026-09-15 |
 | [#1323](https://github.com/ONLYOFFICE/DesktopEditors/issues/1323) | core | `b6672e6780` | `issue-1323-docx-zip-entry-order` | 2026-09-15 |
 | [#1297](https://github.com/ONLYOFFICE/DesktopEditors/issues/1297) | core | `1f81e91eca` | `issue-1297-csv-compaction-skip` | 2026-09-15 |
+| [#1031](https://github.com/ONLYOFFICE/DesktopEditors/issues/1031) | core | `9e6c96b316` | `issue-1031-wmf-ansi-codepage` | 2026-11-11 |
 | [#1018](https://github.com/ONLYOFFICE/DesktopEditors/issues/1018) | sdkjs | `26cb022b7c` `26cb022b7c` | `issue-1018-autofit-column-scan-test.js` | 2026-09-15 |
 | [#963](https://github.com/ONLYOFFICE/DesktopEditors/issues/963) | sdkjs | `bbb6f9ee63` | `issue-963-save-open-cell-edit-test.js` | 2026-09-12 |
+| [#927](https://github.com/ONLYOFFICE/DesktopEditors/issues/927) | sdkjs | `981db8c0e0` | `issue-927-plain-text-line-endings-test.js` | 2026-11-11 |
+| [#925](https://github.com/ONLYOFFICE/DesktopEditors/issues/925) | sdkjs | `49123ea9fe` | `issue-925-french-guillemets-nbsp-test.js` | 2026-11-11 |
 | [#902](https://github.com/ONLYOFFICE/DesktopEditors/issues/902) | sdkjs | `e2d1b5afd8` `e2d1b5afd8` | `issue-902-csv-plain-save-active-sheet-test.js` | 2026-11-11 |
 | [#790](https://github.com/ONLYOFFICE/DesktopEditors/issues/790) | desktop-apps | `7f1090d9cf` | `issue-790-linux-dialog-utf8` | 2026-11-11 |
 | [#706](https://github.com/ONLYOFFICE/DesktopEditors/issues/706) | desktop-apps | `a877e2fc4c` | `issue-706-saveas-dotted-name` | 2026-11-11 |
 | [#676](https://github.com/ONLYOFFICE/DesktopEditors/issues/676) | sdkjs | `d32100e8a1` `d32100e8a1` | `issue-676-nautilus-image-paste-test.js` | 2026-09-15 |
+| [#334](https://github.com/ONLYOFFICE/DesktopEditors/issues/334) | sdkjs | `b7a1614833` | `issue-334-copy-math-justification-test.js` | 2026-11-11 |
 | [#139](https://github.com/ONLYOFFICE/DesktopEditors/issues/139) | core | `fd679c60c1` `fd679c60c1` | `issue-139-pptx-invalid-xml-chars` | 2026-09-15 |
 
 ## Not verified - commit message only
@@ -180,7 +184,17 @@ They have not been demonstrated.
 | [#1720](https://github.com/ONLYOFFICE/DesktopEditors/issues/1720) | desktop-apps | `b361bdbb93` | - | 2026-09-12 |
 | [#1669](https://github.com/ONLYOFFICE/DesktopEditors/issues/1669) | desktop-apps | `40d7b4b5a7` | - | 2026-09-12 |
 | [#1482](https://github.com/ONLYOFFICE/DesktopEditors/issues/1482) | sdkjs | `6392fa067a` | - | 2026-09-12 |
+| [#878](https://github.com/ONLYOFFICE/DesktopEditors/issues/878) | sdkjs | `06157857a8` `78aab3b128` | - | 2026-11-11 |
+| [#560](https://github.com/ONLYOFFICE/DesktopEditors/issues/560) | desktop-apps | `27578a09e7` | - | 2026-11-11 |
+| [#547](https://github.com/ONLYOFFICE/DesktopEditors/issues/547) | sdkjs | `ba80ae077e` | - | 2026-11-11 |
+| [#531](https://github.com/ONLYOFFICE/DesktopEditors/issues/531) | sdkjs | `df3a283c13` | - | 2026-11-11 |
+| [#482](https://github.com/ONLYOFFICE/DesktopEditors/issues/482) | web-apps | `7ddbfa80c2` | - | 2026-11-11 |
 | [#459](https://github.com/ONLYOFFICE/DesktopEditors/issues/459) | core, sdkjs | `875663096b` `67f4a0c2f3` | - | 2026-09-12 |
+| [#344](https://github.com/ONLYOFFICE/DesktopEditors/issues/344) | sdkjs | `6884d875b3` | - | 2026-11-11 |
+| [#328](https://github.com/ONLYOFFICE/DesktopEditors/issues/328) | sdkjs | `6884d875b3` | - | 2026-11-11 |
+| [#307](https://github.com/ONLYOFFICE/DesktopEditors/issues/307) | sdkjs | `67b7cbe97c` | - | 2026-11-11 |
+| [#281](https://github.com/ONLYOFFICE/DesktopEditors/issues/281) | desktop-sdk | `c8d2135de6` | - | 2026-11-11 |
+| [#182](https://github.com/ONLYOFFICE/DesktopEditors/issues/182) | sdkjs | `2c08a678ee` | - | 2026-11-11 |
 
 ## Defects found in passing - no upstream issue
 

@@ -502,7 +502,138 @@ the saver where chown is refused. Not changed: Windows locker (in place); Save A
 existing file (x2t writes straight to it); CFileBinary::Exists after a save drops the process's fcntl
 lock (the .~lock marker remains) - seen in the test app, pre-existing.
 
+### #182 - auto column width needed applying twice - FIXED 2026-11-11
+On a customWidth column, _addCellTextToCache (sdkjs cell/view/WorksheetView.js ~9564) shortened numbers
+to the current width, and _autoFitColumnWidth measured that shortened text; setColBestFit then cleared
+customWidth so the second autofit measured the full number. During autofit the custom width no longer
+blocks the full-width branch (sdkjs 2c08a678ee; test issue-0182-autofit-custom-width-test.js).
+Reporter's file: 96 -> 99 -> 99 px instead of 96 -> 95 -> 99.
+
+### #482 - large CSV - silent row loss over 1,048,576 rows FIXED 2026-11-11
+A 273 MB / 568k-row CSV opens (x2t 97 s, 2.2 GB RSS; editor 20 s). The real defect: x2t's CSVReader stops
+past the row limit with ROWLIMITS (94), which counts as success, and the desktop open path drops the
+code, so rows beyond 1,048,576 vanished without a word - and saving over the CSV lost them. The CSV
+dialog already parses every record; the spreadsheet Main.js onAdvancedOptions now warns with the row
+count and the limit (web-apps 7ddbfa80c2; test issue-0482-csv-row-limit-warning-test.js). Open:
+warning may sit under the load mask until loading ends (GUI check); x2t keeps one row past the limit;
+csv->xlsx conversion ignores the limit; CELLLIMITS (96) truncation is also silent - surfacing x2t
+codes needs desktop-sdk to pass them to JS.
+
+### #560 - print ignores paper size (macOS) - FIXED 2026-11-11
+desktop-apps macos ascprinter.h BeginPaint passed the web-apps preset caption ("US Letter",
+"Envelope #10") to -[NSPrintInfo setPaperName:], which ignores non-macOS names; custom sizes sent
+nothing. So every job used the printer default. Now setPaperSize: from paperSize.w/h (resolves to the
+printer's named paper), name as fallback, JSON types checked (desktop-apps 27578a09e; test
+issue-0560-mac-paper-size, real NSPrintOperation to PDF). Linux/Windows already set the size from the
+document. Real print panel/printer not checked.
+
+### #281 - bottom of a 210x330 page not printed - FIXED 2026-11-11
+desktop-sdk fileprinter.cpp CheckPrintRotate, pm100 branch: a page that fits the sheet neither way was
+printed at 100% from the corner and clipped. It is now fitted to the sheet (FitToPage, the larger
+orientation) as the pmFit branch already does; pages that fit are unchanged (desktop-sdk c8d2135de6;
+test issue-0281-print-oversize-page). Behaviour change: oversize pages shrink instead of being cut.
+
+### #531 - filtered xlsx exported to PDF scaled down - FIXED 2026-11-11
+In x2t, a filter change empties the row/column caches and nothing redraws; calcPrintScale (sdkjs
+cell/view/WorksheetView.js ~4580) took the fit-to-page scale before _calcPagesPrint rebuilt them, so
+hidden rows counted at default height (38 visible of 170 rows printed at 28%). The native-only cache
+rebuild now runs first (sdkjs df3a283c13; test issue-0531-fit-filtered-rows-test.js).
+
+### #547 - PDF export fits everything on one page - FIXED 2026-11-11
+A plain Save to PDF (first save of a new spreadsheet) sent the host default {"fitToWidth":1,
+"fitToHeight":1}, which asc_nativePrint applied to every sheet. It now sends the sheets' own page setup
+and locale as Save As does, keeping #902's activeSheet/topLeftCells (sdkjs ba80ae077e; test
+issue-0547-plain-save-pdf-layout-test.js; the #902 test now expects locale too).
+
+### #927 - plain-text copy adds line breaks (Linux/macOS) - FIXED 2026-11-11
+asc_CheckCopy built text/plain with CR LF paragraph ends and lone CR soft breaks; Chromium converts
+newlines only on Windows. Off Windows it now uses LF (sdkjs 981db8c0e0; test
+issue-927-plain-text-line-endings-test.js; issue-1760 test stub gained AscBrowser). Side effect: a soft
+break pasted back as plain text becomes a paragraph break (it used to vanish). Linux editor paste not
+checked live.
+
+### #334 - copied table left-aligns a centred equation - FIXED 2026-11-11
+Copy rendered each formula to a picture via MathToImageConverter(), which left-aligns the formula
+object itself, and ParaMath.Copy never copied justification. Both fixed in word/Editor/Math.js (sdkjs
+b7a1614833; test issue-334-copy-math-justification-test.js); the reporter's file now saves "center"
+for both tables. The thread's later multi-cell paste/cursor comment is a separate defect.
+
+### #925 - typed « » get no non-breaking spaces in French - FIXED 2026-11-11
+GetAutoCorrectFlags never started French autocorrect for U+00AB/U+00BB, and
+private_ProcessFrenchPunctuation only handled : ; ? !. In fr-FR text, » now gets a nbsp before it
+(replacing typed spaces), « a nbsp after it; each step undoes separately (sdkjs 49123ea9fe; test
+issue-925-french-guillemets-nbsp-test.js). fr-CA/fr-CH not covered.
+
+### ONLYOFFICE 10.0.0 security fixes - audited and backported 2026-11-11
+Source: DesktopEditors CHANGELOG 10.0.0 security section (37 items), DocumentServer CHANGELOG, NVD
+(ONLYOFFICE CVEs: 2026-110385/110652 server-only; 2026-41030/41034 fixed before 9.3). No GitHub
+advisories. Per item mapping in .rd-work/wt/cu-tmp. 18 already covered (earlier picks or our #1664
+work), 15 new: core c5d814c502..fc6cea8985 (XPS font stack overflow, WMF OOB read, HWP/HML path
+traversal, circular DOCX style crash, DOC CHPX/font table OOB, EMF PolyBezier OOB, ZipEmbed bounds,
+PDF image-mask heap overflow, libxml2 CVE-2022-23308 ported into the vendored valid.c, and two of
+ours where upstream has no commit: PPT metafile OOB read leaking memory into the PPTX, DOC piece-table
+bounds); sdkjs b0b55a5bdb (macro sandbox: top/parent/frames/opener/frameElement/WebSocket/importScripts
+stubbed - cookie access), b468963a2e (plugin PasteHtml in a sandboxed iframe); desktop-sdk 439fe1792c
+(bridge RemoveFile path check from a PDF, crash on execCommand/PluginInstall with no args). Tests
+v10-sec-core-converter (ASan), v10-sec-macro-window-aliases, v10-sec-plugin-pastehtml,
+v10-sec-bridge-removefile. Unknown: "DOCX double free", "integer-overflow heap write" (candidate
+commits already picked). Not ported: HtmlFile2 9f33a5b519 follow-up (heavy conflicts); web-apps
+3f9b9168e4 PDFE right-panel crash (changes panel behaviour; needs a GUI repro). PDF-reader fixes also
+need the drawingfile WASM in sdkjs rebuilt to reach the editors (see core-wasm note). RemoveFile now
+refuses paths outside the resolver's folders - cloud-crypto upload may leave an encrypted temp copy.
+
+### #307 - wrapped centred text taller than its cell shows its middle lines - FIXED 2026-11-11
+cell/view/WorksheetView.js _drawCellText passed cellVA straight to _calcTextVertPos, whose Center
+branch goes negative once wrapped text overflows the row, so the clip kept the middle. Excel shows the
+first line. Wrapped, unrotated overflowing text with Center/Dist/Just is drawn from the top (sdkjs
+67b7cbe97c; test issue-0307-wrapped-overflow-valign-test.js). Reporter's file via x2t to PDF matches
+Excel. centerContinuous (centre across cells) still not applied - separate gap.
+
+### #1031 - Chinese text in a WMF decoded as Latin - FIXED 2026-11-11
+MetaFileUtils.cpp ConvertToUnicode decoded ANSI_CHARSET as cp1252 and DEFAULT_CHARSET as Latin-1
+always; Windows uses the system ANSI code page, so GBK bytes in a charset-0 font show as Chinese on a
+cp936 system. ANSI/DEFAULT now follow the host code page when it is 932/936/949/950 (GetACP on
+Windows; LC_ALL/LC_CTYPE/LANG elsewhere) (core 9e6c96b316; test issue-1031-wmf-ansi-codepage).
+Windows branch not compiled; the macOS app launched from Finder usually has no LANG, so there it only
+applies if a locale reaches x2t. Also in the drawingfile/fonts WASM only after a rebuild.
+
+### #878 - videos set to start Automatically/On Click never played in a slide show - FIXED 2026-11-11
+PowerPoint stores Playback > Start as a mediacall <p:cmd type="call" cmd="playFrom(0.0)">. common/
+apiBase.js tested startsWith(...) === 0 (a boolean, never 0), so players got "playFrom(0.0)", which
+neither the AppKit nor the Qt player handles; and the timeline never opened a player (the desktop
+opens one only for a selected video). Now a timeline play in a show selects the video, seeks and
+plays (slide/api.js callTimelineMediaCommand); a resize with no transition keeps the player and moves
+it instead of closing it (sdkjs 78aab3b128, 06157857a8; test issue-0878-slideshow-video-autoplay-test.js).
+Real playback in the native players and the full-screen resize timing need a GUI check.
+
+### #344 / #328 - pptx symbols (a:sym) drew as unrelated glyphs - FIXED 2026-11-11
+Serialize.js ReadRunProperties skipped a:sym, so Insert > Symbol characters (U+F020-F0FF) drew with the
+latin font and fell back to Wingdings (#344: U+F0AC arrow as a star; #328 lec5.pptx: Pi, epsilon,
+approx, element-of, arrows as pictures). Apple's Symbol.ttf has no (3,0) cmap, so "use Symbol" is wrong
+on a Mac too. Reader now maps Symbol sym codes to the Unicode characters (xpdf symbolEncoding via the
+AGL) and gives other sym fonts only to the symbol characters by splitting the run (sdkjs 6884d875b3;
+test issue-0344-pptx-sym-font-test.js). Accepted behaviour change on save: a:sym is not written back -
+Symbol characters save as real Unicode (U+2190 not U+F0AC), which PowerPoint shows correctly; runs with
+another sym font save split with it as latin font.
+
 ## Root-caused, not fixed
+
+### #1032 - long floating table squeezes the following heading - reproduced, not fixed
+TS2.docx: Word offsets the floating table (tblpPr vertAnchor=text tblpY=1, no tblpX/horzAnchor) ~722tw
+right of the margin, we put it at the margin, so the right gap passes the 6.35mm minimum in
+CFlowBase.getArrayWrapIntervals and the heading wraps beside it. Source of Word's 722tw not found.
+
+### #801 - text above instead of below a through-wrapped picture - reproduced, not fixed
+Picture relativeFrom=line +312420 EMU, wrapThrough, distT=152400; sdkjs ignores distT for
+through/tight wrapping (ParaDrawing.getArrayWrapIntervals uses Y0Sp/Y1Sp). A ~1pt question that needs
+a Word rendering to settle.
+
+### #615 - blue page background and a wrapped "4.1" - reproduced, not fixed
+(1) w:background without settings displayBackgroundShape: Word shows white, we paint it; needs a flag
+through the binary format (core BinaryWriterD ~10015 always writes it, BinaryReaderD:8929 always
+adds displayBackgroundShape on save) and an sdkjs render check. (2) "4.1" after 40 spaces in a
+justified cell wraps in our layout; Word's rule not derivable without a Word rendering.
+
 
 ### #1343 - "Invalid character in spreadsheet" - nothing is invalid, and nothing is lost
 
@@ -1428,6 +1559,57 @@ made about the cause.
 
 ## Already fixed in our 9.4 baseline - no action
 
+### #672 - "Show from beginning" started from the current slide
+Fixed upstream in web-apps 25a28289c4 (bug 68209, Mar 2025): Viewport.onPreviewStart calls
+StartDemonstrationFromBeginning/FromCurrentSlide by flag. Ran the real Toolbar/Statusbar handlers and
+the real slide editor: beginning -> slide 0, current -> current (hidden slides skipped).
+
+
+### #678 - .docx from Pages - one line per page
+The Pages export puts <w:framePr w:w="0" w:h="0" w:hRule="exact"/> in w:pPrDefault; in 6.3 every
+paragraph became a zero-height frame. Our 9.4 x2t lays out the reporter's file as 7 normal pages; a
+docx round trip keeps the framePr (no loss) and layout ignores it.
+
+### #1269 - Exported PDF shows garbage instead of Cantarell text
+Arch's Cantarell-VF.otf (CFF2 variable) exports correctly with our 9.4 x2t: glyphs drawn as outlines,
+not embedded, so the text is not selectable/searchable (follow-up: embed CFF2). Static CFF embeds
+fine. Harness note: x2t harnesses must pass the fonts-cache dir (font_selection.bin) as m_sFontDir,
+like the app, or non-bundled fonts come out garbled in PDF (harness artefact, not a product bug).
+
+### #501 / #317 - bullets smashed or missing (Linux)
+Reporters' files with a Linux-like font set (no Symbol/Wingdings): no bullet in a page corner, and
+Symbol/Courier/Wingdings bullets draw via OpenSymbol; the Wingdings U+F0F0/U+F0E8 arrows need the
+#2318 recode table (sdkjs 0f18391e82), which current ration/v10-backports has.
+
+
+### #1024 - Opening CSV files selects Tab delimiter by default
+Already fixed (8.3, sdkjs d75f1d8310 / web-apps a15234fdef): the desktop CSV dialog detects the
+delimiter from the file (getCSVDelimiter counts , \t ; : outside quotes, honours sep=); .tsv picks Tab
+by extension; the remembered delimiter applies only to save-as-CSV. Real getCSVDelimiter and
+OpenDialog.textCallback run in node: plain/quoted CSV -> Comma, sep=; -> Semicolon, TSV -> Tab.
+
+### #883 - FREQUENCY outputs a horizontal array
+Already vertical in 9.4 (cFREQUENCY builds C[k][0]); docbuilder run gives F1:F4 = 4,3,1,2 as Excel.
+Separate, unfixed: FREQUENCY sorts the bins and returns counts in sorted order (Excel keeps the bins'
+order, to be confirmed against Excel), and counts text/bool bins as 0.
+
+### #240 - Landscape orientation not printable on macOS
+macOS print path reworked upstream Feb 2024 (desktop-apps edcbf32e1, 08d85796f, 3b28fed37); later
+comments are Linux and are our #1947. Real ASCPrintView/ASCPrinterContext + CheckPrintRotate through an
+NSPrintOperation to PDF: A4-landscape pages come out 841.89x595.28 upright; with the destination forced
+to "printer", an all-landscape document still prints on landscape sheets. Panel/physical printer and
+">1 copies" variant not checked.
+
+### #233 - Bad language for a date in PDF
+x2t applies the save params' locale (native.js:307); desktop Save As sends the editor's regional setting
+(sdkjs 3426fad8b9). Reporter's file: "28 June 2019" without locale, "28 juin 2019" with 1036. The one
+path that dropped it - a plain Save of a new file to PDF - is fixed with #547.
+
+### #359 - Caption numbers not renumbered when inserting between captions
+Headless 9.4 word editor, reporter's steps with tables and with images: "1: one / 2: three / 3: two",
+kept by the desktop save. CDocument.AddCaption updates every SEQ field of the label (since v6.2).
+
+
 ### #2011 - spreadsheet freezes when copying all cells
 
 Already fixed upstream before our baseline, by `72bf2637d9` ("fix/bug-76100",
@@ -1614,6 +1796,39 @@ anyway". Not investigated in depth.
 
 ## Not reproducible or not testable here
 
+### #350 - ppt: additional text/background image - BLOCKED (files gone)
+Both reporter files were on cloud.univ-grenoble-alpes.fr shares that now answer "Partage non trouvé".
+Upstream fixed Presentation1.ppt in 7.0.1 and tracks Presentation2.ppt as their 56546.
+
+### #342/#343/#346/#347/#348 - pptx text placement series - no PowerPoint reference, no fix
+#342: off-centre text matches plain Tahoma advances - PowerPoint lays out differently (unknown how).
+#346: Arial Bold line is 358.64pt for 357.6pt available; we wrap, PowerPoint tolerates ~1pt.
+#347: no measurable defect. #348: indent=-385763 with marL=0 puts our first line left of the box;
+if PowerPoint clamps marL+indent >= 0 that is the bug - needs a PowerPoint rendering to confirm.
+#343: TD02-4 fine per the reporter; TD02-3 tab-driven lines overflow - expected behaviour unconfirmed.
+
+
+### #312 - Decrease Decimal on empty cells in a selected row/column - not reproducible in 9.4
+Real cell editor, whole rows/columns selected, format 0.00 then decrease/increase 1-3 times, values
+typed into near and far empty cells (A50000, XFD1): every cell got the shifted format.
+changeDigNum applies one format to the range. Mouse selection in the GUI not tried.
+
+### #374 - moving between cells is slow - not reproducible
+20,000x35 workbook with 80k formulas: ~16 ms per arrow move (frame-bound), commit ~55 ms; with 20k
+volatile formulas commits take ~420 ms (recalc), moves unchanged. Reporter's file never shared.
+
+### #556 - Exclude Title from the table of contents - not reproducible in 9.4
+Default Title style has no outline level, so TOC \o "1-3" never lists it (checked in the headless
+editor); giving Title outline level 1 lists it, as Word does. The reporter's Title came from a template
+with an outline level. Workaround: TOC from selected styles. No defect.
+
+### #1046 - Hindi InScript halant + char gives three halants - not reproducible in 9.4
+Real ibus-m17n hi:inscript keystroke traces (Ubuntu 24.04 container) replayed through Chromium's IME
+path into the 9.4 word editor give the correct conjuncts (क्रिया, ब्लू, गल्लो), as a plain textarea. The
+report predates the 7.2.1 input rewrite (text_input2.js). Live ibus into the editor under Xvfb not
+achieved (focus).
+
+
 ### #1664 - Outdated and vulnerable v8 is used - APPLIES TO US (security assessment, 2026-11-11)
 Every platform ships CEF 109.1.18 / Chromium 109.0.5414.120 (V8 10.9.194.10, confirmed in the shipped
 framework); Linux/Windows x2t/docbuilder use V8 branch-heads/8.9 with JIT on (build_tools v8_89.py:445);
@@ -1665,7 +1880,7 @@ desktop-apps 2745193bc, onlyoffice.github.io cdfcd7a local only; tests issue-166
 - file:// pages and the bridge read only the app, editor, plugin and user-data folders, not any file.
 - YouTube and plugin store pages no longer load remote scripts into file:// pages.
 - OnFileDialog now overrides the 109 signature (970a438c); override sweep f7f79a14.
-Still open: user file:// plugins share the editor origin (plan: PLUGIN_ORIGIN_PLAN.md);
+Still open:
 renderer sandbox; CEF upgrade; PluginInstall runtime download (below).
 - Links from any page (document hyperlinks in all editors, PDF links, plugin/start-page window.open)
   go through desktop-sdk link_policy.h in CheckPopup: http/https/mailto open as before; programs,
@@ -1682,6 +1897,18 @@ renderer sandbox; CEF upgrade; PluginInstall runtime download (below).
   had a stray `}` (SyntaxError, so the callback never registered and the result went to converter id
   1); fixed, and the agent's inverted success checks too (desktop-sdk f86491b2; test
   issue-1664-ai-tool-files). Dialog text and Allow/Don't Allow not yet clicked through in the GUI.
+- User-installed plugins run in their own origin rdplugin://<guid>/ (desktop-sdk c9b26fcebc
+  plugin_scheme.h, sdkjs ff6eb2e4e3; test issue-1664-plugin-origin, bridge-origin extended). Before:
+  file:// origin, parent.document and the 233-member bridge reachable, and ascdesktop://fonts//etc/hosts
+  read any file from a local editor's frames (m_bIsLocal skipped path checks; now refused for user
+  plugins). Plugin tier allowlist: file dialog, GetImageBase64 of picked files only, scale values,
+  generateNew/getGenerationInfo. Encryption password no longer reaches plugin frames. localStorage
+  migrated once for keys the plugin's own files name. Approved by the product owner 2026-11-11 with
+  known losses: a user-updated AI plugin (ran at onlyoffice://plugin) loses keys and current
+  model/provider; user-installed encryption plugins lose the crypto bridge; LAN http blocked as mixed
+  content; non-alphanumeric GUIDs don't load. Live: OCR, AI plugin, Plugin Manager, store
+  install/run/uninstall OK. Not verified: picking a file then GetImageBase64; migration across restart.
+  Still open for other frames: ascdesktop:// / onlyoffice:// path checks skipped for local editors.
 - Symlinks/junctions inside allowed folders (and a link at the end of a ?lang= / param-suffixed
   scheme path) now resolve before the check (desktop-sdk 8a118ef3, NSFileAccess::ResolvePath; test
   issue-1664-symlinks). Windows branch only syntax-checked; hard links and a swap-after-check race

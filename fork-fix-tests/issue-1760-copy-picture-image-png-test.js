@@ -80,6 +80,7 @@ const F = { Text: 1, Html: 2, Internal: 4, HtmlElement: 8, Rtf: 16, Image: 32 };
 const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg==', 'base64');
 const AscCommon = {
 	c_oAscClipboardDataFormat: F,
+	AscBrowser: { isWindows: false }, // read by word asc_CheckCopy since #927
 	FOCUS_OBJECT_MAIN: 1,
 	FOCUS_OBJECT_THUMBNAILS: 0,
 	Base64: { decode: s => new Uint8Array(Buffer.from(s, 'base64')) },

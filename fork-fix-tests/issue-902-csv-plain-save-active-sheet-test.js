@@ -18,9 +18,8 @@
  * getAdditionalSaveParams from cell/Local/api.js by brace matching and runs
  * them against stubs: an editor whose active sheet is 1, a host that records
  * what LocalFileSave receives. It checks that a plain Save now hands the host
- * "activeSheet": 1 (and the host's own default spreadsheetLayout, so nothing
- * else in what x2t receives changes), and that Save As still sends the full
- * parameters.
+ * "activeSheet": 1 (plus, since #547, the sheets' page setup and locale and
+ * nothing else of Save As), and that Save As still sends the full parameters.
  *
  * What is NOT claimed here: that x2t exports the sheet named by activeSheet
  * (that is #1839's core change; it was run end to end with the real cell editor
@@ -109,10 +108,11 @@ function run(isSaveAs, options) {
 	const obj = JSON.parse(json);
 	assert.strictEqual(obj.activeSheet, 1, 'the sheet on screen must reach x2t on a plain Save (#902)');
 	assert.strictEqual(obj.topLeftCells, '0:A1;1:C41', 'the scroll position rides the same channel (#1868)');
-	assert.deepStrictEqual(obj.spreadsheetLayout, { fitToWidth: 1, fitToHeight: 1 },
-		'a plain Save must keep the layout the host would have written for empty parameters');
-	assert.deepStrictEqual(Object.keys(obj).sort(), ['activeSheet', 'spreadsheetLayout', 'topLeftCells'],
-		'a plain Save must not pick up the Save As parameters');
+	// #547 replaced the host's fit-to-one-page default with the sheets' own page
+	// setup and added the regional setting (a plain Save can end in a PDF);
+	// issue-0547-plain-save-pdf-layout-test.js covers that.
+	assert.deepStrictEqual(Object.keys(obj).sort(), ['activeSheet', 'locale', 'spreadsheetLayout', 'topLeftCells'],
+		'a plain Save must not pick up the rest of the Save As parameters');
 	assert.strictEqual(args[0], '', 'a plain Save is not a Save As');
 }
 

@@ -43,6 +43,16 @@ FAILS on every frame that must not have it.
   BASELINE=1                       read sources at BASE_REF; must FAIL
   BASE_REF                         default 088146a4^ (the parent of the fix)
 
+Follow-up (PLUGIN_ORIGIN_PLAN.md): user-installed plugins no longer run as
+file:// from the user plugins directory; they are rdplugin://<guid>/ pages with
+the Plugin tier (answer 2: an allowlist bridge, bridge_access.h
+IsPluginTierMethod), inside one of our pages or as a top-level page only. A
+file:// or onlyoffice://plugin/ page from the user plugins directory gets none,
+even if that directory is inside the application's. The rdplugin chains below
+expect 2; at BASE_REF they get 1 (no gate), so they fail there too. The new
+behaviour has its own test with a later BASE_REF:
+fork-fix-tests/issue-1664-plugin-origin.
+
 NOT claimed here (checked live in a copy of the test app instead, see the
 report): CEF's real GetURL/GetName/GetParent values - the URLs below are the
 ones the running app reported. With --site-per-process (not on in this
@@ -117,6 +127,9 @@ AGENT = ('onlyoffice://plugin/' + APPU[7:] + '/editors/sdkjs-plugins/%7B9DC93CDB
 MANAGER = (APPU + '/editors/sdkjs-plugins/%7BAA2EA9B6-9EC2-415F-9762-634EE8D9A95E%7D/index.html?lang=en', 'pluginFrameEditor')
 STORE = (APPU + '/editors/sdkjs-plugins/%7BAA2EA9B6-9EC2-415F-9762-634EE8D9A95E%7D/store/index.html?lang=en', '')
 USERPLUGIN = (USERPU + '/%7BB1664B1D-0000-4000-8000-0000000000B1%7D/index.html?lang=en', 'pluginFrameEditor')
+RDPLUGIN = ('rdplugin://b1664b1d-0000-4000-8000-0000000000b1/index.html?lang=en-EN&theme-type=light', 'pluginFrameEditor')
+RDOCR = ('rdplugin://440ebf13-9b19-4bd8-8621-05200e58140b/index.html?lang=en', 'iframe_asc.{440EBF13-9B19-4BD8-8621-05200E58140B}')
+MAIN = 'main'  # marks the last frame of a chain as CefFrame::IsMain()
 PORTAL = ('https://portal.example.com/Products/Files/DocEditor.aspx?fileid=1&placement=desktop', '')
 NCINNER = ('https://nc.example.com/nextcloud/apps/onlyoffice/42?inframe=true', 'onlyofficeFrame')
 DS = ('https://ds.example.com/web-apps/apps/documenteditor/main/index.html?_dc=0', 'frameEditor')
@@ -128,7 +141,8 @@ def c(*frames):
     return list(frames)
 
 
-# (description, chain from the frame up to the main frame, expected Full?)
+# (description, chain from the frame up to the main frame, expected answer: True = Full (1),
+# False = None (0), 2 = Plugin tier)
 CASES = [
     ('start page', c(START), True),
     ('AI agent in the start page (onlyoffice://plugin//path)', c(AGENT, START), True),
@@ -137,7 +151,19 @@ CASES = [
     ('AI plugin (onlyoffice://plugin/file://...)', c(AI, EDITOR, API), True),
     ('plugin manager', c(MANAGER, EDITOR, API), True),
     ('plugin manager local store', c(STORE, MANAGER, EDITOR, API), True),
-    ('user plugin (user_plugins_path)', c(USERPLUGIN, EDITOR, API), True),
+    ('user plugin as file:// (user_plugins_path): now none', c(USERPLUGIN, EDITOR, API), False),
+    ('user plugin as onlyoffice://plugin/ from user_plugins_path', c(('onlyoffice://plugin/' + USERPU + '/%7BB1664B1D-0000-4000-8000-0000000000B1%7D/index.html', 'iframe_asc.{B1664B1D}'), EDITOR, API), False),
+    ('user plugin as ascdesktop://plugin_content/ from user_plugins_path', c(('ascdesktop://plugin_content/' + USERPU + '/%7BB1664B1D-0000-4000-8000-0000000000B1%7D/index.html', 'x'), EDITOR, API), False),
+    # rdplugin: the Plugin tier (2)
+    ('rdplugin user plugin in the editor', c(RDPLUGIN, EDITOR, API), 2),
+    ('rdplugin OCR (non-visual iframe in the editor)', c(RDOCR, EDITOR, API), 2),
+    ('rdplugin external plugin in the start page', c(RDPLUGIN, START), 2),
+    ('rdplugin as a top-level page (main frame)', c(RDPLUGIN + (MAIN,)), 2),
+    ('about:blank made by an rdplugin page', c(('about:blank', 'x'), RDPLUGIN, EDITOR, API), 2),
+    ('blob:rdplugin made by the plugin, in the editor', c(('blob:rdplugin://b1664b1d-0000-4000-8000-0000000000b1/6f0e', 'x'), EDITOR, API), 2),
+    ('rdplugin page framed by a remote page', c(RDPLUGIN, ('http://127.0.0.1:8765/probe.html', 'bx-remote'), EDITOR, API), False),
+    ('rdplugin page whose parent is in another process (not main)', c(RDPLUGIN), False),
+    ('rdplugin with a host that is not a GUID', c(('rdplugin://evil.example.com/x.html', 'x'), EDITOR, API), False),
     ('about:srcdoc made by the editor', c(('about:srcdoc', 'x'), EDITOR, API), True),
     ('about:blank made by the editor', c(('about:blank', 'x'), EDITOR, API), True),
     ('blob:file made by the editor', c(('blob:file:///6f0e', 'x'), EDITOR, API), True),
@@ -191,7 +217,8 @@ struct CefString {
 	std::string ToString() const { return s; }
 };
 struct CefFrame {
-	std::string url, name; CefFrame* parent;
+	std::string url, name; CefFrame* parent; bool main;
+	bool IsMain() { return main; }
 	CefString GetURL() { return CefString(url); }
 	CefString GetName() { return CefString(name); }
 	CefRefPtr<CefFrame> GetParent() { return CefRefPtr<CefFrame>(parent); }
@@ -236,6 +263,12 @@ int main(int argc, char** argv)
 		for (size_t i = 0; i < frames.size(); ++i)
 		{
 			frames[i].url = f[2 * i]; frames[i].name = f[2 * i + 1];
+			frames[i].main = false;
+			if (frames[i].name.size() > 5 && frames[i].name.compare(frames[i].name.size() - 5, 5, "|main") == 0)
+			{
+				frames[i].name = frames[i].name.substr(0, frames[i].name.size() - 5);
+				frames[i].main = true;
+			}
 			frames[i].parent = (i + 1 < frames.size()) ? &frames[i + 1] : 0;
 		}
 		printf("%d\n", (int)d.CheckBridgeAccess(CefRefPtr<CefFrame>(&frames[0])));
@@ -264,6 +297,10 @@ def main():
         sys.exit('OnContextCreated not found')
     pos_set = occ.find('SetValue("AscDesktopEditor"')
     m = re.search(r'if\s*\(\s*NSBridgeAccess::Full\s*!=\s*CheckBridgeAccess\([^)]*\)\s*\)\s*\)?\s*return\s*;', occ)
+    if m is None:
+        # since the rdplugin follow-up: the answer is kept (eAccess) and the bridge is made only
+        # for Full or Plugin
+        m = re.search(r'if\s*\(\s*NSBridgeAccess::Full\s*!=\s*eAccess\s*&&\s*NSBridgeAccess::Plugin\s*!=\s*eAccess\s*\)\s*return\s*;', occ)
     gated = m is not None and pos_set > m.start()
     print('OnContextCreated returns before SetValue("AscDesktopEditor") on a non-Full answer:', gated)
     if not gated:
@@ -298,18 +335,23 @@ def main():
             r = subprocess.run(['c++', '-std=c++11', '-Wall', '-I', work, '-o', exe, os.path.join(work, 'driver.cpp')], capture_output=True, text=True)
             if r.returncode != 0:
                 sys.exit('compile failed:\n' + r.stderr)
-            stdin = ''.join('\t'.join(x for fr in chain for x in fr) + '\n' for _, chain, _ in CASES)
+            def frame_fields(fr):
+                # (url, name) or (url, name, MAIN): the last marks CefFrame::IsMain()
+                return [fr[0], fr[1] + ('|main' if len(fr) > 2 and fr[2] == MAIN else '')]
+            stdin = ''.join('\t'.join(x for fr in chain for x in frame_fields(fr)) + '\n' for _, chain, _ in CASES)
             out = subprocess.run([exe], input=stdin, capture_output=True, text=True, check=True).stdout.split()
-            results = [o == '1' for o in out]
+            results = [int(o) for o in out]
         finally:
             shutil.rmtree(work, ignore_errors=True)
     else:
         # no gate: OnContextCreated gives every context the bridge
-        results = [True] * len(CASES)
+        results = [1] * len(CASES)
 
+    names = {0: 'no', 1: 'yes', 2: 'plugin tier'}
     for (desc, chain, want), got in zip(CASES, results):
+        want = int(want) if not isinstance(want, bool) else (1 if want else 0)
         ok = got == want
-        print('%-4s %-62s bridge=%s (want %s)' % ('ok' if ok else 'FAIL', desc, 'yes' if got else 'no', 'yes' if want else 'no'))
+        print('%-4s %-62s bridge=%s (want %s)' % ('ok' if ok else 'FAIL', desc, names.get(got, got), names.get(want, want)))
         if not ok:
             failures.append(desc)
 

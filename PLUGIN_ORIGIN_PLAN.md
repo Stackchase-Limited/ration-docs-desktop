@@ -1,6 +1,6 @@
 # User plugins in their own origin (#1664 follow-up) - plan
 
-Status: not started. Written 2026-11-11 from agent cj's assessment.
+Status: IMPLEMENTED 2026-11-11 (desktop-sdk c9b26fcebc, sdkjs ff6eb2e4e3; see UPSTREAM_TRIAGE.md #1664). Written from agent cj's assessment.
 
 ## Problem
 User-installed plugins load from file:// (or the shared onlyoffice://plugin origin). With
