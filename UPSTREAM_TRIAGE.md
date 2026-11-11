@@ -576,7 +576,11 @@ bounds); sdkjs b0b55a5bdb (macro sandbox: top/parent/frames/opener/frameElement/
 stubbed - cookie access), b468963a2e (plugin PasteHtml in a sandboxed iframe); desktop-sdk 439fe1792c
 (bridge RemoveFile path check from a PDF, crash on execCommand/PluginInstall with no args). Tests
 v10-sec-core-converter (ASan), v10-sec-macro-window-aliases, v10-sec-plugin-pastehtml,
-v10-sec-bridge-removefile. Unknown: "DOCX double free", "integer-overflow heap write" (candidate
+v10-sec-bridge-removefile. The PDF-reader/XPS/libxml2 and WMF/EMF fixes reach the editors' WASM
+through sdkjs 4789c97347 (drawingfile + fonts rebuilt from core fc6cea8985; test v10-sec-wasm-renderers;
+test app renders text + image mask). Still open: b6897a441e's 4*w*h overflow guard is size_t = 32 bit
+in wasm32, so a 32768x32769 /ImageMask still traps the viewer module - needs a core guard in
+RendererOutputDev (w > SIZE_MAX/4/h) and another rebuild. Unknown: "DOCX double free", "integer-overflow heap write" (candidate
 commits already picked). Not ported: HtmlFile2 9f33a5b519 follow-up (heavy conflicts); web-apps
 3f9b9168e4 PDFE right-panel crash (changes panel behaviour; needs a GUI repro). PDF-reader fixes also
 need the drawingfile WASM in sdkjs rebuilt to reach the editors (see core-wasm note). RemoveFile now
@@ -615,6 +619,39 @@ AGL) and gives other sym fonts only to the symbol characters by splitting the ru
 test issue-0344-pptx-sym-font-test.js). Accepted behaviour change on save: a:sym is not written back -
 Symbol characters save as real Unicode (U+2190 not U+F0AC), which PowerPoint shows correctly; runs with
 another sym font save split with it as latin font.
+
+### #619 - opening a template edited the template itself - FIXED 2026-11-11
+CCefViewEditor::OpenLocalFile treated a .dotx/.xltx/.potx/.ott/... like any document (m_sFileSrc = the
+template, document counted as saved), so Save converted back over the template. Templates now go
+through the start page's CreateLocalFile(<name>.docx|.xlsx|.pptx, templatePath) path; cloud-crypt
+downloads and mode=view are excluded; editing a template itself = Save As in a template format
+(desktop-sdk 946e4d8f6d; test issue-619-template-opens-as-new). Test app: a .dotx opened with its
+content and stayed byte-identical after edit + Save. Open: shells key the tab by the template path (a
+second open focuses the first new document); binary .dot/.xlt/.pot still open in place.
+
+### #1004 - template types missing from Windows default-app associations - FIXED 2026-11-11
+.dotx itself was fixed upstream (16ebd8f24); macOS Info.plist, Linux .desktop and the MSI already list
+the whole family. The Inno installer we ship (package/inno/_code.iss initExtensions) had no
+.dotm/.xltx/.xltm/.potx/.potm/.ott/.ots/.otp: no ProgID, no Capabilities entry, no association even with
+/FULLASSOCIATION. Added, with en/en_GB descriptions (desktop-apps 867bdbe7e; test
+issue-1004-template-associations, real Inno installer under Wine). Explorer/Default apps UI and the MSI
+not exercised.
+
+### #388 - Edit > Undo/Redo did nothing on macOS - FIXED 2026-11-11
+Main.storyboard sent undo:/redo: to the first responder - Chromium's view, whose browser undo has no
+history for the canvas editor. The menu items now go through AppDelegate onMenuUndo/onMenuRedo to the
+editor (edit:undo/edit:redo, web-apps Desktop.js clicks the header Undo/Redo; no-op with a modal open);
+inputs/iframes reply edit:native and keep the browser undo. Redo shown as Shift+Cmd+Z (Cmd+Y still
+works) (desktop-apps 674be1df2, web-apps 896bea2db7; test issue-0388-mac-edit-menu-undo). Checked in an
+app clone with a relinked executable; a real click with the app in front and detached editor windows
+not checked. Needs a full app build to ship (storyboard + AppDelegate).
+
+### #73 - Cmd+Up/Down on macOS moved one line - FIXED 2026-11-11
+Cmd+Left/Right and Option+Left/Right (with Shift) already behave as macOS in 9.4. Cmd(+Shift)+Up/Down
+acted as plain Up/Down in documents and slide text and did nothing in the cell editor; on macOS they
+now do Ctrl+Home/End (word Document.js, slide Presentation.js, CommonController.js, CellEditorView.js);
+a selected drawing keeps Cmd+arrow as nudge (sdkjs 33475b76ae; test issue-0073-mac-cmd-up-down-test.js).
+PDF form/annotation text not covered.
 
 ## Root-caused, not fixed
 
@@ -1559,6 +1596,24 @@ made about the cause.
 
 ## Already fixed in our 9.4 baseline - no action
 
+### #212 - Read-only doc: Save As doesn't say it can't save
+Real x2t returns 80 for a 0444 target, a non-writable folder and a uchg-locked file, leaving the target
+untouched; fileconverter.h passes the code up, LocalFile_SaveEnd sends status 2, sdkjs raises
+ConvertationSaveError and web-apps shows "This file cannot be saved... The file is read-only". A
+read-only file opens unsaved, so Save goes to Save As. GUI dialog itself not exercised.
+
+### #372 - Unnecessary files in home folder
+The 5.5.1 launcher copied "New document.*" into xdg-user-dir TEMPLATES ($HOME when unset) on every
+start; upstream c3be73c00 made it opt-in (--new-document-templates). Ran our generated launcher in a
+container: $HOME stays empty unless the flag is given. Leftovers: the opt-in copy should refuse when
+TEMPLATES is $HOME; `command -v ... &> /dev/null` under dash backgrounds the command.
+
+### #1086 - changelog in the update box opened in IE
+Reported against WinSparkle's IE view; our tree has no WinSparkle. CUpdateManager/CMessage open the
+release-notes link with the system handler on every path, and Ration Docs doesn't build the update
+module at all (build_tools make.py "updmodule is off").
+
+
 ### #672 - "Show from beginning" started from the current slide
 Fixed upstream in web-apps 25a28289c4 (bug 68209, Mar 2025): Viewport.onPreviewStart calls
 StartDemonstrationFromBeginning/FromCurrentSlide by flag. Ran the real Toolbar/Statusbar handlers and
@@ -1795,6 +1850,19 @@ xls. The reporter's actual ask is an override - "open this in Spreadsheet
 anyway". Not investigated in depth.
 
 ## Not reproducible or not testable here
+
+### #644 - release notes in an unexpected language (macOS) - appcast authoring, not app code
+Our vendored Sparkle 2.0.0 picks an xml:lang="ru" releaseNotesLink whenever ru is anywhere in
+AppleLanguages if the English link has no xml:lang; tagging it xml:lang="en" fixes it. Ration Docs
+ships no feed (no SUFeedURL). If we publish an appcast, every releaseNotesLink needs xml:lang,
+including "en". Separately: a fresh profile shows Sparkle's "Check for updates automatically?" and the
+app menu has an enabled "Check for Updates..." with no feed - both should be hidden.
+
+### #647 - app title becomes smaller after a click - not on macOS, not reproduced on Linux
+macOS title bar is native Cocoa. On Linux/Windows 9.4 the main window's title label is empty
+(__DONT_WRITE_IN_APP_TITLE) and activation only fades the title buttons; the auto vs 150% DPI mismatch
+in the thread is the auto-DPI computation #1468 reworked. Needs a Linux check at auto scaling.
+
 
 ### #350 - ppt: additional text/background image - BLOCKED (files gone)
 Both reporter files were on cloud.univ-grenoble-alpes.fr shares that now answer "Partage non trouvé".

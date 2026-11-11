@@ -8,10 +8,10 @@ behind its own commits when this was written, and several commit messages cite
 test directories that have never existed. Nothing here is typed in by hand, so
 nothing here can claim a test that is not on disk.
 
-- **166 issues** with at least one fix commit
-- **127** have a test artifact in `fork-fix-tests/`
+- **169 issues** with at least one fix commit
+- **130** have a test artifact in `fork-fix-tests/`
 - **39** do not - the fix is asserted by its commit message only
-- **34** fix commits carry no issue number (defects found in passing)
+- **35** fix commits carry no issue number (defects found in passing)
 
 A row here means a commit exists. It does **not** mean the fix was verified;
 that is what the Test column is for. See the verification status section of
@@ -130,6 +130,7 @@ that is what the Test column is for. See the verification status section of
 | [#1297](https://github.com/ONLYOFFICE/DesktopEditors/issues/1297) | core | `1f81e91eca` | `issue-1297-csv-compaction-skip` | 2026-09-15 |
 | [#1031](https://github.com/ONLYOFFICE/DesktopEditors/issues/1031) | core | `9e6c96b316` | `issue-1031-wmf-ansi-codepage` | 2026-11-11 |
 | [#1018](https://github.com/ONLYOFFICE/DesktopEditors/issues/1018) | sdkjs | `26cb022b7c` `26cb022b7c` | `issue-1018-autofit-column-scan-test.js` | 2026-09-15 |
+| [#1004](https://github.com/ONLYOFFICE/DesktopEditors/issues/1004) | desktop-apps | `867bdbe7eb` | `issue-1004-template-associations` | 2026-11-11 |
 | [#963](https://github.com/ONLYOFFICE/DesktopEditors/issues/963) | sdkjs | `bbb6f9ee63` | `issue-963-save-open-cell-edit-test.js` | 2026-09-12 |
 | [#927](https://github.com/ONLYOFFICE/DesktopEditors/issues/927) | sdkjs | `981db8c0e0` | `issue-927-plain-text-line-endings-test.js` | 2026-11-11 |
 | [#925](https://github.com/ONLYOFFICE/DesktopEditors/issues/925) | sdkjs | `49123ea9fe` | `issue-925-french-guillemets-nbsp-test.js` | 2026-11-11 |
@@ -138,10 +139,12 @@ that is what the Test column is for. See the verification status section of
 | [#790](https://github.com/ONLYOFFICE/DesktopEditors/issues/790) | desktop-apps | `7f1090d9cf` | `issue-790-linux-dialog-utf8` | 2026-11-11 |
 | [#706](https://github.com/ONLYOFFICE/DesktopEditors/issues/706) | desktop-apps | `a877e2fc4c` | `issue-706-saveas-dotted-name` | 2026-11-11 |
 | [#676](https://github.com/ONLYOFFICE/DesktopEditors/issues/676) | sdkjs | `d32100e8a1` `d32100e8a1` | `issue-676-nautilus-image-paste-test.js` | 2026-09-15 |
+| [#619](https://github.com/ONLYOFFICE/DesktopEditors/issues/619) | desktop-sdk | `946e4d8f6d` | `issue-619-template-opens-as-new` | 2026-11-11 |
 | [#560](https://github.com/ONLYOFFICE/DesktopEditors/issues/560) | desktop-apps | `27578a09e7` | `issue-0560-mac-paper-size` | 2026-11-11 |
 | [#547](https://github.com/ONLYOFFICE/DesktopEditors/issues/547) | sdkjs | `ba80ae077e` | `issue-0547-plain-save-pdf-layout-test.js` | 2026-11-11 |
 | [#531](https://github.com/ONLYOFFICE/DesktopEditors/issues/531) | sdkjs | `df3a283c13` | `issue-0531-fit-filtered-rows-test.js` | 2026-11-11 |
 | [#482](https://github.com/ONLYOFFICE/DesktopEditors/issues/482) | web-apps | `7ddbfa80c2` | `issue-0482-csv-row-limit-warning-test.js` | 2026-11-11 |
+| [#388](https://github.com/ONLYOFFICE/DesktopEditors/issues/388) | desktop-apps, web-apps | `896bea2db7` `674be1df21` | `issue-0388-mac-edit-menu-undo` | 2026-11-11 |
 | [#344](https://github.com/ONLYOFFICE/DesktopEditors/issues/344) | sdkjs | `6884d875b3` | `issue-0344-pptx-sym-font-test.js` | 2026-11-11 |
 | [#334](https://github.com/ONLYOFFICE/DesktopEditors/issues/334) | sdkjs | `b7a1614833` | `issue-334-copy-math-justification-test.js` | 2026-11-11 |
 | [#307](https://github.com/ONLYOFFICE/DesktopEditors/issues/307) | sdkjs | `67b7cbe97c` | `issue-0307-wrapped-overflow-valign-test.js` | 2026-11-11 |
@@ -200,6 +203,7 @@ They have not been demonstrated.
 
 | Where | Commit | Landed | What |
 |---|---|---|---|
+| sdkjs | `33475b76ae` | 2026-11-11 | #73: Cmd+Up/Down on macOS moved one line in text; now they go to the start/end of the te |
 | web-apps | `52091f33cc` | 2026-10-17 | feat(api): host actions in the File menu — Duplicate, Email, Move to trash |
 | web-apps | `c9b503d06a` | 2026-10-10 | feat(mobile): let the mobile editors edit in the open-source build |
 | desktop-apps | `7cd9fea4d0` | 2026-10-09 | Point the Fastlane release lane at the Ration Docs app |
