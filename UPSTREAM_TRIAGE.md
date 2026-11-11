@@ -661,6 +661,13 @@ otherwise a dotless code point the font has (U+1D6A4/1D6A5, else U+0131/U+0237, 
 (sdkjs aa43ce0290; test issue-0565-accent-dotless-ij-test.js). On-screen editor not GUI-checked.
 Separate, unfixed: the reporter's display equation lands at the right edge in x2t output.
 
+### #661 - windows open under a top panel (Linux) - FIXED 2026-11-11 (Linux part)
+Utils::getScreenGeometry's Linux branch returned the whole screen, panels included (Windows returns
+rcWork), so CWindowBase::startRect kept saved/cascaded rects above the bottom of a top panel, and the
+frameless window was not pulled back by the WM. Now availableGeometry - the X work area (desktop-apps
+706e29c81; test issue-0661-linux-start-rect-workarea, real Qt 5.15 on Xvfb with _NET_WORKAREA).
+Windows report unexplained (startRect already clips to rcWork; suspect frameless WM_NCCALCSIZE margins).
+
 ## Root-caused, not fixed
 
 ### #992 - Word picture bullets shown as a Symbol lambda - feature gap
@@ -1626,6 +1633,18 @@ made about the cause.
 
 ## Already fixed in our 9.4 baseline - no action
 
+### #1241 - process blocks shutdown (Linux)
+Fixed by our #2553 (desktop-apps e467dbac5, bb8dcab02): Qt's fallback session management is off and a
+logout is vetoed only with unsaved changes; main.cpp forces xcb, so KDE/Cinnamon take that XSMP path.
+issue-2553-logout-cancelled passes. A forced logout after a veto leaves data/recover (continuous
+LocalFileSaveChanges). Windows WM_QUERYENDSESSION still goes through Qt's fallback - may veto every
+shutdown as #2553 did on Linux; needs a Windows check.
+
+### #743 - typing impossible when the pointer is off the window (Linux)
+Upstream 953c25ee2 (7.3.0) hands X focus to the CEF child on XCB_FOCUS_IN
+(cwindowplatform.cpp:163-171); in our tree. Code reading only - needs a GUI check on LXQt/Plasma.
+
+
 ### #212 - Read-only doc: Save As doesn't say it can't save
 Real x2t returns 80 for a 0444 target, a non-writable folder and a uchg-locked file, leaving the target
 untouched; fileconverter.h passes the code up, LocalFile_SaveEnd sends status 2, sdkjs raises
@@ -1880,6 +1899,19 @@ xls. The reporter's actual ask is an override - "open this in Spreadsheet
 anyway". Not investigated in depth.
 
 ## Not reproducible or not testable here
+
+### #1621 - grey window after Win+Shift+Arrow to another monitor - Windows/GPU only
+Upstream reproduced only on Intel Arc (their 68947), both monitors 150%. Nothing in our code ties
+rendering to the shortcut path; likely CEF/GPU compositing. Needs Windows with two monitors.
+
+### #566 - table cursors tiny on HiDPI (Linux) - not testable here
+CSS image cursors (editorscommon.js CHTMLCursorModern) scale with the app's pixel ratio, not the OS
+cursor size; whether CEF 109 draws the SVG cursors at device scale needs a HiDPI Linux GUI run.
+
+### #1976 - side panels turn back on (Windows) - not reproducible, no code defect found
+Panel state lives only in localStorage (sse-hidden-leftmenu/rightmenu); the reporter's video also shows
+first-run hints, i.e. the whole localStorage came back empty - a lost/locked CEF profile database.
+
 
 ### #950 - dot accent position in presentation equations - not reproducible in 9.4
 Headless slide editor: \dot x renders with the italic shift (dot centre 26 px vs letter centre 21), as
