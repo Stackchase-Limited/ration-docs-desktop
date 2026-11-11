@@ -668,7 +668,26 @@ frameless window was not pulled back by the WM. Now availableGeometry - the X wo
 706e29c81; test issue-0661-linux-start-rect-workarea, real Qt 5.15 on Xvfb with _NET_WORKAREA).
 Windows report unexplained (startRect already clips to rcWork; suspect frameless WM_NCCALCSIZE margins).
 
+### #905 - drag and drop on Linux: defects in the existing drop path - FIXED 2026-11-11
+Linux drops have worked since upstream 2023 (desktop-sdk 405e1864, f3181f31); the defects in that path:
+QCefView::convertMimeData used QUrl::toString(), so %23/%25/%3F stayed encoded and a.png names with
+#, % or ? dropped nothing; CAscDragDrop::CreateEvent deleted CR/LF from dropped text; a quote in a
+dropped file name made a JS syntax error (backslash silently eaten). Now toLocalFile(), escaped text,
+EscapeJSString (desktop-sdk 11818b60). The GTK Insert > Image filter hid *.JPG (case-sensitive
+patterns) - now bracket globs (desktop-apps eea379f8a). Tests issue-905-linux-drop,
+issue-905-gtk-filter-case. A real XDND drop from Nautilus/Dolphin not run (no Linux app build).
+Also (#927 neighbour): plain-text paste with lone CR became one paragraph and a trailing CR was
+inserted as a character; _pasteText now normalises CRLF/CR to LF (sdkjs d60507f1e5; test
+issue-927-paste-lone-cr-test.js). Slide/PDF paths share it but were not run.
+
 ## Root-caused, not fixed
+
+### #1233 - paste of web content with images freezes the editor - root-caused, not fixed
+AscCommon.sendImgUrls (sdkjs common/Local/common.js:323) calls LocalFileGetImageUrl per image
+synchronously; natively DownloadSync sleep-polls on the renderer main thread, so the editor freezes for
+the sum of all downloads (60 s/image on macOS, no transfer limit with curl on Linux). Fix: route
+through the async DownloadFiles path (callers already accept a callback). Cross-repo, needs a GUI.
+
 
 ### #992 - Word picture bullets shown as a Symbol lambda - feature gap
 lvlPicBulletId bullets: x2t drops the bullet images and sdkjs has no picture-bullet support
@@ -1632,6 +1651,17 @@ rather than reason from the issue text alone it is left unverified. No claim is
 made about the cause.
 
 ## Already fixed in our 9.4 baseline - no action
+
+### #772 - copying an image from Eye of GNOME pastes its file path
+Reproduced EOG's exact clipboard (image targets + file URI as text) under Xvfb with Chromium 109 (=
+our CEF): the paste event offers only the file (image/jpeg); text/plain is empty, and the real
+_private_onpaste takes the image branch. The 6.4 bug was the older CEF exposing text/plain.
+
+### #616 / #275 - drag and drop support, image preview
+Linux file/image drops exist since 2023 and document drops open tabs (#2095); the path's defects are
+fixed under #905. Left as features: a preview pane in the GTK file chooser; inserting more than the
+first of several dropped images.
+
 
 ### #1241 - process blocks shutdown (Linux)
 Fixed by our #2553 (desktop-apps e467dbac5, bb8dcab02): Qt's fallback session management is off and a
