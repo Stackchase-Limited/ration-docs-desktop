@@ -1615,9 +1615,27 @@ desktop-apps 2745193bc, onlyoffice.github.io cdfcd7a local only; tests issue-166
 - file:// pages and the bridge read only the app, editor, plugin and user-data folders, not any file.
 - YouTube and plugin store pages no longer load remote scripts into file:// pages.
 - OnFileDialog now overrides the 109 signature (970a438c); override sweep f7f79a14.
-Still open: user file:// plugins share the editor origin;
-callToolFunction file readers take any path; file:// links in documents opened by the OS; symlinks
-inside allowed folders; renderer sandbox; CEF upgrade.
+Still open: user file:// plugins share the editor origin (plan: PLUGIN_ORIGIN_PLAN.md);
+renderer sandbox; CEF upgrade; PluginInstall runtime download (below).
+- Links from any page (document hyperlinks in all editors, PDF links, plugin/start-page window.open)
+  go through desktop-sdk link_policy.h in CheckPopup: http/https/mailto open as before; programs,
+  bundles, scripts, installers, javascript:/data:/ms-msdt: etc. are refused; anything else (local
+  files/folders, smb, other app schemes) needs a native confirm, Cancel default (desktop-sdk 833fea20,
+  desktop-apps 9b2f78275). The link warning rendered the link as HTML - a hyperlink target could run
+  script in the editor frame as soon as the warning showed; now escaped, and the desktop app asks once
+  natively (web-apps 6b3b01aa96). Tests issue-1664-doc-links, -doc-links-webapps. Test app 2026-11-11:
+  a Calculator.app link from the editor did not launch. Open/Cancel not clicked live; Windows/Linux
+  dialogs not shown live.
+- AI agent tool calls (callToolFunction) only answer the bundled agent's frame; they read at once only
+  files the user picked, dropped or attached (or a tool wrote), and ask the user for any other path
+  (same confirm as MCP commands; "Don't Allow" default; remembered until quit). The _saveAndOpen eval
+  had a stray `}` (SyntaxError, so the callback never registered and the result went to converter id
+  1); fixed, and the agent's inverted success checks too (desktop-sdk f86491b2; test
+  issue-1664-ai-tool-files). Dialog text and Allow/Don't Allow not yet clicked through in the GUI.
+- Symlinks/junctions inside allowed folders (and a link at the end of a ?lang= / param-suffixed
+  scheme path) now resolve before the check (desktop-sdk 8a118ef3, NSFileAccess::ResolvePath; test
+  issue-1664-symlinks). Windows branch only syntax-checked; hard links and a swap-after-check race
+  remain by design.
 - Plugin store (onlyoffice.github.io 683027f, local only; test issue-1664-store-html): every remote
   config.json/rating value is escaped, CHANGELOG markdown is rebuilt from allowed tags only, card links
   must be http(s)/mailto. Not yet GUI-checked in an app build.
