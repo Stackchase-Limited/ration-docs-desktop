@@ -1580,6 +1580,31 @@ including the plugin store, YouTube embeds and cloud portals; (c) the macro warn
 documents do go to the system browser. Fix order: isolate PDF JS, gate the bridge by origin, macro dialog
 default "No", restore site isolation; then a self-built CEF upgrade (the only fix for the engine CVEs).
 
+**Hardening landed 2026-11-11** (fork-fix-tests/issue-1664-*):
+- PDF form/annotation JavaScript runs in QuickJS compiled to WebAssembly (sdkjs pdf/src/scripting,
+  engine/pdfscripting.js, npm packages pinned by sha512; rebuild is byte-identical). Only allowlisted
+  form API crosses in; 3 s deadline and memory/stack limits. Test app: the rd-1664 form computes as
+  before and the escape probe reads "contained".
+- window.AscDesktopEditor only for our own pages (file:// under the app and user plugin dirs,
+  onlyoffice://plugin, ascdesktop:// error pages), connected cloud portals and their document-server
+  frame (desktop-sdk bridge_access.h); remote iframes, data:, other file:// and unconnected servers
+  get none.
+- Macro warning: "No" is the default/Enter, the text says macros can touch this computer, and files
+  from Downloads/mail/temp always ask; AsyncFunction/AsyncGeneratorFunction/GeneratorFunction
+  constructors and import/**/() closed; a rejected macro no longer leaves intrinsics broken. A macro
+  the user runs is still trusted code (deferred callbacks and Api objects lead back to window) -
+  stated in the warning. Test app: Enter runs nothing, Yes runs the macro.
+- Site isolation: full --site-per-process breaks the AI agent's convertFileExternal and cross-origin
+  cloud editors (messages go to the main frame's process), so the trials switch stays and
+  --isolate-origins puts onlyoffice.github.io and the YouTube origins in their own processes.
+  --allow-file-access-from-files must stay (the editors XHR their templates/locales from file://).
+- Engine upgrade: plan in CEF_UPGRADE_PLAN.md (CEF 156; macOS 13 minimum; 7-11 engineer-weeks to a
+  shippable macOS build).
+Follow-ups found: the YouTube plugin and the plugin store pages load scripts from the network into
+file:// pages with the bridge (bundle them); _createProcess is reachable from any onlyoffice://
+frame; the renderer sandbox needs ~200 renderer file operations moved behind IPC first;
+cefview.cpp OnFileDialog does not match the 109 signature (no override) and has never been called.
+
 ### #2238 - IME candidate panel overlaps text in split (snapped) window - not in our page code
 Windows / 9.2.1 / Microsoft Pinyin; "split" = Windows snap (from the attached video). The IME anchor (hidden
 textarea, common/text_input2.js) was reworked upstream (bug 78151, sdkjs ee2e0b3843, in our tree). Real word
