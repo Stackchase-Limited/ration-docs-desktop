@@ -1605,6 +1605,21 @@ file:// pages with the bridge (bundle them); _createProcess is reachable from an
 frame; the renderer sandbox needs ~200 renderer file operations moved behind IPC first;
 cefview.cpp OnFileDialog does not match the 109 signature (no override) and has never been called.
 
+**Follow-ups landed 2026-11-11** (sdkjs b0a9cfb763, desktop-sdk a000faca 4f9635f9 67c62bc5,
+desktop-apps 2745193bc, onlyoffice.github.io cdfcd7a local only; tests issue-1664-webp-guard,
+-paste-webp, -createprocess-gate, -file-access, -no-remote-scripts):
+- WebP/AVIF bytes are stopped before Chromium 109's decoders (document images in desktop-sdk,
+  pasted data: URLs in sdkjs), closing the libwebp CVE-2023-4863 route through an opened document.
+- Bridge _createProcess and arbitrary-path writes are gone for plugins; the AI agent's MCP server
+  commands ask the user first (macOS, Windows, Linux).
+- file:// pages and the bridge read only the app, editor, plugin and user-data folders, not any file.
+- YouTube and plugin store pages no longer load remote scripts into file:// pages.
+- OnFileDialog now overrides the 109 signature (970a438c); override sweep f7f79a14.
+Still open: AVIF images dropped from docx on save; user file:// plugins share the editor origin;
+callToolFunction file readers take any path; file:// links in documents opened by the OS; symlinks
+inside allowed folders; plugin store HTML from remote config/CHANGELOG; build_tools still fetches
+v1/plugins*.js at build time; renderer sandbox; CEF upgrade.
+
 ### #2238 - IME candidate panel overlaps text in split (snapped) window - not in our page code
 Windows / 9.2.1 / Microsoft Pinyin; "split" = Windows snap (from the attached video). The IME anchor (hidden
 textarea, common/text_input2.js) was reworked upstream (bug 78151, sdkjs ee2e0b3843, in our tree). Real word
