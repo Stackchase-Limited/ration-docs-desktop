@@ -118,11 +118,26 @@ def extract(text, anchor, needles=(), after=0, what=None):
 # ---------------------------------------------------------------- extraction
 cls_fcntl, _ = extract(SRC, 'class CFileLockerFCNTL', ('F_SETLK', 'F_GETLK'),
                        what='class CFileLockerFCNTL')
-fn_lock, _ = extract(cls_fcntl, 'virtual bool Lock()',
-                     ('CheckLockFilePath', 'F_WRLCK', 'open('),
+# #2000 (desktop-sdk 5eaf9b64) moved the open() + fcntl part of Lock() into
+# OpenDescriptor(), which the save path reuses to re-lock after its rename.
+# Take both when the split exists; the needles apply to the pair.
+fn_lock, _ = extract(cls_fcntl, 'virtual bool Lock()', ('CheckLockFilePath',),
                      what='CFileLockerFCNTL::Lock')
-fn_unlock, _ = extract(cls_fcntl, 'virtual bool Unlock()', ('F_UNLCK',),
+if 'virtual bool OpenDescriptor()' in cls_fcntl:
+    fn_open, _ = extract(cls_fcntl, 'virtual bool OpenDescriptor()', (),
+                         what='CFileLockerFCNTL::OpenDescriptor')
+    fn_lock = fn_lock + '\n\n' + fn_open
+for n in ('F_WRLCK', 'open('):
+    if n not in fn_lock:
+        raise SystemExit('extracted CFileLockerFCNTL::Lock is missing %r - wrong block?' % n)
+fn_unlock, _ = extract(cls_fcntl, 'virtual bool Unlock()', (),
                        what='CFileLockerFCNTL::Unlock')
+if 'virtual bool CloseDescriptor()' in cls_fcntl:  # #2000 split, as for OpenDescriptor
+    fn_close, _ = extract(cls_fcntl, 'virtual bool CloseDescriptor()', (),
+                          what='CFileLockerFCNTL::CloseDescriptor')
+    fn_unlock = fn_unlock + '\n\n' + fn_close
+if 'F_UNLCK' not in fn_unlock:
+    raise SystemExit("extracted 'CFileLockerFCNTL::Unlock' is missing 'F_UNLCK' - wrong block?")
 fn_isuse, _ = extract(cls_fcntl, 'static bool IsUseLockFile()', ('return',),
                       what='CFileLockerFCNTL::IsUseLockFile')
 fn_islocked, _ = extract(cls_fcntl, 'static LockType IsLockedInternal',
@@ -260,6 +275,8 @@ namespace NSSystem
         std::wstring m_sLockFilePath;
         int m_nDescriptor;
         CFileLocker(const std::wstring &f) : m_sFile(f), m_sLockFilePath(L""), m_nDescriptor(-1) {}
+        /* #2000's save temp; this test never saves, so there is none to drop. */
+        void DropTempFile() {}
         virtual ~CFileLocker() {}
         static CLockFileTemp CheckLockFilePath(const std::wstring &file, const int &flags = 0);
         virtual void DeleteLockFile()

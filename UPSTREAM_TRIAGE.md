@@ -482,6 +482,26 @@ toLocal8Bit; under a non-UTF-8 locale the portal path aborted the whole app in l
 lost) and the GTK path garbled the name. Now toUtf8 (desktop-apps 7f1090d9c; test
 issue-790-linux-dialog-utf8).
 
+### #2000 - Open/save from network share (samba/nfs/cloud) - save half FIXED 2026-11-11 (macOS/Linux)
+Reported: Flatpak 9.0 on GNOME - Samba/NFS/Nextcloud/Google Drive mounts do not appear in the open/save
+dialog. Our GTK chooser (desktop-apps win-linux/src/platform_linux/gtkfilechooser.cpp) is local-only and
+returns gvfs FUSE paths (/run/user/<uid>/gvfs/...), which do show when the sandbox can see them; the
+portal dialog returns document-portal paths. Missing mounts in the Flatpak are a sandbox permission of
+the flathub manifest (xdg-run/gvfs, org.gtk.vfs.*), not in our tree.
+The save half was data loss: CFileLockerFCNTL/FileProvider wrote the new file over the old one in place
+(seek 0, write, truncate, fsync). A share or quota running full or a dropped connection destroyed the
+document (reproduced: HFS+ image, Linux CIFS, macOS smbfs - where write/fsync succeed and ENOSPC only
+comes from close(), so the save was even reported as successful). Now a hidden sibling temp, fsync,
+mode/owner/xattrs copied, close() checked, size verified, rename over the document; any failure leaves
+the document untouched and the save reports failure; EXDEV falls back to verified copy; a folder
+without create rights keeps the in-place write. Linux F_SETLKW (open hung while another process held
+a lock) is now F_SETLK. desktop-sdk 5eaf9b64; test issue-2000-network-share-save (issue-2135 extractor
+updated for the Lock/OpenDescriptor split). Test app: two saves of a 0640 docx replaced the file, kept
+the mode, left no temp. Trade-offs: a save needs room for both copies; hard links break; owner becomes
+the saver where chown is refused. Not changed: Windows locker (in place); Save As over another
+existing file (x2t writes straight to it); CFileBinary::Exists after a save drops the process's fcntl
+lock (the .~lock marker remains) - seen in the test app, pre-existing.
+
 ## Root-caused, not fixed
 
 ### #1343 - "Invalid character in spreadsheet" - nothing is invalid, and nothing is lost

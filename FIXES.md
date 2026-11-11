@@ -8,8 +8,8 @@ behind its own commits when this was written, and several commit messages cite
 test directories that have never existed. Nothing here is typed in by hand, so
 nothing here can claim a test that is not on disk.
 
-- **151 issues** with at least one fix commit
-- **113** have a test artifact in `fork-fix-tests/`
+- **152 issues** with at least one fix commit
+- **114** have a test artifact in `fork-fix-tests/`
 - **38** do not - the fix is asserted by its commit message only
 - **34** fix commits carry no issue number (defects found in passing)
 
@@ -106,6 +106,7 @@ that is what the Test column is for. See the verification status section of
 | [#2031](https://github.com/ONLYOFFICE/DesktopEditors/issues/2031) | desktop-apps | `fb27173cb1` | `issue-2031-installer-assoc-selection` | 2026-11-10 |
 | [#2022](https://github.com/ONLYOFFICE/DesktopEditors/issues/2022) | core | `b398371970` | `issue-2022-csv-last-row` | 2026-09-15 |
 | [#2010](https://github.com/ONLYOFFICE/DesktopEditors/issues/2010) | sdkjs | `29c78b83b5` | `issue-2010-pdf-outline-page-range-test.js` | 2026-11-11 |
+| [#2000](https://github.com/ONLYOFFICE/DesktopEditors/issues/2000) | desktop-sdk | `5eaf9b64f3` | `issue-2000-network-share-save` | 2026-11-11 |
 | [#1967](https://github.com/ONLYOFFICE/DesktopEditors/issues/1967) | desktop-apps, desktop-sdk | `daa44229e7` `df19207858` | `issue-1967-managed-plugin-policy` | 2026-11-11 |
 | [#1947](https://github.com/ONLYOFFICE/DesktopEditors/issues/1947) | desktop-apps | `f205870618` | `issue-1947-linux-landscape-print` | 2026-11-05 |
 | [#1943](https://github.com/ONLYOFFICE/DesktopEditors/issues/1943) | desktop-sdk, sdkjs | `b12cc75a46` `3f9d60fc61` | `issue-1943-presenter-video-sync` | 2026-11-11 |
