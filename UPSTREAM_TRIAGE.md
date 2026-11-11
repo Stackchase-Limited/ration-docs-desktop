@@ -452,6 +452,14 @@ that JSON, the regenerated `records.h`, and the hand-maintained
 asserts the JS map and the generated table agree, since a mismatch is invisible
 at runtime.
 
+### #902 - plain Save to CSV exported the sheet active at open - FIXED 2026-11-11
+Save As CSV was already right (#1839). A plain Save (Ctrl+S on a .csv, or CSV picked for a new file)
+sent "" as save params (sdkjs cell/Local/api.js DesktopOfflineAppDocumentStartSave), so desktop-sdk
+used its default and x2t exported the open-time activeTab; sheet switches write no history. Plain Save
+now sends the host default plus activeSheet/topLeftCells (sdkjs e2d1b5afd8; test issue-902-csv-plain-save-active-sheet-test.js). Test app: CSV opened, sheet
+added and made active, Ctrl-S path wrote that sheet. Side effect: a plain xlsx Save now also keeps the
+sheet/scroll on screen, as Save As does.
+
 ## Root-caused, not fixed
 
 ### #1343 - "Invalid character in spreadsheet" - nothing is invalid, and nothing is lost
