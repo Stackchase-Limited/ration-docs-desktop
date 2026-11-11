@@ -1676,9 +1676,14 @@ renderer sandbox; CEF upgrade; PluginInstall runtime download (below).
   before the guard: CImageManager2::GenerateImageExec pointed the rel at a .png it never wrote. Now the
   original bytes are kept; avif -> image/avif (core 0228100ad6; test issue-1664-avif-save). Not yet
   GUI-checked; odt/doc/rtf saves not tested.
-- New: desktop-sdk client_renderer_wrapper.cpp:3187-3210 (PluginInstall) downloads plugins.js,
-  plugins-ui.js and plugins.css from onlyoffice.github.io into the user v1/ folder at run time on every
-  store install, and every user plugin loads them. Not fixed.
+- PluginInstall downloaded plugins.js, plugins-ui.js and plugins.css from onlyoffice.github.io into the
+  user v1/ folder on every store install/update, and every user plugin loads them; Init_CEF's refresh
+  used a file remove on that directory, so a downloaded v1/ was never replaced, even across updates.
+  Now the app's pinned v1/ is copied on install and replaces the user copy at start-up (desktop-sdk
+  793de03c; test issue-1664-plugin-api-runtime; test app: a planted stale plugins.js was replaced).
+  The remote plugins.js already differs from ours (adds ignoreDisabledToolbar). Still open: store
+  plugin packages themselves (<baseUrl>/deploy/<name>.plugin, "releases/latest") have no integrity
+  check or pinning, and an http:// baseUrl would be accepted.
 
 ### #2238 - IME candidate panel overlaps text in split (snapped) window - not in our page code
 Windows / 9.2.1 / Microsoft Pinyin; "split" = Windows snap (from the attached video). The IME anchor (hidden
