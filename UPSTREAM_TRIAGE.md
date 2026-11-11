@@ -427,6 +427,9 @@ tests.
 | #2062 | LaTeX -> Professional froze the editor for good on any spacing command but `\ ` and `\quad` (`\thinsp`, `\nbsp`..., also reached via a Word thick space); `\,` `\:` `\;` stayed as literal text. Keyboard input on Mac layouts was fine | `sdkjs` |
 | #1468 | Linux "auto" interface scaling ignored the desktop's fractional scale whenever the screen-size guesses or physical DPI disagreed (4K at 125/175% came out 200%, 1600x900 at 125% came out 100%); Xft.dpi now wins | `desktop-sdk` |
 | #1967 | Administrators can switch plugins off machine-wide (all, the plugin manager, or listed GUIDs) through the platform's managed settings: Windows HKLM policy, macOS configuration profile, Linux /etc/ration/docs/policy.conf (desktop-apps MANAGED-SETTINGS.md) | `desktop-sdk`, `desktop-apps` |
+| #2235 | Privacy: every launch fetched ONLYOFFICE's template gallery (templates.onlyoffice.com API + ~750 thumbnails from static-oforms.onlyoffice.com) with no user action; no default gallery now, and Chromium background networking is switched off. Measured: 0 remote requests, sockets or DNS lookups for a full session | `desktop-apps`, `desktop-sdk` |
+| #2271 | macOS sent made-up language codes ("ja-JA", "zh-ZH", "sv-SV", "no-NO"...) that matched no blank template, so new documents for most non-English users were US Letter / en-US; the same language's template is now used. "Set as default" page setup stays a feature request (design in the note) | `desktop-sdk` |
+| #2090 | New setting "Default text direction" (Advanced settings, desktop) for new blank documents; sdkjs can now change the default paragraph direction and re-lays out on it. Documents and templates are never touched | `sdkjs`, `web-apps`, `desktop-sdk` |
 
 Two defects in our own tooling were fixed alongside: CEF remote debugging was
 pinned to a hardcoded port 8080 that could not be overridden, and CEF failures
@@ -1560,6 +1563,30 @@ xls. The reporter's actual ask is an override - "open this in Spreadsheet
 anyway". Not investigated in depth.
 
 ## Not reproducible or not testable here
+
+### #1664 - Outdated and vulnerable v8 is used - APPLIES TO US (security assessment, 2026-11-11)
+Every platform ships CEF 109.1.18 / Chromium 109.0.5414.120 (V8 10.9.194.10, confirmed in the shipped
+framework); Linux/Windows x2t/docbuilder use V8 branch-heads/8.9 with JIT on (build_tools v8_89.py:445);
+macOS arm64 x2t links the system JavaScriptCore. Upstream has nothing newer (build_tools v10.0.0.176 and
+master fetch CEF 5414; desktop-sdk feature/cef-update (CEF 138) stalled 2025-08). CISA KEV lists 30
+in-the-wild Chromium bugs since our build, incl. libwebp CVE-2023-4863 - reachable by opening a document:
+x2t passes WebP bytes through as media/*.png and <img> decodes them.
+Worse, and ours to fix: (a) PDF form JavaScript runs via EvalScript (sdkjs pdf/src/forms/formActions.js:756)
+with full global access, reaching the AscDesktopEditor bridge - shown by running the real code; (b) the
+bridge is injected into every page and iframe of every origin (client_renderer_wrapper.cpp ~6560),
+including the plugin store, YouTube embeds and cloud portals; (c) the macro warning's default button is
+"enable" and the JS macro sandbox escapes via the AsyncFunction constructor (macros.js _safePluginEval);
+(d) no_sandbox, --disable-site-isolation-trials and --allow-file-access-from-files are all set. Links in
+documents do go to the system browser. Fix order: isolate PDF JS, gate the bridge by origin, macro dialog
+default "No", restore site isolation; then a self-built CEF upgrade (the only fix for the engine CVEs).
+
+### #2238 - IME candidate panel overlaps text in split (snapped) window - not in our page code
+Windows / 9.2.1 / Microsoft Pinyin; "split" = Windows snap (from the attached video). The IME anchor (hidden
+textarea, common/text_input2.js) was reworked upstream (bug 78151, sdkjs ee2e0b3843, in our tree). Real word
+sdk in headless Chromium, CDP imeSetComposition, composition box vs caret at 1350x900, snapped 959x1040,
+maximized, resized mid-composition, scrolled, DPR 1-1.75: the box always spans the caret line and opens
+the IME below it, following every resize. The remaining suspect is CEF/TSF screen mapping after a frameless
+Qt window snap on Windows. Needs a Windows check of a 9.4 build.
 
 ### #2519 - editors_helper.exe left in memory after closing (Windows) - not on macOS
 macOS 9.4 test app, 10 quit cycles (bare, docx, docx+xlsx+PDF, slideshow, AI plugin, AI agent panel): every

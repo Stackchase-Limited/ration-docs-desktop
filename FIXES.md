@@ -8,8 +8,8 @@ behind its own commits when this was written, and several commit messages cite
 test directories that have never existed. Nothing here is typed in by hand, so
 nothing here can claim a test that is not on disk.
 
-- **144 issues** with at least one fix commit
-- **106** have a test artifact in `fork-fix-tests/`
+- **147 issues** with at least one fix commit
+- **109** have a test artifact in `fork-fix-tests/`
 - **38** do not - the fix is asserted by its commit message only
 - **34** fix commits carry no issue number (defects found in passing)
 
@@ -75,12 +75,14 @@ that is what the Test column is for. See the verification status section of
 | [#2301](https://github.com/ONLYOFFICE/DesktopEditors/issues/2301) | core | `80e5c0ead3` `80e5c0ead3` | `issue-2301-csv-hex` | 2026-09-14 |
 | [#2296](https://github.com/ONLYOFFICE/DesktopEditors/issues/2296) | sdkjs | `8ad35f24cc` | `issue-2296-date-format-test.js` | 2026-09-15 |
 | [#2274](https://github.com/ONLYOFFICE/DesktopEditors/issues/2274) | build_tools, desktop-apps | `3bde9a8b96` `f26bd0673a` | `issue-2274-qt-library-closure` | 2026-09-14 |
+| [#2271](https://github.com/ONLYOFFICE/DesktopEditors/issues/2271) | desktop-sdk | `ee8f1fdf95` | `issue-2271-new-doc-template-lang` | 2026-11-11 |
 | [#2269](https://github.com/ONLYOFFICE/DesktopEditors/issues/2269) | sdkjs | `280811aeca` | `issue-2269-cf-parent-test.js` | 2026-09-14 |
 | [#2268](https://github.com/ONLYOFFICE/DesktopEditors/issues/2268) | desktop-sdk | `d8daec7d3a` | `issue-2268-provider-invalid-url` | 2026-09-15 |
 | [#2263](https://github.com/ONLYOFFICE/DesktopEditors/issues/2263) | sdkjs | `49d51719c2` | `issue-2263-justify-cjk-test.js` | 2026-09-15 |
 | [#2250](https://github.com/ONLYOFFICE/DesktopEditors/issues/2250) | sdkjs | `8f06905c77` | `issue-2250-bullet-text-test.js` | 2026-09-14 |
 | [#2245](https://github.com/ONLYOFFICE/DesktopEditors/issues/2245) | sdkjs | `d9795582c1` | `issue-2245-trendline-equation-test.js` | 2026-09-15 |
 | [#2244](https://github.com/ONLYOFFICE/DesktopEditors/issues/2244) | web-apps | `b0b8517702` | `issue-2244-axis-bounds-test.js` | 2026-09-14 |
+| [#2235](https://github.com/ONLYOFFICE/DesktopEditors/issues/2235) | desktop-apps, desktop-sdk | `2305804020` `de4b31a40d` | `issue-2235-offline-no-remote-test.js` | 2026-11-11 |
 | [#2234](https://github.com/ONLYOFFICE/DesktopEditors/issues/2234) | sdkjs | `96b4de581f` | `issue-2234-macro-protected-write-test.js` | 2026-09-14 |
 | [#2229](https://github.com/ONLYOFFICE/DesktopEditors/issues/2229) | desktop-apps | `1509c6228e` | `issue-2229-window-border-contrast` | 2026-09-15 |
 | [#2216](https://github.com/ONLYOFFICE/DesktopEditors/issues/2216) | desktop-apps | `325ecd480a` | `issue-2216-gtk-system-theme` | 2026-09-14 |
@@ -97,6 +99,7 @@ that is what the Test column is for. See the verification status section of
 | [#2107](https://github.com/ONLYOFFICE/DesktopEditors/issues/2107) | desktop-sdk, onlyoffice.github.io | `ad09162aca` `34ab06d141` | `issue-2107-plugin-remove-native` | 2026-11-10 |
 | [#2105](https://github.com/ONLYOFFICE/DesktopEditors/issues/2105) | desktop-apps | `2241a8a0e6` | `issue-2105-wayland-no-x` | 2026-09-14 |
 | [#2095](https://github.com/ONLYOFFICE/DesktopEditors/issues/2095) | sdkjs | `74d274f7d2` | `issue-2095-drop-document-opens-tab-test.js` | 2026-11-10 |
+| [#2090](https://github.com/ONLYOFFICE/DesktopEditors/issues/2090) | desktop-sdk, sdkjs, web-apps | `d295746b42` `03aad1a7fe` `7281e56ad6` | `issue-2090-default-text-direction-test.js` | 2026-11-11 |
 | [#2071](https://github.com/ONLYOFFICE/DesktopEditors/issues/2071) | sdkjs | `b98bcb7c01` | `issue-2071-unhide-all-rows-test.js` | 2026-09-15 |
 | [#2062](https://github.com/ONLYOFFICE/DesktopEditors/issues/2062) | sdkjs | `599f986ab7` | `issue-2062-latex-space-hang-test.js` | 2026-11-11 |
 | [#2056](https://github.com/ONLYOFFICE/DesktopEditors/issues/2056) | desktop-sdk | `6cd7c621ee` | `issue-2056-flush-before-success` | 2026-09-12 |
