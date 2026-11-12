@@ -920,6 +920,30 @@ detects the sandbox it runs in (desktop-apps ec03992720; test issue-0669-about-p
 The start page's "Autosaved" column was always empty: Recovers_Load never set the date. It now takes the
 time of the recovery folder's last change (desktop-sdk bdbd5c35; test issue-1144-recover-list-dates).
 
+### RD-0004..RD-0018 - converter crashes and memory errors from a public-corpus run - FIXED 2026-11-12
+x2t run (release + ASan/UBSan) over Apache POI, LibreOffice and Tika test documents; each distinct root
+cause fixed with a minimised reproducer test (fork-fix-tests/rd-NNNN-*), core 001b1246fd..ccddc3317b.
+Built with Apple clang 21 after patching boost 1.72's numeric/conversion as boost 1.81 did
+(.rd-work/bin/patch-boost-clang21.sh - build-output headers only).
+- **RD-0001** Csv kept one row past 1048576, csv -> xlsx ignored the row limit and said nothing; both now stop at 1048576 and return ROWLIMITS
+- **RD-0002** MacOS started Sparkle with no appcast and offered "Check for Updates..."; the updater and its menu item are gone
+- **RD-0003** Special paste with no clipboard data threw a TypeError; it now stops after reporting empty data
+- **RD-0004** PDF export read one byte past the TrueType subset's glyph flags; the closing loca entry no longer consults them
+- **RD-0005** A broken MNG picture freed libmng's decoder from its own error callback (use after free, double free); the callback now only reports the error
+- **RD-0006** JasPer streams were closed through function pointers in a stack object already out of scope; the CxFileJas now outlives jas_stream_close
+- **RD-0007** A .doc whose document properties run past the table stream read up to 700 bytes beyond the DOP buffer; the bounds now use the bytes actually read
+- **RD-0008** The format detector ran strstr over zip parts that were not NUL-terminated; parts read from an archive now end in a zero byte
+- **RD-0009** VBA module decompression read past the end of the compressed stream; tokens and stored chunks are now bounded by the input
+- **RD-0010** A .doc style whose name or UPX lengths run past the style's bytes copied heap memory into the style; the STD's variable part is now read within its size
+- **RD-0011** ODS cells of type scientific/fraction/date-time read their number format id from past the end of a global table; out-of-range types now map to 0
+- **RD-0012** Saving a presentation with notes but no notes-master theme relation crashed x2t; an empty theme list now falls back to the first theme
+- **RD-0013** RTF export wrote stray stack bytes after a list bullet; the list text is now exactly the bullet
+- **RD-0014** Excel 2003 XML rows were not yet in the sheet while being read, so merged cells crashed the first row and went into the previous row otherwise; the row is now the sheet's last row while it is read
+- **RD-0015** A .ppt with an inline fill picture in a shape's properties crashed x2t; a blip read without a temp folder is now stepped over
+- **RD-0016** Saving a 3-D surface chart without band formats crashed x2t; c:bandFmts is now written only when present
+- **RD-0017** An ODP table in a document without office:automatic-styles crashed x2t on open; the default cell style is now created only when it can be stored
+- **RD-0018** EMF to SVG wrote through a null pointer for an empty text record with character spacing; such a text now gets a single x coordinate
+
 ## Root-caused, not fixed
 
 ### #83 - CSV delimiter/encoding cannot be chosen on save - design decision

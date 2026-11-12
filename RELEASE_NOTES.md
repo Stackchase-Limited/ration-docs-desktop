@@ -1,3 +1,235 @@
+# Ration Docs Desktop 2026.2.0
+
+The second release of Ration Docs Desktop, a hard fork of ONLYOFFICE Desktop Editors 9.4, and the
+first built for **macOS, Windows and Linux**.
+
+## At a glance
+
+- **125 more reported upstream issues fixed** since 2026.1.0, so 209 in all, and 170 of those have
+  a regression test that fails without the fix. The full list is below.
+- **18 further defects that we found ourselves** (RD-0001 to RD-0018). Most are converter crashes
+  and memory errors found by running the converter over thousands of public test documents.
+- **A security overhaul.** Every page and plugin now runs with the least access it needs, and the
+  security fixes from ONLYOFFICE 10.0 are backported. See *Security* below.
+
+## Security
+
+- **Plugins you install yourself now run in their own sandbox.** They can no longer read the open
+  document or use the desktop bridge beyond a short list of safe calls.
+- **The desktop bridge is only given to our own pages.** That means our own pages, bundled plugins
+  and connected cloud portals. Remote iframes, other web pages and other local files get nothing.
+- **Local files are protected.** Pages can only read the folders the editors need. Symbolic links
+  and `..` paths can no longer escape those folders.
+- **Links in documents are checked before anything opens.** Web and mail links open as before.
+  Links to programs, scripts and installers are refused. Anything else asks you first.
+- **Macros need your consent.**
+  - A shape or button with an assigned macro asks before it runs (#2188).
+  - Custom functions saved in a workbook wait for consent before they run.
+  - The macro warning defaults to "No".
+- **PDF form scripts run in a separate sandbox,** cut off from the rest of the app.
+- **The AI agent's tools are limited to files you gave it.** It can only read files you picked,
+  dropped or attached, and asks before reading any other file or starting a program.
+- **The ONLYOFFICE 10.0 security fixes are backported.** They cover XPS, WMF/EMF, Word, PowerPoint
+  and PDF images, HWP, libxml2, macros and plugin paste. The in-app PDF viewer's copy of the code
+  is rebuilt with them.
+- **Nothing is downloaded from ONLYOFFICE's servers at run time.** Plugin installs use the copy of
+  the plugin API shipped with the app.
+
+## Behaviour you will notice
+
+- **Macros:** the first click on a macro button now asks first. Until you allow macros, cells that
+  use a workbook's custom functions show `#NAME?`.
+- **Your own plugins:**
+  - Plugins that need more of the bridge than the safe list stop working.
+  - A user-updated AI plugin loses its saved keys.
+  - Plugins can't reach `http://` servers on your local network.
+- **Links:** opening a link to a local file, folder or network share asks you first.
+- **Saving to network shares and synced folders:**
+  - A save that fails part-way now leaves the original intact and tells you (#2000).
+  - A save needs room for two copies of the file.
+- **CSV:**
+  - Saving a multi-sheet CSV with Ctrl+S now warns that only one sheet is kept (#1490).
+  - Rows beyond 1,048,576 are reported, not silently dropped.
+- **Settings:**
+  - "Keep a list of recent files" (#1594).
+  - "Default document language" (#143).
+  - "Non-breaking spaces with French punctuation" (#2075).
+  - On a fresh profile, units follow your OS region (#432).
+- **Shortcuts:**
+  - Cmd/Ctrl+Shift+T reopens a closed tab (#1847).
+  - Cmd/Ctrl+Shift+G opens the word count (#167).
+  - Ctrl+N creates a new document on Windows and Linux (#200).
+  - Ctrl+Q quits on Linux (#1270).
+  - Ctrl+Cmd+F enters full screen on macOS (#858).
+  - Control+U edits the active cell on macOS, and Cmd+U underlines (#247).
+- **macOS:** the "Check for Updates" menu item and its prompt are gone. Ration Docs has no update feed.
+
+## Known limitations of this release
+
+- **Some changes need a GUI check.** Many were verified by tests and builds but not yet by hand in
+  each operating system's interface: the new dialogs and menus, the Windows installer and the
+  Linux sandboxes.
+- **Windows code was not compiled in the macOS development cycle.** The Windows build must be
+  compiled on the Windows x64 build machine, and any compile errors must be fixed before signing.
+- **The plugin store and bundled plugins come from a separate repository.** Build machines must
+  check out `onlyoffice.github.io` from lab02 (`ration/ration-docs-onlyoffice.github.io`), and the
+  build must set `desktop-marketplace="1"` to include the plugin manager.
+- **Still open:**
+  - The macOS font-weight change (#1718) is not in this release.
+  - F11 full screen on Windows and Linux.
+  - A choice of CSV delimiter on save (#83).
+
+## Reported issues fixed in 2026.2.0
+
+- There was no way to choose the language of new documents; Advanced settings now has "Default document language" ([#143](https://github.com/ONLYOFFICE/DesktopEditors/issues/143))
+- There was no shortcut to see the word count; Ctrl+Shift+G (Cmd+Shift+G on macOS) now opens Document Info ([#167](https://github.com/ONLYOFFICE/DesktopEditors/issues/167))
+- Autofit on a custom-width column measured shortened numbers; now fits in one go ([#182](https://github.com/ONLYOFFICE/DesktopEditors/issues/182))
+- On Windows/Linux no key made a new document from an editor; Ctrl+N now creates one of the editor's type ([#200](https://github.com/ONLYOFFICE/DesktopEditors/issues/200))
+- Paragraph spacing that LibreOffice puts in the clipboard HTML's style sheet was dropped on paste; it is now applied ([#206](https://github.com/ONLYOFFICE/DesktopEditors/issues/206))
+- On macOS there was no practical key to edit a filled cell (F2 needs fn); Control+U now opens the cell editor, as in Excel for Mac ([#247](https://github.com/ONLYOFFICE/DesktopEditors/issues/247))
+- A page larger than the sheet lost its bottom when printed; now shrunk to fit ([#281](https://github.com/ONLYOFFICE/DesktopEditors/issues/281))
+- Wrapped text taller than its cell was centred and clipped; it now shows from its first line ([#307](https://github.com/ONLYOFFICE/DesktopEditors/issues/307))
+- Pptx symbols (a:sym, Insert > Symbol) drew as unrelated glyphs; now as PowerPoint draws them ([#328](https://github.com/ONLYOFFICE/DesktopEditors/issues/328))
+- A copied display formula pasted left-aligned; it now keeps its justification ([#334](https://github.com/ONLYOFFICE/DesktopEditors/issues/334))
+- Pptx symbols (a:sym, Insert > Symbol) drew as unrelated glyphs; now as PowerPoint draws them ([#344](https://github.com/ONLYOFFICE/DesktopEditors/issues/344))
+- Edit > Undo/Redo of the macOS menu now reach the document ([#388](https://github.com/ONLYOFFICE/DesktopEditors/issues/388))
+- The desktop editors ignored the OS Region when picking their default unit; a US Region now starts in inches ([#432](https://github.com/ONLYOFFICE/DesktopEditors/issues/432))
+- A csv with more than 1048576 rows opened cut short without a word; now it warns ([#482](https://github.com/ONLYOFFICE/DesktopEditors/issues/482))
+- Fit-to-page PDF of a sheet filtered in this session shrank as if hidden rows printed ([#531](https://github.com/ONLYOFFICE/DesktopEditors/issues/531))
+- A new workbook saved as PDF was squeezed onto one page; now uses its page setup ([#547](https://github.com/ONLYOFFICE/DesktopEditors/issues/547))
+- MacOS printed on the default sheet whatever the page size; now on the page's own size ([#560](https://github.com/ONLYOFFICE/DesktopEditors/issues/560))
+- A math i/j under an accent (\vec, \dot) drew blank or as a stray glyph without Cambria Math; now a dotless i/j ([#565](https://github.com/ONLYOFFICE/DesktopEditors/issues/565))
+- PDF export recompressed JPEGs that carry Photoshop/XMP metadata at quality 85; they are now embedded as they are ([#572](https://github.com/ONLYOFFICE/DesktopEditors/issues/572))
+- A docx page background was shown although settings.xml has no w:displayBackgroundShape, and saving added the flag; the binary now carries the flag ([#615](https://github.com/ONLYOFFICE/DesktopEditors/issues/615))
+- Insert > Image > From file took one picture at a time in the desktop app; several picked at once are now all inserted ([#617](https://github.com/ONLYOFFICE/DesktopEditors/issues/617))
+- Opening a template starts a new untitled document instead of editing the template ([#619](https://github.com/ONLYOFFICE/DesktopEditors/issues/619))
+- On Linux a window could open under a top panel; it now starts inside the work area ([#661](https://github.com/ONLYOFFICE/DesktopEditors/issues/661))
+- About showed "deb" (or nothing) for Flatpak, Snap and AppImage builds; on Linux it now names the sandbox the app runs in ([#669](https://github.com/ONLYOFFICE/DesktopEditors/issues/669))
+- The macOS About window had no way to report a problem either; it now has a "Report an issue" link ([#670](https://github.com/ONLYOFFICE/DesktopEditors/issues/670))
+- On Linux with QT_SCALE_FACTOR the editor filled only the top-left part of its panel ([#694](https://github.com/ONLYOFFICE/DesktopEditors/issues/694))
+- Save As no longer truncates a dotted name or quietly renames a typed extension ([#706](https://github.com/ONLYOFFICE/DesktopEditors/issues/706))
+- On macOS the back/forward side buttons of a mouse closed the tab under the pointer; only the middle button does now ([#766](https://github.com/ONLYOFFICE/DesktopEditors/issues/766))
+- Linux Save As hands GTK and the portal the name as UTF-8, so a Chinese name no longer aborts or garbles ([#790](https://github.com/ONLYOFFICE/DesktopEditors/issues/790))
+- On macOS Ctrl+Cmd+F did not enter full screen; Window > Enter Full Screen (Ctrl+Cmd+F) now does ([#858](https://github.com/ONLYOFFICE/DesktopEditors/issues/858))
+- Zooming out in documents, presentations and PDFs stopped at 50% and zooming in from below jumped to 50%; the steps now go down to 10% ([#870](https://github.com/ONLYOFFICE/DesktopEditors/issues/870))
+- A window resize in a slide show closed the open video player (and stopped the video); now it is moved ([#878](https://github.com/ONLYOFFICE/DesktopEditors/issues/878))
+- A plain Save to CSV exported the sheet active at open, not the one on screen ([#902](https://github.com/ONLYOFFICE/DesktopEditors/issues/902))
+- Linux image dialog hid Photo.JPG - GTK filter patterns are now matched case-insensitively ([#905](https://github.com/ONLYOFFICE/DesktopEditors/issues/905))
+- Typed « and » got no non-breaking spaces in French; now «nbsp text nbsp» ([#925](https://github.com/ONLYOFFICE/DesktopEditors/issues/925))
+- Plain text with lone-CR line ends pasted as one run-together paragraph; now one paragraph per line ([#927](https://github.com/ONLYOFFICE/DesktopEditors/issues/927))
+- An idle document no longer wakes the renderer on every animation frame ([#1000](https://github.com/ONLYOFFICE/DesktopEditors/issues/1000))
+- The Windows installer registers every template type, so Default apps lists them ([#1004](https://github.com/ONLYOFFICE/DesktopEditors/issues/1004))
+- Chinese text in WMF/EMF "ANSI" fonts drew as Latin-1 garbage; it now follows the system code page ([#1031](https://github.com/ONLYOFFICE/DesktopEditors/issues/1031))
+- The Recover list on the start page gave names only; each file now shows when its last change was autosaved ([#1144](https://github.com/ONLYOFFICE/DesktopEditors/issues/1144))
+- A Google Docs/Sheets/Slides link opened Google's editor in a tab; it now goes to the browser ([#1167](https://github.com/ONLYOFFICE/DesktopEditors/issues/1167))
+- Touchpad scrolling in a document dropped the sub-pixel part of every event; it is now carried over ([#1194](https://github.com/ONLYOFFICE/DesktopEditors/issues/1194))
+- On macOS a new UI language reached new editors only after a restart; they now open in it at once ([#1230](https://github.com/ONLYOFFICE/DesktopEditors/issues/1230))
+- Pasting web content with images no longer freezes the editor while they download ([#1233](https://github.com/ONLYOFFICE/DesktopEditors/issues/1233))
+- Ctrl+Q did nothing on Linux; it now quits the app, asking about unsaved documents ([#1270](https://github.com/ONLYOFFICE/DesktopEditors/issues/1270))
+- A missing GSettings schema killed the app when it showed a notification on GNOME/Cinnamon; now the setting is read only if installed ([#1433](https://github.com/ONLYOFFICE/DesktopEditors/issues/1433))
+- A Last Resort font installed by the user took every fallback range; it is now never picked for missing glyphs ([#1450](https://github.com/ONLYOFFICE/DesktopEditors/issues/1450))
+- Linux "auto" interface scaling follows the desktop's fractional scale ([#1468](https://github.com/ONLYOFFICE/DesktopEditors/issues/1468))
+- CJK punctuation fallback on Linux took a TC/HK face (centered 。); Simplified Chinese faces now win ([#1470](https://github.com/ONLYOFFICE/DesktopEditors/issues/1470))
+- Save of a csv/tsv file with several sheets dropped every sheet but the active one without a word; it now asks first ([#1490](https://github.com/ONLYOFFICE/DesktopEditors/issues/1490))
+- Media player data says whether a slide show is running ([#1491](https://github.com/ONLYOFFICE/DesktopEditors/issues/1491))
+- A pinned recent file could vanish from Recent or show twice; pinned entries now stay once at the top ([#1513](https://github.com/ONLYOFFICE/DesktopEditors/issues/1513))
+- Highlight in the selection now goes into the updated/new style ([#1568](https://github.com/ONLYOFFICE/DesktopEditors/issues/1568))
+- There was no setting to stop the start page keeping recent files; "Keep a list of recent files" now turns it off and clears it ([#1594](https://github.com/ONLYOFFICE/DesktopEditors/issues/1594))
+- Cmd+click adds/removes an item in multi-select lists on macOS ([#1655](https://github.com/ONLYOFFICE/DesktopEditors/issues/1655))
+- AVIF pictures were dropped from docx/xlsx/pptx on save; their bytes are now kept ([#1664](https://github.com/ONLYOFFICE/DesktopEditors/issues/1664))
+- Print preview and web PDF use the same slides as the desktop print ([#1672](https://github.com/ONLYOFFICE/DesktopEditors/issues/1672))
+- With Flatpak's network permission off each file opened in a new instance; the instance socket now lives in the shared runtime folder ([#1710](https://github.com/ONLYOFFICE/DesktopEditors/issues/1710))
+- A copied picture reached other apps only as HTML; it now also goes out as image/png ([#1760](https://github.com/ONLYOFFICE/DesktopEditors/issues/1760))
+- A user name with a comma was refused, and on macOS '&', '#', '+' or '%' cut or broke it in the editors; both now arrive intact ([#1829](https://github.com/ONLYOFFICE/DesktopEditors/issues/1829))
+- A closed document tab could not be brought back; Ctrl+Shift+T (Shift+Cmd+T on macOS) now reopens the most recently closed one ([#1847](https://github.com/ONLYOFFICE/DesktopEditors/issues/1847))
+- A video's own mute/volume now reaches the player when it is opened by selecting or hovering it ([#1922](https://github.com/ONLYOFFICE/DesktopEditors/issues/1922))
+- In a slide show the video controls show only while the mouse is over the video ([#1942](https://github.com/ONLYOFFICE/DesktopEditors/issues/1942))
+- Play/pause/seek in the presenter's video player now drive the slide show's player ([#1943](https://github.com/ONLYOFFICE/DesktopEditors/issues/1943))
+- Landscape documents print shrunk onto a portrait sheet on Linux CUPS printers ([#1947](https://github.com/ONLYOFFICE/DesktopEditors/issues/1947))
+- Document the machine-wide plugin settings for administrators ([#1967](https://github.com/ONLYOFFICE/DesktopEditors/issues/1967))
+- A save to a share that fails part-way leaves the document as it was and says so ([#2000](https://github.com/ONLYOFFICE/DesktopEditors/issues/2000))
+- PDF bookmarks from headings now point at the right pages when only a page range is saved, and titles lose the paragraph mark ([#2010](https://github.com/ONLYOFFICE/DesktopEditors/issues/2010))
+- The Windows installer no longer associates file types the user unticked ([#2031](https://github.com/ONLYOFFICE/DesktopEditors/issues/2031))
+- LaTeX -> Professional no longer hangs on \thinsp/\nbsp, and reads \, \: \; ([#2062](https://github.com/ONLYOFFICE/DesktopEditors/issues/2062))
+- The French punctuation autocorrect (non-breaking spaces before : ; ? !) could not be turned off; the api can now switch it ([#2075](https://github.com/ONLYOFFICE/DesktopEditors/issues/2075))
+- A document's default paragraph direction (docDefaults w:bidi) can be set, and re-lays out every paragraph ([#2090](https://github.com/ONLYOFFICE/DesktopEditors/issues/2090))
+- Dropping a document onto an open editor now opens it in a new tab ([#2095](https://github.com/ONLYOFFICE/DesktopEditors/issues/2095))
+- Removing a plugin no longer reports success after a partial or failed removal ([#2107](https://github.com/ONLYOFFICE/DesktopEditors/issues/2107))
+- Slides print fitted to the paper on macOS instead of cut off on the right ([#2110](https://github.com/ONLYOFFICE/DesktopEditors/issues/2110))
+- Shift pressed during a row/column drag now inserts between rows (as Excel) instead of being ignored ([#2119](https://github.com/ONLYOFFICE/DesktopEditors/issues/2119))
+- An inserted video takes the video's aspect ratio instead of the square placeholder poster's ([#2131](https://github.com/ONLYOFFICE/DesktopEditors/issues/2131))
+- Document macros ran on a click and custom functions saved in a file ran on open, without the macros warning; both now wait for the user's consent ([#2188](https://github.com/ONLYOFFICE/DesktopEditors/issues/2188))
+- The start page no longer fetches ONLYOFFICE's template gallery on every launch ([#2235](https://github.com/ONLYOFFICE/DesktopEditors/issues/2235))
+- A new document uses the blank template of the user's language, not always en-US ([#2271](https://github.com/ONLYOFFICE/DesktopEditors/issues/2271))
+- ROW/ROWS/COLUMN/COLUMNS over INDIRECT or OFFSET no longer report a false circular reference ([#2288](https://github.com/ONLYOFFICE/DesktopEditors/issues/2288))
+- Wingdings symbols drew blank or as a stray glyph on Linux; they now draw from OpenSymbol ([#2318](https://github.com/ONLYOFFICE/DesktopEditors/issues/2318))
+- Scrolling a document repainted at most every 40ms (20-25fps); a scroll now repaints on the next frame ([#2375](https://github.com/ONLYOFFICE/DesktopEditors/issues/2375))
+- Elbow connector between aligned anchors is routed as an elbow, not a straight line ([#2428](https://github.com/ONLYOFFICE/DesktopEditors/issues/2428))
+- Keep placeholder idx through save; no duplicate idx on a layout ([#2448](https://github.com/ONLYOFFICE/DesktopEditors/issues/2448))
+- Editing a gradient stop no longer strips every stop's own transparency ([#2455](https://github.com/ONLYOFFICE/DesktopEditors/issues/2455))
+- Turning a sorted table's header row off/on keeps its sortState on the data rows ([#2459](https://github.com/ONLYOFFICE/DesktopEditors/issues/2459))
+- Tool calls sent with finish_reason, or several at once, are no longer dropped ([#2461](https://github.com/ONLYOFFICE/DesktopEditors/issues/2461))
+- A comment added from a macro (ApiRange.AddComment etc.) showed twice in the Comments panel; it is announced once now (backport of upstream 551cb909f3) ([#2463](https://github.com/ONLYOFFICE/DesktopEditors/issues/2463))
+- Home/End in the formula bar left the editor caret behind; Alt+Enter now breaks at the caret ([#2467](https://github.com/ONLYOFFICE/DesktopEditors/issues/2467))
+- The left column of a 2-column section after a continuous break could vanish from page 1; stepping back to a later column no longer resets the section (backport of upstream 0f67b0544a) ([#2469](https://github.com/ONLYOFFICE/DesktopEditors/issues/2469))
+- FontDescriptor FontBBox/Ascent/Descent/CapHeight of embedded TrueType subsets were in font units; now in glyph space (1/1000 em) ([#2471](https://github.com/ONLYOFFICE/DesktopEditors/issues/2471))
+- Don't flush a null cookie manager on shutdown ([#2476](https://github.com/ONLYOFFICE/DesktopEditors/issues/2476))
+- Don't crash saving a PDF with a CID font that has no CMap ([#2479](https://github.com/ONLYOFFICE/DesktopEditors/issues/2479))
+- A save whose replace breaks half-way no longer strands the new content; stale save temps are removed ([#2480](https://github.com/ONLYOFFICE/DesktopEditors/issues/2480))
+- Keep each comment's paraId when re-saving, so threads survive ([#2482](https://github.com/ONLYOFFICE/DesktopEditors/issues/2482))
+- A pivot change that throws no longer suspends recalculation for the session ([#2485](https://github.com/ONLYOFFICE/DesktopEditors/issues/2485))
+- FreeType's FTC_* and TT_* entry points were still exported from libgraphics.so ([#2490](https://github.com/ONLYOFFICE/DesktopEditors/issues/2490))
+- On Linux a window moved to a screen of another scale kept its old chrome size next to a re-zoomed editor; it is now re-scaled ([#2501](https://github.com/ONLYOFFICE/DesktopEditors/issues/2501))
+- Deleting all text in a shape no longer resets its font size and bullets ([#2502](https://github.com/ONLYOFFICE/DesktopEditors/issues/2502))
+- An xkb region written as an adjective ("English (Australian)") now gives that region ([#2503](https://github.com/ONLYOFFICE/DesktopEditors/issues/2503))
+- A grayscale JPEG 2000 image without /ColorSpace rendered black; its colour space now comes from the JPX header ([#2506](https://github.com/ONLYOFFICE/DesktopEditors/issues/2506))
+- Write numbering.xml in schema order, so lists survive in Word ([#2507](https://github.com/ONLYOFFICE/DesktopEditors/issues/2507))
+- The caret stops blinking when the OS has cursor blinking turned off ([#2508](https://github.com/ONLYOFFICE/DesktopEditors/issues/2508))
+- Paste-options button no longer lingers after the pasted object is deselected ([#2517](https://github.com/ONLYOFFICE/DesktopEditors/issues/2517))
+- Know the TSV format id in the desktop controller ([#2521](https://github.com/ONLYOFFICE/DesktopEditors/issues/2521))
+- A relative path given to a second instance now opens relative to where it was typed ([#2523](https://github.com/ONLYOFFICE/DesktopEditors/issues/2523))
+- Mistral no longer rejects a thread that contains a tool call ([#2524](https://github.com/ONLYOFFICE/DesktopEditors/issues/2524))
+- A plugin closed mid-stream no longer leaves the editor locked; its open group is ended, text kept ([#2525](https://github.com/ONLYOFFICE/DesktopEditors/issues/2525))
+- Redaction left shaded shapes, frames and soft-masked images behind ([#2526](https://github.com/ONLYOFFICE/DesktopEditors/issues/2526))
+- Don't abort on "--view path" and other malformed launch arguments ([#2527](https://github.com/ONLYOFFICE/DesktopEditors/issues/2527))
+- On macOS, tabs already open take the new theme's background on a theme change ([#2528](https://github.com/ONLYOFFICE/DesktopEditors/issues/2528))
+- Serbian (Latin) no longer hyphenates before a word-final lj/nj ([#2533](https://github.com/ONLYOFFICE/DesktopEditors/issues/2533))
+- Every dark-type theme, theme-night included, gets the dark message box ([#2537](https://github.com/ONLYOFFICE/DesktopEditors/issues/2537))
+- Hangul no longer drawn with a Chinese glyph from Heiti's legacy cmap ([#2542](https://github.com/ONLYOFFICE/DesktopEditors/issues/2542))
+- Switching spelling language detection off now reaches open documents ([#2543](https://github.com/ONLYOFFICE/DesktopEditors/issues/2543))
+- Uppercase Cyrillic "СС" is read as seconds in Russian number formats ([#2545](https://github.com/ONLYOFFICE/DesktopEditors/issues/2545))
+- One non-UTF-8 byte garbled every non-ASCII character of a UTF-8 CSV ([#2546](https://github.com/ONLYOFFICE/DesktopEditors/issues/2546))
+- Don't flock documents in iCloud / File Provider folders on macOS ([#2547](https://github.com/ONLYOFFICE/DesktopEditors/issues/2547))
+- A logout vetoed for unsaved documents now shows the save dialogs ([#2553](https://github.com/ONLYOFFICE/DesktopEditors/issues/2553))
+- Slideshow no longer clips text that sticks out of tight exact line spacing ([#2554](https://github.com/ONLYOFFICE/DesktopEditors/issues/2554))
+- Rows hidden down to the end of the sheet came back visible after an ODS save; they now stay hidden ([#2556](https://github.com/ONLYOFFICE/DesktopEditors/issues/2556))
+- Portuguese and other regional keyboards on macOS no longer get the wrong country ([#2559](https://github.com/ONLYOFFICE/DesktopEditors/issues/2559))
+- Accent picked from the macOS accent menu doubled in spreadsheet text boxes (eé); it now replaces the letter ([#2560](https://github.com/ONLYOFFICE/DesktopEditors/issues/2560))
+- An image drag that crossed a document without dropping no longer splits the paragraph at the next click ([#2561](https://github.com/ONLYOFFICE/DesktopEditors/issues/2561))
+
+## Defects we found ourselves
+
+- **RD-0001** Csv kept one row past 1048576, csv -> xlsx ignored the row limit and said nothing; both now stop at 1048576 and return ROWLIMITS
+- **RD-0002** MacOS started Sparkle with no appcast and offered "Check for Updates..."; the updater and its menu item are gone
+- **RD-0003** Special paste with no clipboard data threw a TypeError; it now stops after reporting empty data
+- **RD-0004** PDF export read one byte past the TrueType subset's glyph flags; the closing loca entry no longer consults them
+- **RD-0005** A broken MNG picture freed libmng's decoder from its own error callback (use after free, double free); the callback now only reports the error
+- **RD-0006** JasPer streams were closed through function pointers in a stack object already out of scope; the CxFileJas now outlives jas_stream_close
+- **RD-0007** A .doc whose document properties run past the table stream read up to 700 bytes beyond the DOP buffer; the bounds now use the bytes actually read
+- **RD-0008** The format detector ran strstr over zip parts that were not NUL-terminated; parts read from an archive now end in a zero byte
+- **RD-0009** VBA module decompression read past the end of the compressed stream; tokens and stored chunks are now bounded by the input
+- **RD-0010** A .doc style whose name or UPX lengths run past the style's bytes copied heap memory into the style; the STD's variable part is now read within its size
+- **RD-0011** ODS cells of type scientific/fraction/date-time read their number format id from past the end of a global table; out-of-range types now map to 0
+- **RD-0012** Saving a presentation with notes but no notes-master theme relation crashed x2t; an empty theme list now falls back to the first theme
+- **RD-0013** RTF export wrote stray stack bytes after a list bullet; the list text is now exactly the bullet
+- **RD-0014** Excel 2003 XML rows were not yet in the sheet while being read, so merged cells crashed the first row and went into the previous row otherwise; the row is now the sheet's last row while it is read
+- **RD-0015** A .ppt with an inline fill picture in a shape's properties crashed x2t; a blip read without a temp folder is now stepped over
+- **RD-0016** Saving a 3-D surface chart without band formats crashed x2t; c:bandFmts is now written only when present
+- **RD-0017** An ODP table in a document without office:automatic-styles crashed x2t on open; the default cell style is now created only when it can be stored
+- **RD-0018** EMF to SVG wrote through a null pointer for an empty text record with character spacing; such a text now gets a single x coordinate
+
+---
+
 # Ration Docs Desktop 2026.1.0
 
 First release of Ration Docs Desktop, a hard fork of ONLYOFFICE Desktop Editors 9.4.0.

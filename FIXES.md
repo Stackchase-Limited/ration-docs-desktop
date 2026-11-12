@@ -12,7 +12,7 @@ nothing here can claim a test that is not on disk.
 - **170** have a test artifact in `fork-fix-tests/`
 - **39** do not - the fix is asserted by its commit message only
 - **36** fix commits carry no issue number (defects found in passing)
-- **3** defects found by our own testing (RD-NNNN), 3 with a test - counted separately from upstream issues
+- **18** defects found by our own testing (RD-NNNN), 18 with a test - counted separately from upstream issues
 
 A row here means a commit exists. It does **not** mean the fix was verified;
 that is what the Test column is for. See the verification status section of
@@ -244,6 +244,21 @@ They have not been demonstrated.
 
 | ID | Where | Commit | Test | Landed | What |
 |---|---|---|---|---|---|
+| RD-0018 | core | `ccddc3317b` | `rd-0018-emf-svg-empty-text-dx` | 2026-11-12 | EMF to SVG wrote through a null pointer for an empty text record with character  |
+| RD-0017 | core | `72e231853b` | `rd-0017-odp-table-no-auto-styles` | 2026-11-12 | an ODP table in a document without office:automatic-styles crashed x2t on open;  |
+| RD-0016 | core | `ce4bbdb6aa` | `rd-0016-chart-surface3d-bandfmts` | 2026-11-12 | saving a 3-D surface chart without band formats crashed x2t; c:bandFmts is now w |
+| RD-0015 | core | `7bdeb60fa3` | `rd-0015-ppt-fillblip-no-tempdir` | 2026-11-12 | a .ppt with an inline fill picture in a shape's properties crashed x2t; a blip r |
+| RD-0014 | core | `973bbc4b78` | `rd-0014-xml2003-current-row` | 2026-11-12 | Excel 2003 XML rows were not yet in the sheet while being read, so merged cells  |
+| RD-0013 | core | `74a8ff889d` | `rd-0013-rtf-list-bullet-text` | 2026-11-12 | RTF export wrote stray stack bytes after a list bullet; the list text is now exa |
+| RD-0012 | core | `67a534fc58` | `rd-0012-pptx-notes-master-theme` | 2026-11-12 | saving a presentation with notes but no notes-master theme relation crashed x2t; |
+| RD-0011 | core | `001b1246fd` | `rd-0011-ods-value-type-numfmt` | 2026-11-12 | ODS cells of type scientific/fraction/date-time read their number format id from |
+| RD-0010 | core | `2582055add` | `rd-0010-doc-style-upx-bounds` | 2026-11-12 | a .doc style whose name or UPX lengths run past the style's bytes copied heap me |
+| RD-0009 | core | `cb15bb25e9` | `rd-0009-vba-decompress-bounds` | 2026-11-12 | VBA module decompression read past the end of the compressed stream; tokens and  |
+| RD-0008 | core | `d2bc0bbcf9` | `rd-0008-zip-part-not-terminated` | 2026-11-12 | the format detector ran strstr over zip parts that were not NUL-terminated; part |
+| RD-0007 | core | `c02a029ed8` | `rd-0007-doc-dop-short-table` | 2026-11-12 | a .doc whose document properties run past the table stream read up to 700 bytes  |
+| RD-0006 | core | `aa7fbced56` | `rd-0006-jasper-stream-ops-scope` | 2026-11-12 | JasPer streams were closed through function pointers in a stack object already o |
+| RD-0005 | core | `87c5a74031` | `rd-0005-mng-error-callback-uaf` | 2026-11-12 | a broken MNG picture freed libmng's decoder from its own error callback (use aft |
+| RD-0004 | core | `9e859476ed` | `rd-0004-ttf-subset-glyph-flags` | 2026-11-12 | PDF export read one byte past the TrueType subset's glyph flags; the closing loc |
 | RD-0003 | sdkjs | `12e566a791` | `rd-0003-special-paste-null-data-test.js` | 2026-11-12 | special paste with no clipboard data threw a TypeError; it now stops after repor |
 | RD-0002 | desktop-apps | `09c48fb4e0` | `rd-0002-mac-no-sparkle-updater-test.js` | 2026-11-12 | macOS started Sparkle with no appcast and offered "Check for Updates..."; the up |
 | RD-0001 | core, desktop-sdk, web-apps | `9eed63b760` `ffc735fa93` `95c61da632` | `rd-0001-csv-open-limits` | 2026-11-12 | csv kept one row past 1048576, csv -> xlsx ignored the row limit and said nothin |

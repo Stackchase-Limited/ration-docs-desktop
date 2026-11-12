@@ -1,5 +1,11 @@
 # Change log
 
+## Ration Docs 2026.2.0
+
+First Ration Docs release for macOS, Windows and Linux: 125 more upstream issues fixed (209 in all),
+18 defects of our own (RD-0001..RD-0018), a security overhaul of plugins, links, macros and the desktop
+bridge, and the ONLYOFFICE 10.0 security fixes backported. Details: `RELEASE_NOTES.md`.
+
 ## 9.4.0
 
 ### New features
