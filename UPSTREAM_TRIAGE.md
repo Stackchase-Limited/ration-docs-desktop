@@ -1042,7 +1042,23 @@ fall through to selection-extend; rebindable. #1292 context menus: typing a lett
 starting with it (web-apps 9e2a4c5e94). #179 the shortcuts search ignores spaces and searches descriptions
 (web-apps 459948889e). Tests issue-0603-*, issue-0322-*, issue-1203-*, issue-1292-*, issue-0179-*.
 
+### #2239 / #2466 / #1438 / #2180 - plugins, AI, dictionaries, SVG paste - DONE 2026-11-12 (after 2026.2.0)
+#2239 AI agent providers take hand-entered model IDs (desktop-sdk 42a94cd1; ai-agent deploy rebuilt
+reproducibly). #2466 option (off by default): bundled plugins can be hidden in the Plugin Manager and
+restored; the app folder is never written (desktop-sdk 1db9f146, sdkjs 532aac2b28, desktop-apps 6c7c62a2b,
+onlyoffice.github.io bea6535b on its new ration/v10-backports branch). #1438 Settings > "Add spelling
+dictionary..." installs a UTF-8 hunspell pair into the user folder, user dictionaries win (desktop-sdk
+4efb34f6, new header spell_dictionaries.h; desktop-apps 3fb2865cc). #2180 an SVG copied from Inkscape-like
+apps pastes as a vector picture, plain SVG text still pastes as text (sdkjs 8c1cd0c54a). Tests
+issue-2239-*, issue-2466-*, issue-1438-*, issue-2180-*; issue-0195/0630/676/2543 tests updated for the new
+code. macOS .mm edits for #2466 not compiled; GUI checks pending.
+
 ## Root-caused, not fixed
+
+### #1592 - copy to the X PRIMARY selection (Linux) - not simple in CEF 109
+The editors' canvas selection never reaches a DOM selection, so Chromium never sets PRIMARY; needs an
+sdkjs selection hook, a bridge call and QClipboard::Selection in desktop-apps - three repos, > a day.
+
 
 ### #1064 - list of undo steps - needs labelled history points
 History descriptions are internal identifiers (~320 word/slide codes to label and translate) and 243 of 244

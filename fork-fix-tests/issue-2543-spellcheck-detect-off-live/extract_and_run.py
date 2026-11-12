@@ -197,7 +197,8 @@ struct CAscApplicationManager_Private {
 	NSAscCrypto::AscCryptoType m_nCurrentCryptoMode = NSAscCrypto::None;
 	bool m_bIsEnableConvertLogs = false, m_bIsUseExternalMessageLoop = false,
 	     m_bIsUseSpellCheckKeyboardInput = true, m_bDebugInfoSupport = false,
-	     m_bSupportMultiplugins = false, m_bLoggingBrowserUrls = false, m_bDisableAI = false;
+	     m_bSupportMultiplugins = false, m_bLoggingBrowserUrls = false, m_bDisableAI = false,
+	     m_bCanHideSystemPlugins = false; // #2466 (desktop-sdk 1db9f146) reads plugins-hide-builtin in the same block
 	void LoadSettings() {}      // refreshes the manager's own map; not needed here
 	%(SAVE)s
 };

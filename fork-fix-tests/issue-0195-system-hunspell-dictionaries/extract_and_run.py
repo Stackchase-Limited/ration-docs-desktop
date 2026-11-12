@@ -100,6 +100,14 @@ def method(text, sig):
 
 
 spell = read(SPELL)
+
+
+def spell_dictionaries():
+    """spell_dictionaries.h (#1438, desktop-sdk e2d1d5ed), which spellchecker.cpp includes since then,
+    inlined with core paths made absolute; nothing before it."""
+    if '#include "./spell_dictionaries.h"' not in spell:
+        return ''
+    return read('ChromiumBasedEditors/lib/src/spell_dictionaries.h').replace('"../../../../core/', '"%s/' % CORE)
 plugins = read(PLUGINS)
 records = os.path.join(CORE, 'Common/3dParty/hunspell/autogen/records.h')
 
@@ -126,6 +134,7 @@ src = r'''
 #include "%(core)s/Common/3dParty/hunspell/hunspell/src/hunspell/hunspell.h"
 #include <dirent.h>
 #include "%(core)s/Common/MS-LCID.h"
+%(spelldict)s
 
 typedef long long int_64_type;
 #define ASC_MENU_EVENT_TYPE_CEF_SPELLCHECK 1
@@ -171,7 +180,7 @@ int main(int argc, char** argv) {
 	}
 	return 0;
 }
-''' % dict(core=CORE,
+''' % dict(core=CORE, spelldict=spell_dictionaries(),
            getstr=method(plugins, 'static std::string GetStringValue('),
            getarr=method(plugins, 'static std::string GetArrayValue('),
            textitem=cls(spell, 'CJsonTextItem'),

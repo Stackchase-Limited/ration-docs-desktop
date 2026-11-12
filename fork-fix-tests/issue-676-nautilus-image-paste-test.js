@@ -33,7 +33,7 @@ const fs = require('fs');
 const path = require('path');
 const assert = require('assert');
 
-const SDKJS = path.resolve(__dirname, '..', 'sdkjs');
+const SDKJS = path.resolve(process.env.RD_REPO || path.join(__dirname, '..', 'sdkjs'));
 const REL = 'common/clipboard_base.js';
 // Pinned to the commit this fix landed on top of. It must NOT default to HEAD:
 // once the fix is committed, HEAD carries it, the baseline stops differing and
@@ -70,6 +70,9 @@ assert.ok(onpasteSrc.includes('reader.readAsDataURL(blob)'), 'extraction truncat
 
 const pathsSrc = extractMethod(source, 'getFileManagerImagePaths');
 const checkSrc = extractMethod(source, 'checkFileManagerImagePaste');
+/* #2180 (sdkjs wip/2180) calls these from the same branch; absent before it */
+const svgTextSrc = extractMethod(source, 'isSvgDocumentText');
+const svgCheckSrc = extractMethod(source, 'checkSvgDocumentPaste');
 if (!BASELINE) {
 	assert.ok(pathsSrc, 'getFileManagerImagePaths missing - is the fix applied?');
 	assert.ok(checkSrc, 'checkFileManagerImagePaste missing - is the fix applied?');
@@ -273,6 +276,8 @@ function run(scenario) {
 
 	if (pathsSrc) cb.getFileManagerImagePaths = make(pathsSrc);
 	if (checkSrc) cb.checkFileManagerImagePaste = make(checkSrc);
+	if (svgTextSrc) cb.isSvgDocumentText = make(svgTextSrc);
+	if (svgCheckSrc) cb.checkSvgDocumentPaste = make(svgCheckSrc);
 	cb._private_onpaste = make(onpasteSrc);
 
 	cb._private_onpaste({ clipboardData, preventDefault() {} });

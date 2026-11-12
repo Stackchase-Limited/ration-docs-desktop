@@ -8,8 +8,8 @@ behind its own commits when this was written, and several commit messages cite
 test directories that have never existed. Nothing here is typed in by hand, so
 nothing here can claim a test that is not on disk.
 
-- **241 issues** with at least one fix commit
-- **199** have a test artifact in `fork-fix-tests/`
+- **245 issues** with at least one fix commit
+- **203** have a test artifact in `fork-fix-tests/`
 - **42** do not - the fix is asserted by its commit message only
 - **35** fix commits carry no issue number (defects found in passing)
 - **19** defects found by our own testing (RD-NNNN), 19 with a test - counted separately from upstream issues
@@ -57,6 +57,7 @@ that is what the Test column is for. See the verification status section of
 | [#2471](https://github.com/ONLYOFFICE/DesktopEditors/issues/2471) | core | `bf09d8ce1c` `8aca22e449` `2a38ea99f3` | `issue-2471-cid-subset-tag` | 2026-11-04 |
 | [#2469](https://github.com/ONLYOFFICE/DesktopEditors/issues/2469) | sdkjs | `ba6466c2e1` | `issue-2469-two-column-left-column-lost-test.js` | 2026-06-16 |
 | [#2467](https://github.com/ONLYOFFICE/DesktopEditors/issues/2467) | sdkjs | `0c13033452` | `issue-2467-formula-bar-home-alt-enter-test.js` | 2026-11-04 |
+| [#2466](https://github.com/ONLYOFFICE/DesktopEditors/issues/2466) | desktop-apps, desktop-sdk, onlyoffice.github.io, sdkjs | `532aac2b28` `6c7c62a2b5` `1db9f146f5` | `issue-2466-hide-builtin-plugins` | 2026-11-12 |
 | [#2463](https://github.com/ONLYOFFICE/DesktopEditors/issues/2463) | sdkjs | `3fae1156fb` | `issue-2463-macro-comment-twice-test.js` | 2026-09-30 |
 | [#2461](https://github.com/ONLYOFFICE/DesktopEditors/issues/2461) | desktop-sdk | `073ae7bae2` `c865aace2a` | `issue-2461-ollama-tool-args-test.js` | 2026-11-05 |
 | [#2459](https://github.com/ONLYOFFICE/DesktopEditors/issues/2459) | sdkjs | `f0aa8ae774` `c5160011f4` `1bb4bdfbe9` | `issue-2459-totals-row-autofilter-test.js` | 2026-11-05 |
@@ -92,6 +93,7 @@ that is what the Test column is for. See the verification status section of
 | [#2250](https://github.com/ONLYOFFICE/DesktopEditors/issues/2250) | sdkjs | `8f06905c77` | `issue-2250-bullet-text-test.js` | 2026-09-14 |
 | [#2245](https://github.com/ONLYOFFICE/DesktopEditors/issues/2245) | sdkjs | `d9795582c1` | `issue-2245-trendline-equation-test.js` | 2026-09-15 |
 | [#2244](https://github.com/ONLYOFFICE/DesktopEditors/issues/2244) | web-apps | `b0b8517702` | `issue-2244-axis-bounds-test.js` | 2026-09-14 |
+| [#2239](https://github.com/ONLYOFFICE/DesktopEditors/issues/2239) | desktop-sdk | `42a94cd1ed` | `issue-2239-ai-agent-custom-models-test.js` | 2026-11-12 |
 | [#2235](https://github.com/ONLYOFFICE/DesktopEditors/issues/2235) | desktop-apps, desktop-sdk | `2305804020` `de4b31a40d` | `issue-2235-offline-no-remote-test.js` | 2026-11-11 |
 | [#2234](https://github.com/ONLYOFFICE/DesktopEditors/issues/2234) | sdkjs | `96b4de581f` | `issue-2234-macro-protected-write-test.js` | 2026-09-14 |
 | [#2229](https://github.com/ONLYOFFICE/DesktopEditors/issues/2229) | desktop-apps | `1509c6228e` | `issue-2229-window-border-contrast` | 2026-09-15 |
@@ -102,6 +104,7 @@ that is what the Test column is for. See the verification status section of
 | [#2189](https://github.com/ONLYOFFICE/DesktopEditors/issues/2189) | desktop-apps | `cba281172d` | `issue-2189-mutex-lasterror` | 2026-09-14 |
 | [#2188](https://github.com/ONLYOFFICE/DesktopEditors/issues/2188) | sdkjs, web-apps | `b6a9dee535` `f8b289bf97` | `issue-2188-macro-click-consent-test.js` | 2026-11-12 |
 | [#2187](https://github.com/ONLYOFFICE/DesktopEditors/issues/2187) | core | `b4a57ad44e` `b4a57ad44e` | `issue-2187-shape-macro` | 2026-09-15 |
+| [#2180](https://github.com/ONLYOFFICE/DesktopEditors/issues/2180) | sdkjs | `8c1cd0c54a` | `issue-2180-svg-clipboard-paste-test.js` | 2026-11-12 |
 | [#2161](https://github.com/ONLYOFFICE/DesktopEditors/issues/2161) | desktop-apps | `4ab3fb37ec` | `issue-2161-landscape-print-margins` | 2026-09-15 |
 | [#2160](https://github.com/ONLYOFFICE/DesktopEditors/issues/2160) | sdkjs, web-apps | `84afc71c38` `aaa725f624` | `issue-2160-context-numerals-test.js` | 2026-11-12 |
 | [#2147](https://github.com/ONLYOFFICE/DesktopEditors/issues/2147) | desktop-apps | `2441a039db` | `issue-2147-color-printing` | 2026-09-15 |
@@ -151,6 +154,7 @@ that is what the Test column is for. See the verification status section of
 | [#1470](https://github.com/ONLYOFFICE/DesktopEditors/issues/1470) | core | `64f592dfbb` | `issue-1470-cjk-fallback-sc-first` | 2026-11-05 |
 | [#1468](https://github.com/ONLYOFFICE/DesktopEditors/issues/1468) | desktop-sdk | `7ec929901a` | `issue-1468-linux-fractional-scaling` | 2026-11-11 |
 | [#1450](https://github.com/ONLYOFFICE/DesktopEditors/issues/1450) | core | `dc5f520a6a` | `issue-1450-last-resort-fallback` | 2026-11-12 |
+| [#1438](https://github.com/ONLYOFFICE/DesktopEditors/issues/1438) | desktop-apps, desktop-sdk | `3fb2865cc6` `4efb34f662` | `issue-1438-install-spell-dictionary` | 2026-11-12 |
 | [#1433](https://github.com/ONLYOFFICE/DesktopEditors/issues/1433) | desktop-apps | `a314de8d2f` | `issue-1433-gsettings-missing-schema` | 2026-11-12 |
 | [#1372](https://github.com/ONLYOFFICE/DesktopEditors/issues/1372) | core | `39a34e13b3` | `issue-1372-csv-locale-date-and-numfmt` | 2026-09-15 |
 | [#1364](https://github.com/ONLYOFFICE/DesktopEditors/issues/1364) | sdkjs | `ef815d5784` `ef815d5784` | `issue-1364-single-cell-copy-test.js` | 2026-09-15 |
