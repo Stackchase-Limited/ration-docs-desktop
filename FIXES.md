@@ -8,8 +8,8 @@ behind its own commits when this was written, and several commit messages cite
 test directories that have never existed. Nothing here is typed in by hand, so
 nothing here can claim a test that is not on disk.
 
-- **274 issues** with at least one fix commit
-- **232** have a test artifact in `fork-fix-tests/`
+- **279 issues** with at least one fix commit
+- **237** have a test artifact in `fork-fix-tests/`
 - **42** do not - the fix is asserted by its commit message only
 - **35** fix commits carry no issue number (defects found in passing)
 - **20** defects found by our own testing (RD-NNNN), 20 with a test - counted separately from upstream issues
@@ -139,16 +139,19 @@ that is what the Test column is for. See the verification status section of
 | [#2000](https://github.com/ONLYOFFICE/DesktopEditors/issues/2000) | desktop-sdk | `5eaf9b64f3` | `issue-2000-network-share-save` | 2026-11-11 |
 | [#1969](https://github.com/ONLYOFFICE/DesktopEditors/issues/1969) | web-apps | `72a998da54` | `issue-1969-fill-from-clipboard-test.js` | 2026-11-12 |
 | [#1967](https://github.com/ONLYOFFICE/DesktopEditors/issues/1967) | desktop-apps, desktop-sdk | `daa44229e7` `df19207858` | `issue-1967-managed-plugin-policy` | 2026-11-11 |
+| [#1952](https://github.com/ONLYOFFICE/DesktopEditors/issues/1952) | desktop-apps | `a1c23fcfb9` | `issue-1952-recent-path-tooltip-test.js` | 2026-11-12 |
 | [#1947](https://github.com/ONLYOFFICE/DesktopEditors/issues/1947) | desktop-apps | `f205870618` | `issue-1947-linux-landscape-print` | 2026-11-05 |
 | [#1943](https://github.com/ONLYOFFICE/DesktopEditors/issues/1943) | desktop-sdk, sdkjs | `b12cc75a46` `3f9d60fc61` | `issue-1943-presenter-video-sync` | 2026-11-11 |
 | [#1942](https://github.com/ONLYOFFICE/DesktopEditors/issues/1942) | desktop-sdk | `f5635e16ec` | `issue-1942-slideshow-video-controls` | 2026-11-11 |
+| [#1925](https://github.com/ONLYOFFICE/DesktopEditors/issues/1925) | sdkjs, web-apps | `61fae925c0` `bcdb51112f` | `issue-1925-smooth-wheel-scroll-test.js` | 2026-11-12 |
 | [#1922](https://github.com/ONLYOFFICE/DesktopEditors/issues/1922) | desktop-sdk, sdkjs | `39b0fd827b` `d97740fb73` `83724834dc` | `issue-1922-video-volume` | 2026-11-11 |
 | [#1905](https://github.com/ONLYOFFICE/DesktopEditors/issues/1905) | sdkjs | `d829164103` | `issue-1905-move-sheet-new-workbook-test.js` | 2026-11-12 |
 | [#1899](https://github.com/ONLYOFFICE/DesktopEditors/issues/1899) | desktop-apps | `b61080a052` | `issue-1899-window-buttons-close-only-test.js` | 2026-11-12 |
 | [#1885](https://github.com/ONLYOFFICE/DesktopEditors/issues/1885) | sdkjs | `d54317276d` | `issue-1885-pdf-shape-hyperlinks-test.js` | 2026-11-12 |
 | [#1872](https://github.com/ONLYOFFICE/DesktopEditors/issues/1872) | desktop-sdk | `61e4e166ab` | `issue-1872-screen-reader-accessibility-test.js` | 2026-11-12 |
+| [#1864](https://github.com/ONLYOFFICE/DesktopEditors/issues/1864) | sdkjs, web-apps | `5f7ad1f89c` `1ecc12124b` | `issue-1864-print-preview-wait-test.js` | 2026-11-12 |
 | [#1855](https://github.com/ONLYOFFICE/DesktopEditors/issues/1855) | core | `4116fbeb76` | `issue-1855-pdf-outline-pagemode` | 2026-09-15 |
-| [#1847](https://github.com/ONLYOFFICE/DesktopEditors/issues/1847) | desktop-apps | `b76fc9693a` | `issue-1847-reopen-closed-tab` | 2026-11-12 |
+| [#1847](https://github.com/ONLYOFFICE/DesktopEditors/issues/1847) | desktop-apps | `ccb7f894af` `b76fc9693a` | `issue-1847-reopen-closed-tab` | 2026-11-12 |
 | [#1829](https://github.com/ONLYOFFICE/DesktopEditors/issues/1829) | desktop-apps | `d269d54a3c` | `issue-1829-user-name-chars` | 2026-11-12 |
 | [#1814](https://github.com/ONLYOFFICE/DesktopEditors/issues/1814) | desktop-apps | `607339b530` | `issue-1814-mac-move-tab-to-new-window` | 2026-11-12 |
 | [#1760](https://github.com/ONLYOFFICE/DesktopEditors/issues/1760) | sdkjs | `9f3cc5dd87` | `issue-1760-copy-picture-image-png-test.js` | 2026-11-10 |
@@ -158,6 +161,7 @@ that is what the Test column is for. See the verification status section of
 | [#1672](https://github.com/ONLYOFFICE/DesktopEditors/issues/1672) | sdkjs, web-apps | `e88d90ee71` `c32ac680e4` `73d504525b` | `issue-1672-hidden-slides-pdf-print-test.js` | 2026-11-10 |
 | [#1664](https://github.com/ONLYOFFICE/DesktopEditors/issues/1664) | core, desktop-apps, desktop-sdk, onlyoffice.github.io, sdkjs, web-apps | `0228100ad6` `ff6eb2e4e3` `b0a9cfb763` | `issue-1664-no-remote-scripts-test.js` | 2026-11-11 |
 | [#1655](https://github.com/ONLYOFFICE/DesktopEditors/issues/1655) | web-apps | `d420245695` | `issue-1655-pivot-group-cmd-click-test.js` | 2026-11-11 |
+| [#1611](https://github.com/ONLYOFFICE/DesktopEditors/issues/1611) | desktop-apps, desktop-sdk | `a37156b0ce` `cdeb4bb74b` | `issue-1611-pinch-zoom-option-test.js` | 2026-11-12 |
 | [#1594](https://github.com/ONLYOFFICE/DesktopEditors/issues/1594) | desktop-apps, desktop-sdk | `2d2ba2b25a` `7597f17aea` | `issue-1594-disable-recents-test.js` | 2026-11-12 |
 | [#1570](https://github.com/ONLYOFFICE/DesktopEditors/issues/1570) | sdkjs | `fdbbb561c4` `fdbbb561c4` | `issue-1570-verdana-substitution-test.js` | 2026-09-15 |
 | [#1568](https://github.com/ONLYOFFICE/DesktopEditors/issues/1568) | sdkjs | `85cc0673e2` | `issue-1568-style-from-selection-highlight-test.js` | 2026-11-10 |
@@ -188,6 +192,7 @@ that is what the Test column is for. See the verification status section of
 | [#1194](https://github.com/ONLYOFFICE/DesktopEditors/issues/1194) | sdkjs | `aa8e849c33` | `issue-1194-touchpad-subpixel-scroll-test.js` | 2026-11-11 |
 | [#1177](https://github.com/ONLYOFFICE/DesktopEditors/issues/1177) | desktop-apps | `ae489fe2a6` | `issue-1177-reapply-file-associations-test.js` | 2026-11-12 |
 | [#1167](https://github.com/ONLYOFFICE/DesktopEditors/issues/1167) | desktop-apps | `82e255608f` | `issue-1167-google-doc-link` | 2026-11-11 |
+| [#1166](https://github.com/ONLYOFFICE/DesktopEditors/issues/1166) | web-apps | `b541e516bf` | `issue-1166-default-page-margins-test.js` | 2026-11-12 |
 | [#1144](https://github.com/ONLYOFFICE/DesktopEditors/issues/1144) | desktop-apps, desktop-sdk | `68827a107d` `bdbd5c3508` | `issue-1144-recover-list-dates` | 2026-11-12 |
 | [#1031](https://github.com/ONLYOFFICE/DesktopEditors/issues/1031) | core | `9e6c96b316` | `issue-1031-wmf-ansi-codepage` | 2026-11-11 |
 | [#1018](https://github.com/ONLYOFFICE/DesktopEditors/issues/1018) | sdkjs | `26cb022b7c` `26cb022b7c` | `issue-1018-autofit-column-scan-test.js` | 2026-09-15 |

@@ -1136,7 +1136,49 @@ diff identical). #34 CMainWindow drop handlers were Linux-only; now on Windows t
 case-insensitive suffixes and non-local URLs refused (desktop-apps f7e1ac479; test issue-0034-main-window-file-drop).
 Windows code is not compiled yet; all three need Windows GUI checks.
 
+### #1611 / #1847 / #1166 / #1952 / #1864 / #1925 - opt-in UI features - DONE 2026-11-12
+#1611 option "Pinch to zoom" (Win/Linux, off by default) drops CEF --disable-pinch (desktop-sdk cdeb4bb7,
+desktop-apps a37156b0c). #1847 option "Reopen documents from the last session at start" (off by default; local
+files only; desktop-apps ccb7f894af). #1166 Advanced setting "Default page margins" for new blank documents (unset =
+template; web-apps b541e516bf). #1952 Recent list name tooltip is the full path (desktop-apps a1c23fcfb). #1864 print
+preview of a workbook >= 500k used cells shows "please wait" before building (sdkjs 5f7ad1f89c, web-apps 1ecc12124b).
+#1925 option "Smooth scrolling with the mouse wheel" in the document editor, off by default (sdkjs 61fae925c0,
+web-apps bcdb51112f). Tests issue-1611/-1847-restore-session-tabs/-1166/-1952/-1864/-1925. GUI checks pending;
+native parts compiled syntax-only (Linux, macOS), Windows not compiled.
+
 ## Root-caused, not fixed
+
+### #278 - custom error bars from sheet ranges - UI and API missing (about two days)
+Error Bars menu (SE ChartTab.js:355) offers only None/Standard error/Percentage/Standard deviation via
+asc_ChartSettings.setDisplayErrorBars (sdkjs common/apiCommon.js:1839); CUST bars get a one-point numLit. The model
+reads, draws and round-trips CMinusPlus numRef. Needed: setCustomErrorBars(plusRef, minusRef, dir, endCap) building a
+cached CNumRef kept up to date like series refs; a "Format error bars" dialog with two range pickers; x2t round-trip test.
+
+### #420 - pin any toolbar button to the quick access toolbar - feature, not done (about two days)
+QAT is a fixed set of six buttons in Header.js (onChangeQuickAccess :342); Desktop.js:505-530 passes them by name as
+titlebuttons, and Win/Linux editor windows draw native copies (ceditorwindow_p.h m_mapTitleButtons). A pinned
+arbitrary button has no native counterpart; needs a context-menu item, per-editor pinned ids, cloned icon/state in
+Header.js, and either in-page only or a generic native title-button type. Which buttons qualify is a product call.
+
+### #1858 - extract pages to a new PDF - needs a byte-save path (about a day)
+CPDFDoc.GetPagesBinary(indexes) (sdkjs pdf/src/document.js:7491) already produces a PDF of chosen pages. Save Copy
+(#982) runs x2t over the whole document and cannot carry a subset. Route: a blob download from the editor, which
+desktop-sdk cefview.cpp OnBeforeDownload (:6044) turns into CEF_SAVEFILEDIALOG; Win/Linux handle it
+(onDownloadSaveDialog, cascapplicationmanagerwrapper.cpp:821), macOS has no handler. Needs that handler and a
+security review that only editor-initiated blob: downloads are offered.
+
+### #2045 - Duplicate tab - not done (about a day + two native builds)
+CCefViewEditor::OpenCopyAsRecoverFile (desktop-sdk cefview.cpp:9038) can open a copy of a view's recovery dir, but
+the copy only holds changes flushed by autosave, so the editor must flush first (new bridge call); a leftover
+EditorForAsLocal.bin must be skipped; macOS has no tab context menu (needs File > Duplicate); PDF tabs use another
+recovery layout. Lead (unverified): "copy sheet to new workbook" replaces Editor.bin with the selected sheets but keeps
+the source's changes0.json, which is then replayed on top - possible wrong result, candidate RD.
+
+### #2484 - transparent colour for a picture (a:clrChange) - not rendered (more than a day)
+a:clrChange round-trips (sdkjs CClrChange Format.js:4634; core PPTX Logic/Effects/ClrChange.cpp) but nothing draws it:
+the only blip effect applied is alphaModFix (CBlipFill.getTransparent, Format.js:3819), and core's renderer ignores
+it, so the picture background shows in the editors and in PDF export. Needs per-pixel processing in both the sdkjs
+canvas path and core metafile/PDF path, plus an eyedropper UI.
 
 ### Linux set_drop_files puts file names into JS unescaped (found 2026-11-12, agent ef) - not fixed
 desktop-sdk client_renderer_wrapper.cpp ~8455: set_drop_files builds a script with the dropped file names
