@@ -944,6 +944,21 @@ Built with Apple clang 21 after patching boost 1.72's numeric/conversion as boos
 - **RD-0017** An ODP table in a document without office:automatic-styles crashed x2t on open; the default cell style is now created only when it can be stored
 - **RD-0018** EMF to SVG wrote through a null pointer for an empty text record with character spacing; such a text now gets a single x coordinate
 
+### Linux x64 2026.2.0 .deb - built and GUI-checked 2026-11-12
+Clean build with build_tools in Docker (recipe: build_tools/LINUX_X64_DESKTOP_BUILD.md); the .deb installs
+into a clean ubuntu:24.04 and passes docx/xlsx/pptx/pdf open-edit-save with our x2t. GUI checks PASS:
+#905 (file and text drop, GTK filter), #1270, #200, #1847, #661, #694, #1710 (incl. --network none), #706,
+#790 (GTK), #669, #1664 (remote-frame bridge, program link refused, rdplugin), #1594, #1513. #2501 not
+testable on Xvfb; #1433's fixed path is unreachable in this build (no notification callers).
+Build fixes: build_tools 43ede6b (v8 libstdc++ swap without sysroot), desktop-apps d2eb1a70e (deb
+Depends: NSS, xcb-util). Defects found and fixed: #1144 date column hidden by CSS (desktop-apps
+68827a107; test issue-1144-recover-date-visible-test.js); RD-0019 second-launch handoff decoded UTF-8 as
+local 8-bit (desktop-apps 687091511; test rd-0019-handoff-utf8); a committed node_modules symlink
+removed (8ef70c799). Known, not fixed: an empty ~/.local/share/ONLYOFFICE is created at start
+(core SystemUtils GetBuildBranding defaults to ONLYOFFICE unless OO_BUILD_BRANDING is set, which would
+also move build output paths); with QT_SCALE_FACTOR=2 a saved full-work-area window may open with its
+status bar off-screen (observed once). The package needs glibc 2.39 (Ubuntu 24.04+ / Debian 13+).
+
 ## Root-caused, not fixed
 
 ### #83 - CSV delimiter/encoding cannot be chosen on save - design decision

@@ -12,7 +12,7 @@ nothing here can claim a test that is not on disk.
 - **170** have a test artifact in `fork-fix-tests/`
 - **39** do not - the fix is asserted by its commit message only
 - **36** fix commits carry no issue number (defects found in passing)
-- **18** defects found by our own testing (RD-NNNN), 18 with a test - counted separately from upstream issues
+- **19** defects found by our own testing (RD-NNNN), 19 with a test - counted separately from upstream issues
 
 A row here means a commit exists. It does **not** mean the fix was verified;
 that is what the Test column is for. See the verification status section of
@@ -149,7 +149,7 @@ that is what the Test column is for. See the verification status section of
 | [#1230](https://github.com/ONLYOFFICE/DesktopEditors/issues/1230) | desktop-apps | `5c8da46e06` | `issue-1230-mac-language-new-editors` | 2026-11-12 |
 | [#1194](https://github.com/ONLYOFFICE/DesktopEditors/issues/1194) | sdkjs | `aa8e849c33` | `issue-1194-touchpad-subpixel-scroll-test.js` | 2026-11-11 |
 | [#1167](https://github.com/ONLYOFFICE/DesktopEditors/issues/1167) | desktop-apps | `82e255608f` | `issue-1167-google-doc-link` | 2026-11-11 |
-| [#1144](https://github.com/ONLYOFFICE/DesktopEditors/issues/1144) | desktop-sdk | `bdbd5c3508` | `issue-1144-recover-list-dates` | 2026-11-12 |
+| [#1144](https://github.com/ONLYOFFICE/DesktopEditors/issues/1144) | desktop-apps, desktop-sdk | `68827a107d` `bdbd5c3508` | `issue-1144-recover-list-dates` | 2026-11-12 |
 | [#1031](https://github.com/ONLYOFFICE/DesktopEditors/issues/1031) | core | `9e6c96b316` | `issue-1031-wmf-ansi-codepage` | 2026-11-11 |
 | [#1018](https://github.com/ONLYOFFICE/DesktopEditors/issues/1018) | sdkjs | `26cb022b7c` `26cb022b7c` | `issue-1018-autofit-column-scan-test.js` | 2026-09-15 |
 | [#1004](https://github.com/ONLYOFFICE/DesktopEditors/issues/1004) | desktop-apps | `867bdbe7eb` | `issue-1004-template-associations` | 2026-11-11 |
@@ -244,6 +244,7 @@ They have not been demonstrated.
 
 | ID | Where | Commit | Test | Landed | What |
 |---|---|---|---|---|---|
+| RD-0019 | desktop-apps | `6870915119` | `rd-0019-handoff-utf8` | 2026-11-12 | a second launch handed a non-ASCII path garbled to a first instance in a non-UTF |
 | RD-0018 | core | `ccddc3317b` | `rd-0018-emf-svg-empty-text-dx` | 2026-11-12 | EMF to SVG wrote through a null pointer for an empty text record with character  |
 | RD-0017 | core | `72e231853b` | `rd-0017-odp-table-no-auto-styles` | 2026-11-12 | an ODP table in a document without office:automatic-styles crashed x2t on open;  |
 | RD-0016 | core | `ce4bbdb6aa` | `rd-0016-chart-surface3d-bandfmts` | 2026-11-12 | saving a 3-D surface chart without band formats crashed x2t; c:bandFmts is now w |
