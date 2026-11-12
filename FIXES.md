@@ -8,8 +8,8 @@ behind its own commits when this was written, and several commit messages cite
 test directories that have never existed. Nothing here is typed in by hand, so
 nothing here can claim a test that is not on disk.
 
-- **198 issues** with at least one fix commit
-- **159** have a test artifact in `fork-fix-tests/`
+- **203 issues** with at least one fix commit
+- **164** have a test artifact in `fork-fix-tests/`
 - **39** do not - the fix is asserted by its commit message only
 - **36** fix commits carry no issue number (defects found in passing)
 - **3** defects found by our own testing (RD-NNNN), 3 with a test - counted separately from upstream issues
@@ -132,8 +132,10 @@ that is what the Test column is for. See the verification status section of
 | [#1568](https://github.com/ONLYOFFICE/DesktopEditors/issues/1568) | sdkjs | `85cc0673e2` | `issue-1568-style-from-selection-highlight-test.js` | 2026-11-10 |
 | [#1513](https://github.com/ONLYOFFICE/DesktopEditors/issues/1513) | desktop-apps | `fc625f1ea2` | `issue-1513-pinned-recents-test.js` | 2026-11-12 |
 | [#1491](https://github.com/ONLYOFFICE/DesktopEditors/issues/1491) | desktop-sdk, sdkjs | `eb97eb93a8` `33fa495f48` | `issue-1491-slideshow-video-keys` | 2026-11-10 |
+| [#1490](https://github.com/ONLYOFFICE/DesktopEditors/issues/1490) | sdkjs, web-apps | `80e0954ad1` `b1ddc7a260` | `issue-1490-csv-save-multisheet-warning-test.js` | 2026-11-12 |
 | [#1470](https://github.com/ONLYOFFICE/DesktopEditors/issues/1470) | core | `64f592dfbb` | `issue-1470-cjk-fallback-sc-first` | 2026-11-05 |
 | [#1468](https://github.com/ONLYOFFICE/DesktopEditors/issues/1468) | desktop-sdk | `7ec929901a` | `issue-1468-linux-fractional-scaling` | 2026-11-11 |
+| [#1450](https://github.com/ONLYOFFICE/DesktopEditors/issues/1450) | core | `dc5f520a6a` | `issue-1450-last-resort-fallback` | 2026-11-12 |
 | [#1433](https://github.com/ONLYOFFICE/DesktopEditors/issues/1433) | desktop-apps | `a314de8d2f` | `issue-1433-gsettings-missing-schema` | 2026-11-12 |
 | [#1372](https://github.com/ONLYOFFICE/DesktopEditors/issues/1372) | core | `39a34e13b3` | `issue-1372-csv-locale-date-and-numfmt` | 2026-09-15 |
 | [#1364](https://github.com/ONLYOFFICE/DesktopEditors/issues/1364) | sdkjs | `ef815d5784` `ef815d5784` | `issue-1364-single-cell-copy-test.js` | 2026-09-15 |
@@ -141,7 +143,9 @@ that is what the Test column is for. See the verification status section of
 | [#1359](https://github.com/ONLYOFFICE/DesktopEditors/issues/1359) | core | `af68137e07` `af68137e07` | `issue-1359-x2t-bad-alloc` | 2026-09-15 |
 | [#1323](https://github.com/ONLYOFFICE/DesktopEditors/issues/1323) | core | `b6672e6780` | `issue-1323-docx-zip-entry-order` | 2026-09-15 |
 | [#1297](https://github.com/ONLYOFFICE/DesktopEditors/issues/1297) | core | `1f81e91eca` | `issue-1297-csv-compaction-skip` | 2026-09-15 |
+| [#1270](https://github.com/ONLYOFFICE/DesktopEditors/issues/1270) | desktop-apps | `dc2314a372` | `issue-1270-linux-ctrl-q-quit` | 2026-11-12 |
 | [#1233](https://github.com/ONLYOFFICE/DesktopEditors/issues/1233) | sdkjs | `3b3a0125ea` | `issue-1233-paste-image-download-async-test.js` | 2026-11-12 |
+| [#1230](https://github.com/ONLYOFFICE/DesktopEditors/issues/1230) | desktop-apps | `5c8da46e06` | `issue-1230-mac-language-new-editors` | 2026-11-12 |
 | [#1194](https://github.com/ONLYOFFICE/DesktopEditors/issues/1194) | sdkjs | `aa8e849c33` | `issue-1194-touchpad-subpixel-scroll-test.js` | 2026-11-11 |
 | [#1167](https://github.com/ONLYOFFICE/DesktopEditors/issues/1167) | desktop-apps | `82e255608f` | `issue-1167-google-doc-link` | 2026-11-11 |
 | [#1031](https://github.com/ONLYOFFICE/DesktopEditors/issues/1031) | core | `9e6c96b316` | `issue-1031-wmf-ansi-codepage` | 2026-11-11 |
@@ -154,6 +158,7 @@ that is what the Test column is for. See the verification status section of
 | [#905](https://github.com/ONLYOFFICE/DesktopEditors/issues/905) | desktop-apps, desktop-sdk | `eea379f8aa` `11818b6036` | `issue-905-gtk-filter-case` | 2026-11-11 |
 | [#902](https://github.com/ONLYOFFICE/DesktopEditors/issues/902) | sdkjs | `e2d1b5afd8` `e2d1b5afd8` | `issue-902-csv-plain-save-active-sheet-test.js` | 2026-11-11 |
 | [#878](https://github.com/ONLYOFFICE/DesktopEditors/issues/878) | sdkjs | `06157857a8` `78aab3b128` | `issue-0878-slideshow-video-autoplay-test.js` | 2026-11-11 |
+| [#870](https://github.com/ONLYOFFICE/DesktopEditors/issues/870) | sdkjs | `34252d945d` | `issue-0870-zoom-steps-below-50-test.js` | 2026-11-12 |
 | [#790](https://github.com/ONLYOFFICE/DesktopEditors/issues/790) | desktop-apps | `7f1090d9cf` | `issue-790-linux-dialog-utf8` | 2026-11-11 |
 | [#706](https://github.com/ONLYOFFICE/DesktopEditors/issues/706) | desktop-apps | `a877e2fc4c` | `issue-706-saveas-dotted-name` | 2026-11-11 |
 | [#694](https://github.com/ONLYOFFICE/DesktopEditors/issues/694) | desktop-sdk | `963c2394ad` | `issue-0694-linux-qt-scale-factor` | 2026-11-11 |

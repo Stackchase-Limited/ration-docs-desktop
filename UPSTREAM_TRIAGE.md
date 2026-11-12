@@ -866,6 +866,31 @@ files, as on Windows/Linux. Needs an app rebuild and GUI check.
 Start-page About and the native macOS About window link to https://ration.works/support (the SUPPORT_URL
 already in package/Makefile) (desktop-apps ab21b214c8, d8de43be2e; test issue-0670-about-report-issue-test.js).
 
+### #1230 - a new UI language reached new editors only after a relaunch (macOS) - FIXED 2026-11-12
+The settings:apply handler took the editors' lang from [NSLocale currentLocale], cached for the life of
+the process; it now stores the language first and uses ASCLinguist appLanguageCode (desktop-apps
+5c8da46e06; test issue-1230-mac-language-new-editors). Already-open documents keep their language.
+
+### #1450 - a user-installed Last Resort font took every CJK fallback - FIXED 2026-11-12
+ApplicationFontsWorker ranks non-priority families by file size; Last Resort maps every code point and is
+small, so it won all ranges (345 -> 3). Last Resort* families are now skipped when building the range
+table, still selectable by name (core dc5f520a6a; test issue-1450-last-resort-fallback, real allfontsgen).
+
+### #1270 - no Ctrl+Q to quit on Linux - FIXED 2026-11-12
+Ctrl+Q now closes every window with the usual save prompts (desktop-apps dc2314a372; test
+issue-1270-linux-ctrl-q-quit). Not run live on Linux.
+
+### #870 - zoom steps stopped at 50% - FIXED 2026-11-12
+The zoom box accepts 10-500%, but Ctrl+-, Ctrl+wheel and the minus button stopped at 50% in documents,
+presentations and PDFs; their step lists now start at 10% like visio's (sdkjs 34252d945d; test
+issue-0870-zoom-steps-below-50-test.js).
+
+### #1490 - Ctrl+S on a multi-sheet csv silently dropped all but one sheet - FIXED 2026-11-12
+DATA LOSS. A plain Save of a file opened from .csv/.tsv wrote CSV again with only the active sheet and no
+warning. With more than one sheet it now asks first (the existing, translated warnDownloadCsvSheets);
+Cancel - the default - opens Save As (sdkjs 80e0954ad1, web-apps b1ddc7a260; test
+issue-1490-csv-save-multisheet-warning-test.js). GUI flow not run.
+
 ## Root-caused, not fixed
 
 ### #83 - CSV delimiter/encoding cannot be chosen on save - design decision
@@ -2162,6 +2187,15 @@ xls. The reporter's actual ask is an override - "open this in Spreadsheet
 anyway". Not investigated in depth.
 
 ## Not reproducible or not testable here
+
+### #1389 - comment balloons in "Only markup / no balloons" - by design
+Simple markup suppresses only track-change balloons (as Word); comments have their own switch, File >
+Advanced settings > "Turn on display of the comments".
+
+### #1352 - ~/Downloads created at startup (Linux) - Chromium/CEF behaviour
+strace of the 9.4 tarball: CEF init creates $HOME/Downloads only when ~/.config/user-dirs.dirs is
+missing (Xfce without xdg-user-dirs); nothing in our code does. Workaround: xdg-user-dirs-update.
+
 
 ### #348 - pptx first line left of the box with indent<0, marL=0 - rule not established
 ECMA and MS-OI29500 say nothing about clamping; LibreOffice clamps only bulleted paragraphs; POI ignores
