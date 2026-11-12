@@ -891,6 +891,35 @@ warning. With more than one sheet it now asks first (the existing, translated wa
 Cancel - the default - opens Save As (sdkjs 80e0954ad1, web-apps b1ddc7a260; test
 issue-1490-csv-save-multisheet-warning-test.js). GUI flow not run.
 
+### #766 - middle-click to close tabs (already in 9.4); macOS side buttons closed tabs - FIXED 2026-11-12
+Middle-click close exists (upstream bug 51040). Defect: macOS -otherMouseDown: acted on every other
+button, so back/forward side buttons closed the tab under the pointer; now only button 2 (desktop-apps
+8c8ec5f91b; test issue-0766-mac-middle-click-tab-close).
+
+### #1847 - reopen a closed tab (Ctrl/Cmd+Shift+T) - FIXED 2026-11-12 (feature)
+Per-session list of closed local documents (newest last, unique, max 20, deleted files skipped); macOS
+File > Reopen Closed Tab (Shift+Cmd+T), Ctrl+Shift+T on Windows/Linux (desktop-apps b76fc9693a; test
+issue-1847-reopen-closed-tab). Restoring all tabs after quit not done (design). Close-then-reopen not run
+live.
+
+### #858 - full screen shortcut - FIXED 2026-11-12 (macOS)
+Ctrl+Cmd+F did nothing (our View menu is hidden, so AppKit added no full-screen item); Window > Enter
+Full Screen now binds it (desktop-apps 483116cf19; test issue-0858-mac-full-screen-shortcut). Windows/
+Linux F11 not done: whole window vs document-only is a design decision, and the custom frame needs a
+Windows GUI.
+
+### #200 - Ctrl+N for a new document - FIXED 2026-11-12 (Windows/Linux)
+macOS already has File > New shortcuts (Ctrl+Shift+D/S/P/T). On Windows/Linux Ctrl+N in an editor sends
+create:new for that editor's type (desktop-apps 283bb57d3f; test issue-0200-ctrl-n-new-document).
+
+### #669 - About should show the package type - FIXED 2026-11-12 (Linux)
+deb/rpm/exe/msi already shown from package.config; Flatpak/Snap/AppImage builds said "deb". About now
+detects the sandbox it runs in (desktop-apps ec03992720; test issue-0669-about-package-type).
+
+### #1144 - dates in the Recover files list - FIXED 2026-11-12
+The start page's "Autosaved" column was always empty: Recovers_Load never set the date. It now takes the
+time of the recovery folder's last change (desktop-sdk bdbd5c35; test issue-1144-recover-list-dates).
+
 ## Root-caused, not fixed
 
 ### #83 - CSV delimiter/encoding cannot be chosen on save - design decision
