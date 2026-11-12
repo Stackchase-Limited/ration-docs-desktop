@@ -309,7 +309,7 @@ function md(inShow) {
   const f = vm.runInContext('(' + @GPD@ + ')', ctx);
   const drawing = { Id: 'v', selected: true, getFullRotate: () => 0, getFullFlipH: () => false, getFullFlipV: () => false };
   const self = { isValid: () => true, getDrawing: () => drawing, isFullScreen: () => false, isMute: () => false, isVideo: () => true,
-    getVol: () => null, getStartTime: () => 0, getEndTime: () => 0, getName: () => 'v.mp4' };
+    getVol: () => null, getPlaybackFlags: () => 0, getStartTime: () => 0, getEndTime: () => 0, getName: () => 'v.mp4' };
   const r = { toObject: () => ({ X: 0, Y: 0, W: 1, H: 1 }) };
   return f.call(self, r, r)['IsSlideShow'];
 }

@@ -181,13 +181,16 @@ CTiming.prototype.getTimingRootNode = function () {
 };
 CTiming.prototype.checkTimeRoot = function () { const ch = this.children; return { pushToChildTnLst(n) { ch.push(n); } }; };
 CTiming.prototype.updateNodesIDs = function () { log.push('ids'); };
-const AscFormat = { CTiming };
+const NODE_FILL_REMOVE = 2;
+const AscFormat = { CTiming, isRealNumber: n => typeof n === "number" && !isNaN(n) };
 @TIMING@
 AscFormat.getMediaSettings = getMediaSettings;
 function Drawing(id, video) { this.id = id; this.video = video; }
 Drawing.prototype.Get_Id = function () { return this.id; };
 Drawing.prototype.isVideo = function () { return this.video; };
 Drawing.prototype.getMediaFileName = function () { return this.video === null ? null : this.id + '.mp4'; };
+Drawing.prototype.getMediaStartTime = function () { return null; };
+Drawing.prototype.getMediaEndTime = function () { return null; };
 const slide = { timing: null, setTiming(t) { this.timing = t; }, graphicObjects: { sel: [], getSelectedArray() { return this.sel; },
     checkShowMediaControlOnSelect() { log.push('show ' + (this.sel[0] && this.sel[0].id)); } } };
 function CPresentation() { this.locked = false; }
@@ -260,7 +263,8 @@ if change and media_part:
 const calls = [];
 const me = { api: { asc_getMediaSettings: () => me.media, asc_setMediaSettings: s => calls.push(s) },
     fireEvent: () => {}, PlaybackTable: { hidden: null, toggleClass(c, v) { this.hidden = v; } },
-    chMute: { v: null, setValue(v) { this.v = v; } }, chHideStopped: { setValue() {} } };
+    chMute: { v: null, setValue(v) { this.v = v; } }, chHideStopped: { setValue() {} },
+    chLoop: { setValue() {} }, chRewind: { setValue() {} }, numTrimStart: { setValue() {} }, numTrimEnd: { setValue() {} } };
 me.onMediaSettingChange = function @CHANGE@;
 me.apply = function () { @MEDIA@ };
 const out = {};
@@ -304,7 +308,7 @@ public:
 	bool get_IsSelected() { return IsSelected; }
 	bool get_Mute() { return Mute; }
 	int get_Volume() { return Volume; }
-	int get_From() { return 0; } bool get_IsSlideShow() { return false; }
+	int get_From() { return 0; } int get_StartTime() { return -1; } int get_EndTime() { return -1; } bool get_IsSlideShow() { return false; }
 	int get_FrameBoundsX() { return 10; } int get_FrameBoundsY() { return 10; }
 	int get_FrameBoundsW() { return 320; } int get_FrameBoundsH() { return 180; }
 	int get_ControlRectX() { return 10; } int get_ControlRectY() { return 200; }

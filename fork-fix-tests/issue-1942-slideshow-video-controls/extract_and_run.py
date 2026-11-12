@@ -137,7 +137,7 @@ public:
 	bool get_IsSlideShow() { return IsSlideShow; }
 	bool get_Mute() { return Mute; }
 	int get_Volume() { return Volume; }
-	int get_From() { return 0; }
+	int get_From() { return 0; } int get_StartTime() { return -1; } int get_EndTime() { return -1; }
 	// video 10,10 320x180; in a slide show sdkjs lays the footer over the video's bottom
 	int get_FrameBoundsX() { return 10; } int get_FrameBoundsY() { return 10; }
 	int get_FrameBoundsW() { return 320; } int get_FrameBoundsH() { return 180; }

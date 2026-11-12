@@ -8,8 +8,8 @@ behind its own commits when this was written, and several commit messages cite
 test directories that have never existed. Nothing here is typed in by hand, so
 nothing here can claim a test that is not on disk.
 
-- **279 issues** with at least one fix commit
-- **237** have a test artifact in `fork-fix-tests/`
+- **282 issues** with at least one fix commit
+- **240** have a test artifact in `fork-fix-tests/`
 - **42** do not - the fix is asserted by its commit message only
 - **35** fix commits carry no issue number (defects found in passing)
 - **20** defects found by our own testing (RD-NNNN), 20 with a test - counted separately from upstream issues
@@ -135,7 +135,10 @@ that is what the Test column is for. See the verification status section of
 | [#2022](https://github.com/ONLYOFFICE/DesktopEditors/issues/2022) | core | `b398371970` | `issue-2022-csv-last-row` | 2026-09-15 |
 | [#2010](https://github.com/ONLYOFFICE/DesktopEditors/issues/2010) | sdkjs | `29c78b83b5` | `issue-2010-pdf-outline-page-range-test.js` | 2026-11-11 |
 | [#2007](https://github.com/ONLYOFFICE/DesktopEditors/issues/2007) | sdkjs, web-apps | `7eef14211f` `93947f7455` | `issue-2007-media-hide-while-not-playing-test.js` | 2026-11-12 |
+| [#2006](https://github.com/ONLYOFFICE/DesktopEditors/issues/2006) | desktop-sdk, sdkjs, web-apps | `09f9fe40f6` `9cf394be57` `a7c893ccfe` | `issue-2006-media-rewind` | 2026-11-12 |
+| [#2005](https://github.com/ONLYOFFICE/DesktopEditors/issues/2005) | desktop-sdk, sdkjs, web-apps | `bdf76e0758` `f91cb3a707` `a40c22291e` | `issue-2005-media-loop` | 2026-11-12 |
 | [#2003](https://github.com/ONLYOFFICE/DesktopEditors/issues/2003) | desktop-sdk, sdkjs, web-apps | `3d36688e80` `28c61dfec1` `b427381748` | `issue-2003-media-mute` | 2026-11-12 |
+| [#2002](https://github.com/ONLYOFFICE/DesktopEditors/issues/2002) | core, desktop-sdk, sdkjs, web-apps | `c971b560a5` `3ac6a8d2b2` `7b232bed78` | `issue-2002-media-trim` | 2026-11-12 |
 | [#2000](https://github.com/ONLYOFFICE/DesktopEditors/issues/2000) | desktop-sdk | `5eaf9b64f3` | `issue-2000-network-share-save` | 2026-11-11 |
 | [#1969](https://github.com/ONLYOFFICE/DesktopEditors/issues/1969) | web-apps | `72a998da54` | `issue-1969-fill-from-clipboard-test.js` | 2026-11-12 |
 | [#1967](https://github.com/ONLYOFFICE/DesktopEditors/issues/1967) | desktop-apps, desktop-sdk | `daa44229e7` `df19207858` | `issue-1967-managed-plugin-policy` | 2026-11-11 |

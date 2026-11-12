@@ -1146,7 +1146,52 @@ preview of a workbook >= 500k used cells shows "please wait" before building (sd
 web-apps bcdb51112f). Tests issue-1611/-1847-restore-session-tabs/-1166/-1952/-1864/-1925. GUI checks pending;
 native parts compiled syntax-only (Linux, macOS), Windows not compiled.
 
+### #2002 / #2005 / #2006 - slide video trim kept (data loss); loop until stopped; rewind after playing - DONE 2026-11-12
+#2002 p14:trim was dropped on every save: core Ext::toXmlWriter never wrote it, toPPTY clamped st/end at ~21 s, and
+sdkjs ReadNvPr/Write_nvPr skipped the extLst. Now kept through x2t, the sdkjs save and editor round trips (core
+c971b560a5, sdkjs 7b232bed78), played as trimmed on macOS and Qt and settable in Playback (sdkjs 3ac6a8d2b2,
+desktop-sdk 8160bcfb, web-apps 291d879da9). #2005 Loop until stopped (repeatCount="indefinite"; players restart at the
+end; sdkjs bdf76e0758, desktop-sdk a40c2229, web-apps f91cb3a707) - decks that already loop in PowerPoint now loop.
+#2006 Rewind after playing (fill="remove"; sdkjs 09f9fe40f6, desktop-sdk a7c893cc, web-apps 9cf394be57). Tests
+issue-2002-media-trim, issue-2002-trim-playback, issue-2005-media-loop, issue-2006-media-rewind. Not verified: Linux
+compile (Docker down), Qt player actually playing, GUI; docx (wp15) trim is not written; fill="remove" for Rewind not
+checked against a PowerPoint-made file.
+
 ## Root-caused, not fixed
+
+### #2008 - play a slide video full screen - about half a day
+sdkjs Image.js getPlayerData sets "FullScreen" but client_renderer_wrapper.cpp CallMediaPlayerCommand reads "Fullscreen";
+Timing.js getMediaAdditionalData reads oPr.fullScrn from the cMediaNode though it is an attribute of <p:video>
+(CVideo.fullScrn). No player consumes get_Fullscreen() anyway. Needs sdkjs to send the slide-show rect as FrameRect while
+a fullScrn video plays and restore it at the end (the #2005 setMediaFlags end hooks can do that).
+
+### #2550 - media Play/Pause/Stop animations - about a day
+Needs a mediacall preset class and a Media gallery in the Animation tab. Not started.
+
+### #1801 - command search ("Tell me") - new UI feature, more than a day
+No command search exists in web-apps. Smallest version: index each editor's ribbon buttons and menu items by caption/hint,
+switch to the owning tab and trigger the item, keyboard focus handling, strings in every locale - three editors plus a
+new header control. Placement and scope (menus or ribbon only) are product calls.
+
+### #289 - slide sorter view - multi-day
+The thumbnails panel already multi-selects, drags and reorders. The sorter mode is a stub only: sdkjs slide/apiDefines.js:840
+c_oAscPresentationViewMode.sorter = 2, slide/Drawing/HtmlPage.js:5206 empty case, presentationeditor ViewTab.js:466 comment.
+A grid sorter needs a new canvas layout, hit-testing, drag-and-drop, zoom and a View-tab button.
+
+### #2047 / #1859 - oCIS, OpenCloud, CryptPad as cloud providers - need server-side desktop integration
+A provider is data (loginpage/providers/<id>/config.json), but a server becomes a connected portal only when its page
+calls execCommand('portal:login') from a server-side connector (onlyoffice-nextcloud/-owncloud desktop.js). oCIS and
+OpenCloud use the document server via WOPI with no desktop hand-off; CryptPad runs its own encrypted editor fork with no
+document-server endpoint. An entry would only open the web UI while granting that origin the bridge (#1664) - not added.
+
+### #589 - WebDAV cloud connection - feature, multi-day
+Needs a native remote file browser and open/save/lock over DAV; providers are web portals. Workaround: mount the share in
+the OS (Finder Connect to Server, GVfs dav, Windows network drive) and open files locally.
+
+### #2042 - MathType plugin on desktop - licensing/product decision
+Upstream removed it from onlyoffice.github.io (f2e4b936, 2025-11-11) and documented it as web-only. It loads plugin
+scripts remotely (refused by our #1664 hardening) and depends on Wiris's hosted service and telemetry; would need a
+licensed offline Wiris build. Built-in equations and onlymath/mathpix remain.
 
 ### #1453 / #561 - native Wayland (flatpak "can't run"; blurry under fractional scaling) - needs CEF upgrade
 win-linux/src/main.cpp forces QT_QPA_PLATFORM=xcb and GDK_BACKEND=x11; the bundled Qt has no wayland plugin and CEF
@@ -2236,6 +2281,18 @@ rather than reason from the issue text alone it is left unverified. No claim is
 made about the cause.
 
 ## Already fixed in our 9.4 baseline - no action
+
+### #1835 - HuggingChat models in AI - already supported
+The AI agent's "OpenAI Compatible" provider (desktop-sdk plugins/ai-agent/src/providers/openaicompatible/index.ts)
+takes any base URL, lists every model and chats over /chat/completions. Hugging Face's router
+https://router.huggingface.co/v1 is OpenAI-compatible with CORS *; the real provider under vitest against its captured
+/v1/models offered 128 of 128 models and completed a streamed chat. Recipe: Add provider > OpenAI Compatible, that URL,
+a Hugging Face token. Live chat with a real token not tried.
+
+### #1785 - Zotero citation numbering after inserting between citations - already works (bundled plugin 1.0.9)
+Real CitationService + citeproc + ieee.csl on a fake ordered document: insert C between A and B gives [1][3][2], Refresh
+renumbers to [1][2][3] with the bibliography in order (citation-service.js ~430-560, fields in document order via
+CDocument.GetAllAddinFields). Upstream 1.1.0 has no numbering change.
 
 ### #662 - 150% scaling doesn't work on Windows - already fixed in 9.4
 On Windows 10+ IsUseSystemScaling() (desktop-sdk applicationmanager_p.h ~233) is on by default and Settings offers

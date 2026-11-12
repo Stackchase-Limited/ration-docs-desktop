@@ -268,7 +268,7 @@ public:
 	bool get_IsSelected() { return IsSelected; }
 	bool get_Mute() { return Mute; }
 	int get_Volume() { return Volume; }
-	int get_From() { return 0; } bool get_IsSlideShow() { return false; }
+	int get_From() { return 0; } int get_StartTime() { return -1; } int get_EndTime() { return -1; } bool get_IsSlideShow() { return false; }
 	int get_FrameBoundsX() { return 10; } int get_FrameBoundsY() { return 10; }
 	int get_FrameBoundsW() { return 320; } int get_FrameBoundsH() { return 180; }
 	int get_ControlRectX() { return 10; } int get_ControlRectY() { return 200; }

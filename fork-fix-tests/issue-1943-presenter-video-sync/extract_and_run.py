@@ -208,7 +208,7 @@ public:
 	bool get_IsSlideShow() { return IsSlideShow; }
 	bool get_Mute() { return Mute; }
 	int get_Volume() { return Volume; }
-	int get_From() { return From; }
+	int get_From() { return From; } int get_StartTime() { return -1; } int get_EndTime() { return -1; }
 	int get_FrameBoundsX() { return 10; } int get_FrameBoundsY() { return 10; }
 	int get_FrameBoundsW() { return 320; } int get_FrameBoundsH() { return 180; }
 	int get_ControlRectX() { return 10; } int get_ControlRectY() { return 200; }
@@ -671,8 +671,8 @@ expect('rep stop', {'rep': [], 'main': ['stop %s sel=true' % V1]},
        'presenter stops -> slide show\'s player stops')
 expect('main pause', {'rep': ['seek %s sel=true From=7300' % V1, 'pause %s sel=true From=7300' % V1], 'main': []},
        'pause in the slide show\'s player -> the presenter\'s player pauses at the same position')
-expect('closed', {'rep': [], 'main': ['showMediaControl %s sel=true' % V2, 'seek %s sel=true From=800' % V2, 'play %s sel=true From=800' % V2]},
-       'slide show without an open player -> it opens one for the same video, seeks, plays')
+expect('closed', {'rep': [], 'main': ['showMediaControl %s sel=true' % V2, 'setMediaFlags %s sel=true' % V2, 'seek %s sel=true From=800' % V2, 'play %s sel=true From=800' % V2]},
+       'slide show without an open player -> it opens one for the same video (with its playback flags, #2005), seeks, plays')
 expect('other slide', {'rep': [], 'main': []}, 'slide show on another slide -> nothing')
 expect('no reporter', {'sent': 0, 'rep': [], 'main': []}, 'slide show without the presenter\'s view -> nothing sent')
 expect('editor', {'rep': [], 'main': []}, 'player in the editor (no slide show) -> nothing sent')
