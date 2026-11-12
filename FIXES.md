@@ -8,8 +8,8 @@ behind its own commits when this was written, and several commit messages cite
 test directories that have never existed. Nothing here is typed in by hand, so
 nothing here can claim a test that is not on disk.
 
-- **188 issues** with at least one fix commit
-- **149** have a test artifact in `fork-fix-tests/`
+- **193 issues** with at least one fix commit
+- **154** have a test artifact in `fork-fix-tests/`
 - **39** do not - the fix is asserted by its commit message only
 - **36** fix commits carry no issue number (defects found in passing)
 - **3** defects found by our own testing (RD-NNNN), 3 with a test - counted separately from upstream issues
@@ -107,6 +107,7 @@ that is what the Test column is for. See the verification status section of
 | [#2105](https://github.com/ONLYOFFICE/DesktopEditors/issues/2105) | desktop-apps | `2241a8a0e6` | `issue-2105-wayland-no-x` | 2026-09-14 |
 | [#2095](https://github.com/ONLYOFFICE/DesktopEditors/issues/2095) | sdkjs | `74d274f7d2` | `issue-2095-drop-document-opens-tab-test.js` | 2026-11-10 |
 | [#2090](https://github.com/ONLYOFFICE/DesktopEditors/issues/2090) | desktop-sdk, sdkjs, web-apps | `d295746b42` `03aad1a7fe` `7281e56ad6` | `issue-2090-default-text-direction-test.js` | 2026-11-11 |
+| [#2075](https://github.com/ONLYOFFICE/DesktopEditors/issues/2075) | sdkjs, web-apps | `7a99b84860` `196bada5b0` | `issue-2075-french-punctuation-option-test.js` | 2026-11-12 |
 | [#2071](https://github.com/ONLYOFFICE/DesktopEditors/issues/2071) | sdkjs | `b98bcb7c01` | `issue-2071-unhide-all-rows-test.js` | 2026-09-15 |
 | [#2062](https://github.com/ONLYOFFICE/DesktopEditors/issues/2062) | sdkjs | `599f986ab7` | `issue-2062-latex-space-hang-test.js` | 2026-11-11 |
 | [#2056](https://github.com/ONLYOFFICE/DesktopEditors/issues/2056) | desktop-sdk | `6cd7c621ee` | `issue-2056-flush-before-success` | 2026-09-12 |
@@ -164,12 +165,16 @@ that is what the Test column is for. See the verification status section of
 | [#547](https://github.com/ONLYOFFICE/DesktopEditors/issues/547) | sdkjs | `ba80ae077e` | `issue-0547-plain-save-pdf-layout-test.js` | 2026-11-11 |
 | [#531](https://github.com/ONLYOFFICE/DesktopEditors/issues/531) | sdkjs | `df3a283c13` | `issue-0531-fit-filtered-rows-test.js` | 2026-11-11 |
 | [#482](https://github.com/ONLYOFFICE/DesktopEditors/issues/482) | web-apps | `7ddbfa80c2` | `issue-0482-csv-row-limit-warning-test.js` | 2026-11-11 |
+| [#432](https://github.com/ONLYOFFICE/DesktopEditors/issues/432) | desktop-apps, web-apps | `367ff6911d` `1591170a48` | `issue-0432-os-region-units` | 2026-11-12 |
 | [#388](https://github.com/ONLYOFFICE/DesktopEditors/issues/388) | desktop-apps, web-apps | `896bea2db7` `674be1df21` | `issue-0388-mac-edit-menu-undo` | 2026-11-11 |
 | [#344](https://github.com/ONLYOFFICE/DesktopEditors/issues/344) | sdkjs | `6884d875b3` | `issue-0344-pptx-sym-font-test.js` | 2026-11-11 |
 | [#334](https://github.com/ONLYOFFICE/DesktopEditors/issues/334) | sdkjs | `b7a1614833` | `issue-334-copy-math-justification-test.js` | 2026-11-11 |
 | [#307](https://github.com/ONLYOFFICE/DesktopEditors/issues/307) | sdkjs | `67b7cbe97c` | `issue-0307-wrapped-overflow-valign-test.js` | 2026-11-11 |
 | [#281](https://github.com/ONLYOFFICE/DesktopEditors/issues/281) | desktop-sdk | `c8d2135de6` | `issue-0281-print-oversize-page` | 2026-11-11 |
+| [#247](https://github.com/ONLYOFFICE/DesktopEditors/issues/247) | sdkjs | `4acf06a079` | `issue-0247-mac-edit-cell-key-test.js` | 2026-11-12 |
+| [#206](https://github.com/ONLYOFFICE/DesktopEditors/issues/206) | sdkjs | `19a6e7a7bd` | `issue-0206-paste-stylesheet-spacing-test.js` | 2026-11-12 |
 | [#182](https://github.com/ONLYOFFICE/DesktopEditors/issues/182) | sdkjs | `2c08a678ee` | `issue-0182-autofit-custom-width-test.js` | 2026-11-11 |
+| [#143](https://github.com/ONLYOFFICE/DesktopEditors/issues/143) | web-apps | `869747e03c` | `issue-0143-default-doc-language-test.js` | 2026-11-12 |
 | [#139](https://github.com/ONLYOFFICE/DesktopEditors/issues/139) | core | `fd679c60c1` `fd679c60c1` | `issue-139-pptx-invalid-xml-chars` | 2026-09-15 |
 
 ## Not verified - commit message only

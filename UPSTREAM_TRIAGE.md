@@ -810,7 +810,43 @@ screen change the tabs stayed at the old scale. CWindowPlatform::event now re-ru
 on QEvent::ScreenChangeInternal (desktop-apps 276791931; test issue-2501-linux-screen-change-rescale, real
 Qt on a two-output weston). Real mixed-DPI screens not run.
 
+### #247 - no practical key to edit a filled cell on a Mac - FIXED 2026-11-12 (macOS)
+F2 already edits in place, but Mac keyboards need fn. On macOS Control+U now opens the cell editor, as
+in Excel for Mac; Underline stays on Cmd+U (Control+U no longer underlines) (sdkjs 4acf06a079; test
+issue-0247-mac-edit-cell-key-test.js).
+
+### #206 - paragraphs pasted from LibreOffice lose their spacing - FIXED 2026-11-12
+LibreOffice puts Text Body spacing only in the clipboard HTML's style sheet; _set_pPr read inline styles
+only. Margins and line-height now also come from matching rules of the pasted document's own sheets
+(later rules win; specificity not compared). Word HTML with class-rule spacing benefits too (sdkjs
+19a6e7a7bd; test issue-0206-paste-stylesheet-spacing-test.js, real code in Chromium). Real LibreOffice
+clipboard not run.
+
+### #2075 - no way to turn off non-breaking spaces before French punctuation - FIXED 2026-11-12
+The FrenchPunctuation autocorrect flag existed but nothing could set it. New api + AutoCorrect checkbox
+"Non-breaking spaces with French punctuation" in the document and presentation editors, on by default
+(sdkjs 7a99b84860, web-apps 196bada5b0; test issue-2075-french-punctuation-option-test.js).
+
+### #143 - no way to choose the language of new documents - FIXED 2026-11-12
+File > Advanced settings > "Default document language" (desktop, word editor), "Same as the interface"
+by default; applied to new blank documents only (web-apps 869747e03c; test
+issue-0143-default-doc-language-test.js). #626's automatic use of the OS language is a design decision,
+not done; slides/sheets not covered.
+
+### #432 - units ignore the OS Region (inches in the US) - FIXED 2026-11-12
+Windows/Linux already sent location=<country> but the desktop editor page dropped it, and macOS never
+sent it. web-apps passes it to editorConfig.location; macOS sends NSLocale's country, so a fresh profile
+in a US/CA Region starts in inches (web-apps 367ff6911d, desktop-apps 1591170a48; test
+issue-0432-os-region-units). Windows reads the system (not user) locale; Linux C locale sends EN.
+
 ## Root-caused, not fixed
+
+### #83 - CSV delimiter/encoding cannot be chosen on save - design decision
+Desktop Save As always sends m_nCsvTxtEncoding 46 / delimiter 4 (fileconverter.h:1101-1109); the web-apps
+CSV options dialog is web-only, and the open-time options are not kept, so Ctrl+S on a semicolon or
+non-UTF-8 CSV likely rewrites it as comma/UTF-8 (read, not run). Partial step: enable the commented-out
+SCSV format (cefview.cpp:1855) as #2521 did for TSV; a real choice needs a native<->JS step.
+
 
 ### #1233 - paste of web content with images freezes the editor - root-caused, not fixed
 AscCommon.sendImgUrls (sdkjs common/Local/common.js:323) calls LocalFileGetImageUrl per image
