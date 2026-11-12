@@ -1062,7 +1062,31 @@ desktop-sdk b4273817; test issue-2003-media-mute). #2007 "Hide while not playing
 decks already carrying PowerPoint's showWhenStopped="0" now hide the video as PowerPoint does (sdkjs
 7eef14211f, web-apps 93947f7455; test issue-2007-*). GUI checks pending.
 
+### #1674 / #746 / #852 / #1969 - editing workflow - DONE 2026-11-12 (after 2026.2.0)
+#1674 option (off): closing a modified local document we can write in place saves it without asking, via the
+normal save (#2000 safe path); new/template/cloud/read-only still ask (desktop-apps 6093e48df). #746 option:
+default font and size for new blank documents (sdkjs c951cbc881, web-apps 2518219af3). #852 option: Shift+wheel
+scrolls sideways in document/presentation/PDF editors on Windows/Linux (sdkjs 6eddf61a54, web-apps 8604aeacb2).
+#1969 "From clipboard" for slide background / shape picture fills (web-apps 72a998da54). Tests issue-1674-*,
+issue-0746-*, issue-0852-*, issue-1969-*. GUI checks pending.
+
+### #2299 / #2422 / #1215 - printing - DONE 2026-11-12 (after 2026.2.0)
+#2299 print panels: "Only odd pages" / "Only even pages" for the range, sent as an explicit page list (web-apps
+55387961da). #2422 "Print on both sides manually" on Windows/Linux: odd pages, prompt to turn the stack, even
+pages (web-apps 720bbc9976; macOS prints through its own panel). #1215 (part) Linux: the GTK dialog's "Pages per
+side" now reaches CUPS (desktop-apps 04a0d87d2; test prints a real QPrinter job to a CUPS queue). Tests
+issue-2299-*, issue-2422-*, issue-1215-*. Pre-existing: the macOS Print button ignores the in-app page range.
+
 ## Root-caused, not fixed
+
+### #959 / #874 / #2339 / #1215 (rest) - not small
+#959: the save overlay blocks during x2t's replay of changes (40k paragraphs 47 s without JIT, 5 s with the
+allow-jit entitlement the shipped x2t has); editing during save needs a recovery-folder snapshot. #874: no
+equation-number support at all in sdkjs. #2339: a Windows DocumentProperties button needs Windows build and
+printer. #1215 rest: in-app N-up (#930) is page composition.
+NOTE: the test app (.rd-work/make-test-app.sh re-signs ad hoc) and harness x2t lack com.apple.security.cs.allow-jit,
+so saves timed there are 6-9x slower than the shipped app.
+
 
 ### #2008 / #2006 / #2005 / #2002 / #2550 / #1968 - slide media playback options - not done
 Data survives for full screen, rewind (cTn fill), loop (repeatCount); both players lack an end-of-media
@@ -2070,6 +2094,11 @@ rather than reason from the issue text alone it is left unverified. No claim is
 made about the cause.
 
 ## Already fixed in our 9.4 baseline - no action
+
+### #946 - use the system print dialog
+Already in 9.4: "Print using the system dialog" in every editor's print panel (web-apps c4ae376f8c); Windows
+PrintDlgEx, Linux GTK, macOS print panel. Skipping the in-app panel entirely would be a product call.
+
 
 ### #1166 - spreadsheet weekday/month autofill
 Already in 9.4 (upstream 45855): Monday/Tuesday, Mon/Tue, January, Jan all extend in docbuilder.
