@@ -8,8 +8,8 @@ behind its own commits when this was written, and several commit messages cite
 test directories that have never existed. Nothing here is typed in by hand, so
 nothing here can claim a test that is not on disk.
 
-- **270 issues** with at least one fix commit
-- **228** have a test artifact in `fork-fix-tests/`
+- **272 issues** with at least one fix commit
+- **230** have a test artifact in `fork-fix-tests/`
 - **42** do not - the fix is asserted by its commit message only
 - **35** fix commits carry no issue number (defects found in passing)
 - **20** defects found by our own testing (RD-NNNN), 20 with a test - counted separately from upstream issues
@@ -54,6 +54,7 @@ that is what the Test column is for. See the verification status section of
 | [#2485](https://github.com/ONLYOFFICE/DesktopEditors/issues/2485) | sdkjs | `d2d908d3b7` | `issue-2485-pivot-recalc-lock-test.js` | 2026-11-04 |
 | [#2482](https://github.com/ONLYOFFICE/DesktopEditors/issues/2482) | core | `e56c05efdd` | `issue-2482-comment-paraid` | 2026-10-27 |
 | [#2480](https://github.com/ONLYOFFICE/DesktopEditors/issues/2480) | desktop-sdk | `4c58fffa76` `17e125e137` `565af3d1d5` | `issue-2480-gio-save-recovery` | 2026-11-05 |
+| [#2477](https://github.com/ONLYOFFICE/DesktopEditors/issues/2477) | desktop-apps | `2ca1974555` | `issue-2477-macos-pkg` | 2026-11-12 |
 | [#2476](https://github.com/ONLYOFFICE/DesktopEditors/issues/2476) | desktop-sdk | `6bdcae56e2` | `issue-2476-ondestroywindow-null-cookies` | 2026-11-04 |
 | [#2471](https://github.com/ONLYOFFICE/DesktopEditors/issues/2471) | core | `bf09d8ce1c` `8aca22e449` `2a38ea99f3` | `issue-2471-cid-subset-tag` | 2026-11-04 |
 | [#2469](https://github.com/ONLYOFFICE/DesktopEditors/issues/2469) | sdkjs | `ba6466c2e1` | `issue-2469-two-column-left-column-lost-test.js` | 2026-06-16 |
@@ -219,6 +220,7 @@ that is what the Test column is for. See the verification status section of
 | [#617](https://github.com/ONLYOFFICE/DesktopEditors/issues/617) | desktop-apps, sdkjs | `4dcd75bc18` `2fceb40b24` | `issue-0617-insert-multiple-images-test.js` | 2026-11-12 |
 | [#615](https://github.com/ONLYOFFICE/DesktopEditors/issues/615) | core, sdkjs | `4dc21d337a` `ecd1f58829` | `issue-0615-display-background-shape-test.js` | 2026-11-12 |
 | [#603](https://github.com/ONLYOFFICE/DesktopEditors/issues/603) | desktop-sdk, sdkjs | `f7223cbbb5` `9cda0a45ca` | `issue-0603-tel-links-test.js` | 2026-11-12 |
+| [#591](https://github.com/ONLYOFFICE/DesktopEditors/issues/591) | desktop-apps | `4d3ee8ad50` | `issue-0591-linux-editor-launchers` | 2026-11-12 |
 | [#572](https://github.com/ONLYOFFICE/DesktopEditors/issues/572) | core | `eb2c12c2b7` | `issue-0572-pdf-jpeg-passthrough` | 2026-11-12 |
 | [#565](https://github.com/ONLYOFFICE/DesktopEditors/issues/565) | sdkjs | `aa43ce0290` | `issue-0565-accent-dotless-ij-test.js` | 2026-11-11 |
 | [#560](https://github.com/ONLYOFFICE/DesktopEditors/issues/560) | desktop-apps | `27578a09e7` | `issue-0560-mac-paper-size` | 2026-11-11 |

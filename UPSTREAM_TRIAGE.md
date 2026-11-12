@@ -1120,7 +1120,27 @@ with such a system locale now starts in it (desktop-apps 76994a700). #141 Window
 Creative Cloud (CoreSync livetype) are found (core a60044ddd3; macOS already sees them via CoreText). Tests
 issue-1695-*, issue-0888-*, issue-0736-*, issue-1355-*, issue-0141-*.
 
+### #2477 / #591 - macOS .pkg; per-editor Linux launchers - DONE 2026-11-12 (tooling, release build unchanged)
+#2477 desktop-apps/macos/make_pkg.sh builds a non-relocatable product .pkg with the binary's real architectures
+and min OS, optional Developer ID Installer signing (desktop-apps 2ca197455; test issue-2477-macos-pkg; a real
+1.04 GB pkg built from the test app). #591 option EDITOR_LAUNCHERS=1 in package/Makefile adds Linux launchers
+for Document / Spreadsheet / Presentation / PDF Form (desktop-apps 4d3ee8ad5; test validates them with
+desktop-file-validate). Neither is wired into the release build. #151/#2548 documented in DISTRIBUTION.md.
+
 ## Root-caused, not fixed
+
+### Packaging findings from the #2548/#1279 checks (2026-11-12) - not fixed
+1. `make rpm` cannot build with our branding: common.spec's non-ONLYOFFICE %files lists undefined
+   %{_imageviewer_exec}/%{_videoplayer_exec}, makes a world-writable %attr(777) /etc/ration-docs, lists
+   /usr/bin/ration-docs twice and ships no help package. We release no rpm - fix before anyone does.
+2. The Sep-19 2026.1.0 arm64 deb in a scratch folder has NEEDED /home/administrator/.../libicudata.so.74 (the
+   defect build_tools c90bce7 fixed) - CONFIRM the published 2026.1.0 arm64 deb/tarball were built after c90bce7.
+3. That arm64 payload bundles no Qt but its Depends lists none of the system libQt5 packages - check the
+   2026.2.0 arm64 build (deploy_desktop.py:153 should copy Qt on Linux; the x64 build bundles Qt 5.15.2).
+Also triaged: #2510 AppImage (we build none), #835 Debian main (policy/maintainer work), #645 nightlies (CI and
+a separate channel), #33 FreeBSD (no CEF/v8), #1279 SRPM (the spec repacks a prebuilt payload; a source spec
+means the full network build).
+
 
 ### #959 / #874 / #2339 / #1215 (rest) - not small
 #959: the save overlay blocks during x2t's replay of changes (40k paragraphs 47 s without JIT, 5 s with the

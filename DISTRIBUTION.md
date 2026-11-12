@@ -56,3 +56,39 @@ and are anonymous-downloadable for a public repository.
 
 GitHub's limit is 2 GB per Release asset, so both fit; the Linux tar.xz and deb are well
 under it. Release asset bandwidth is not counted against LFS or repository quotas.
+
+## Running without installing (#151, #2548)
+
+Linux. The tarball `ration-docs-<version>-<build>-<arch>.tar.xz` is the same tree the
+.deb installs, without the package manager. It does not need to go in /opt and does not
+need root:
+
+    mkdir -p ~/apps/ration-docs
+    tar -xJf ration-docs-<version>-<build>-<arch>.tar.xz -C ~/apps/ration-docs
+    # optional offline help, into the same directory:
+    tar -xJf ration-docs-help-<version>-<build>-any.tar.xz -C ~/apps/ration-docs
+    ~/apps/ration-docs/opt/ration/docs/RationDocs
+
+Start `opt/ration/docs/RationDocs` itself: the `usr/bin/ration-docs` launcher and the
+`.desktop` file in the tarball point at /opt/ration/docs and only work when the tarball
+is unpacked at `/`. The program finds its libraries relative to itself and runs from a
+read-only directory. The libraries the .deb lists under Depends must be present on the
+system (NSS, GTK 3, the xcb utility libraries, and on arm64 the Qt 5 libraries). An X
+display is required; on Wayland that means XWayland.
+
+macOS. The application in the disk image can be dragged to any folder, for example
+~/Applications, and started from there. Clear the quarantine attribute on that copy as
+described under Download.
+
+What "without installing" does not mean: settings, recent files and the editors' cache
+still go to your user profile (~/.config/ration and ~/.local/share/ration/docs on Linux,
+~/Library on macOS), not next to the program. Removing the directory removes the
+program, not those.
+
+Windows: build_tools can produce a portable ZIP (desktop-apps/package/make_zip.ps1);
+see that script's header for what it does and does not include.
+
+Managed Macs (#2477, on ration/v10-backports after 2026.2.0): `desktop-apps/macos/make_pkg.sh
+[--sign "Developer ID Installer: ..."]` builds `Ration-Docs-<version>-<arch>.pkg` from the same
+application bundle as the disk image, for `installer -pkg` and MDM tools. Release packages are
+not signed or notarized, and MDM's InstallEnterpriseApplication needs a signed package.
