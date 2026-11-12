@@ -1092,6 +1092,24 @@ AXManualAccessibility and checks VoiceOver at launch; every browser is enabled w
 (desktop-sdk 61e4e166, new header accessibility_state.h; test issue-1872-screen-reader-accessibility-test.js).
 No change without a screen reader. Document body is canvas and stays unreadable. Needs a real VoiceOver check.
 
+### #100 / #947 - document variables lost on save; cell vertical alignment in the panel - FIXED 2026-11-12
+#100 DATA LOSS: w:docVars (the values DOCVARIABLE fields read) were dropped on every save from the editor, so
+Word showed "Error! No document variable supplied"; now carried through the binary (settings item DocVars=100)
+and escaped on write (core 48a2f86930, sdkjs 87ae50a92a; tests issue-0100-docvars-core, -sdkjs-test.js).
+No UI to edit variables. #947 Table settings panel gains Top/Middle/Bottom cell alignment (web-apps 34fa78bf7d).
+
+### #69 / #1814 / #2342 - macOS menus and interface scaling - DONE 2026-11-12 (after 2026.2.0)
+#69 File > Open Recent lists and opens recent local documents (was a hidden, never-fed AppKit menu) (desktop-apps
+6aa7e7249c). #1814 Window > Move Tab to New Window (607339b530; drag-out and the open-in-window setting
+already existed). #2342 interface scaling in 5% steps 100-150% on Windows/Linux (02d1fc2f6c). Checked live in an
+app clone with lldb (#69, #1814). Tab-UI redesign not done.
+
+### #780 / #211 - EMF/WMF pictures; OCR for TIFF - FIXED 2026-11-12
+#780 the engine already inserts EMF/WMF as vector pictures but no image dialog offered them; now all do
+(desktop-apps a52f7eca4). #211 the OCR plugin dropped TIFF pictures silently (Chromium cannot draw them) and
+gave no message for unreadable files; TIFF now goes to tesseract and failures are reported (onlyoffice.github.io
+94a3e9c5 on ration/v10-backports). Tests issue-780-*, issue-211-*.
+
 ## Root-caused, not fixed
 
 ### #959 / #874 / #2339 / #1215 (rest) - not small
@@ -2450,6 +2468,16 @@ xls. The reporter's actual ask is an override - "open this in Spreadsheet
 anyway". Not investigated in depth.
 
 ## Not reproducible or not testable here
+
+### #739 / #361 / #778 / #1238 / #1611 / #2535 / #2039 / #1858 / #1929 / #60 - triaged 2026-11-12
+#739 Restrict Editing / forms protection already works in 9.4 (checked end to end); Forms tab only for form
+formats is a product call. #361 equation numbering: no support to build on (see #874). #778 punch/fold marks,
+#1238 OS thumbnails, #2535 built-in traffic-light buttons (system title bar since #2504 covers themed WMs),
+#2039 Apple Intelligence (needs a Swift bridge), #60 DjVu writer: features/product calls. #1611 pinch works on
+macOS; Windows/Linux pass --disable-pinch (client_app.h:314) - an opt-in setting is the follow-up. #1858 copy/
+paste pages already merge/split; "insert/extract pages from file" needs a picked-file read/save path (#1664
+review). #1929 smart cards: Windows CryptoAPI may already work; PKCS#11/Keychain and PDF signing are multi-week.
+
 
 ### #1828 / #2246 / #2093 / #1801 / #1913 / #420 - accessibility and UI features - triaged
 #1828 Linux screen readers: needs AT-SPI detection and a check that our CEF Linux build has ATK (then reuse
