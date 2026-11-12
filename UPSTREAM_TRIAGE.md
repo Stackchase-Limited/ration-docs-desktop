@@ -1033,7 +1033,21 @@ is "none" - follows the user's own desktop setting, no change otherwise (desktop
 issue-0083-*, issue-2321-*, issue-2258-*, issue-2404-*, issue-1522-*, issue-2130-*. Windows not compiled;
 Linux GUI checks pending.
 
+### #603 / #322 / #1203 / #1292 / #179 - links, comments, lists, menus, shortcuts - DONE 2026-11-12 (after 2026.2.0)
+#603 tel: links accepted like mailto and opened at once when they hold a phone number; other tel: text still
+asks (sdkjs f7223cbbb5, desktop-sdk 9cda0a45). #322 search box in the Comments panel (text, quote, author,
+replies) in all editors (web-apps 62bf4b1e8b). #1203 Alt/Option+Shift+Up/Down move the selected paragraphs
+(list items) up/down, one undo step, comments kept (sdkjs 63f1738698, web-apps 4729f16bc5) - these keys used to
+fall through to selection-extend; rebindable. #1292 context menus: typing a letter picks/focuses the item
+starting with it (web-apps 9e2a4c5e94). #179 the shortcuts search ignores spaces and searches descriptions
+(web-apps 459948889e). Tests issue-0603-*, issue-0322-*, issue-1203-*, issue-1292-*, issue-0179-*.
+
 ## Root-caused, not fixed
+
+### #1064 - list of undo steps - needs labelled history points
+History descriptions are internal identifiers (~320 word/slide codes to label and translate) and 243 of 244
+spreadsheet history points have none; points are merged. A product decision on wording plus > a day.
+
 
 ### #1694 - save as XLS and DOC - blocked by the converter
 docx->doc is a stub (doc.h docx_dir2doc returns error 80); the XLS writer is unfinished (values survive
