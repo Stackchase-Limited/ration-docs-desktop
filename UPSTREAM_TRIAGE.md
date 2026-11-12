@@ -1077,6 +1077,14 @@ pages (web-apps 720bbc9976; macOS prints through its own panel). #1215 (part) Li
 side" now reaches CUPS (desktop-apps 04a0d87d2; test prints a real QPrinter job to a CUPS queue). Tests
 issue-2299-*, issue-2422-*, issue-1215-*. Pre-existing: the macOS Print button ignores the in-app page range.
 
+### #2544 / #2137 / #2112 - presentation and theme requests - DONE 2026-11-12 (after 2026.2.0)
+#2544 video/audio files dropped on a slide are inserted as by Insert > Video/Audio (sdkjs 660fdeb7c9). #2137
+option: "Use this size for new presentations" in the Slide Size dialog (web-apps ad9ffc4e5f, off until ticked).
+#2112 (dark part) the document dark-mode page colour comes from the theme (canvas-dark-content-background,
+#3a3a3a in every built-in theme), so a true-black theme is possible; example theme
+resources/themes/black-theme-dark.json.example; also fixed a page-fill colour that lost leading zeros
+(sdkjs 96dcdf31dd, web-apps fe6457de1f). Tests issue-2544-*, issue-2137-*, issue-2112-*. GUI checks pending.
+
 ## Root-caused, not fixed
 
 ### #959 / #874 / #2339 / #1215 (rest) - not small
@@ -2435,6 +2443,12 @@ xls. The reporter's actual ask is an override - "open this in Spreadsheet
 anyway". Not investigated in depth.
 
 ## Not reproducible or not testable here
+
+### #289 / #1804 - slide sorter view; book cover - features
+#289: the thumbnails panel already multi-selects, drags, Ctrl(+Shift)+Up/Down moves; a grid sorter view
+(c_oAscPresentationViewMode.sorter exists but is empty) is multi-day. #1804: no cover-page feature exists; a
+cover designer is a product decision. #2112 paste part: split Paste button with options already in 9.4.
+
 
 ### #278 - custom error bars from sheet columns - UI missing only
 The model reads, draws and round-trips c:errBars with custom plus/minus refs (both directions); only a

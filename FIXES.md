@@ -8,8 +8,8 @@ behind its own commits when this was written, and several commit messages cite
 test directories that have never existed. Nothing here is typed in by hand, so
 nothing here can claim a test that is not on disk.
 
-- **254 issues** with at least one fix commit
-- **212** have a test artifact in `fork-fix-tests/`
+- **257 issues** with at least one fix commit
+- **215** have a test artifact in `fork-fix-tests/`
 - **42** do not - the fix is asserted by its commit message only
 - **35** fix commits carry no issue number (defects found in passing)
 - **20** defects found by our own testing (RD-NNNN), 20 with a test - counted separately from upstream issues
@@ -31,6 +31,7 @@ that is what the Test column is for. See the verification status section of
 | [#2547](https://github.com/ONLYOFFICE/DesktopEditors/issues/2547) | desktop-sdk | `47cbfdfb00` | `issue-2547-icloud-flock` | 2026-11-04 |
 | [#2546](https://github.com/ONLYOFFICE/DesktopEditors/issues/2546) | core | `47c38a34cd` | `issue-2546-csv-utf8-fallback` | 2026-11-04 |
 | [#2545](https://github.com/ONLYOFFICE/DesktopEditors/issues/2545) | sdkjs | `7557345509` | `issue-2545-ru-seconds-symbol-test.js` | 2026-11-04 |
+| [#2544](https://github.com/ONLYOFFICE/DesktopEditors/issues/2544) | sdkjs | `660fdeb7c9` | `issue-2544-drop-media-into-slide-test.js` | 2026-11-12 |
 | [#2543](https://github.com/ONLYOFFICE/DesktopEditors/issues/2543) | desktop-sdk | `2c10dedf61` | `issue-2543-spellcheck-detect-off-live` | 2026-11-04 |
 | [#2542](https://github.com/ONLYOFFICE/DesktopEditors/issues/2542) | core, sdkjs | `49e0ac9b11` `733baa7bec` `a48ed236a1` | `issue-2542-hangul-legacy-cmap` | 2026-11-04 |
 | [#2537](https://github.com/ONLYOFFICE/DesktopEditors/issues/2537) | desktop-apps | `10b49fdd23` `c946559b75` | `issue-2537-dark-theme-type-message` | 2026-11-04 |
@@ -111,10 +112,12 @@ that is what the Test column is for. See the verification status section of
 | [#2160](https://github.com/ONLYOFFICE/DesktopEditors/issues/2160) | sdkjs, web-apps | `84afc71c38` `aaa725f624` | `issue-2160-context-numerals-test.js` | 2026-11-12 |
 | [#2147](https://github.com/ONLYOFFICE/DesktopEditors/issues/2147) | desktop-apps | `2441a039db` | `issue-2147-color-printing` | 2026-09-15 |
 | [#2139](https://github.com/ONLYOFFICE/DesktopEditors/issues/2139) | desktop-apps | `52e500360b` | `issue-2139-ctrl-tab-recent-order-test.js` | 2026-11-12 |
+| [#2137](https://github.com/ONLYOFFICE/DesktopEditors/issues/2137) | web-apps | `ad9ffc4e5f` | `issue-2137-default-slide-size-test.js` | 2026-11-12 |
 | [#2131](https://github.com/ONLYOFFICE/DesktopEditors/issues/2131) | desktop-sdk, sdkjs | `3c780add0b` `6e140c36ca` | `issue-2131-video-aspect` | 2026-11-10 |
 | [#2130](https://github.com/ONLYOFFICE/DesktopEditors/issues/2130) | desktop-sdk | `54c6d5d6f5` | `issue-2130-linux-grayscale-ui-text` | 2026-11-12 |
 | [#2119](https://github.com/ONLYOFFICE/DesktopEditors/issues/2119) | sdkjs | `ff0514e5b7` | `issue-2119-shift-drag-insert-rows-test.js` | 2026-11-11 |
 | [#2113](https://github.com/ONLYOFFICE/DesktopEditors/issues/2113) | core | `4a3252194b` `4a3252194b` | `issue-2113-ods-pivot-table` | 2026-09-15 |
+| [#2112](https://github.com/ONLYOFFICE/DesktopEditors/issues/2112) | sdkjs, web-apps | `96dcdf31dd` `fe6457de1f` | `issue-2112-dark-page-color-test.js` | 2026-11-12 |
 | [#2110](https://github.com/ONLYOFFICE/DesktopEditors/issues/2110) | desktop-sdk | `c5fa6b67af` | `issue-2110-mac-slide-print-fit` | 2026-11-10 |
 | [#2107](https://github.com/ONLYOFFICE/DesktopEditors/issues/2107) | desktop-sdk, onlyoffice.github.io | `ad09162aca` `34ab06d141` | `issue-2107-plugin-remove-native` | 2026-11-10 |
 | [#2105](https://github.com/ONLYOFFICE/DesktopEditors/issues/2105) | desktop-apps | `2241a8a0e6` | `issue-2105-wayland-no-x` | 2026-09-14 |
