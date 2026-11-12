@@ -1053,7 +1053,24 @@ apps pastes as a vector picture, plain SVG text still pastes as text (sdkjs 8c1c
 issue-2239-*, issue-2466-*, issue-1438-*, issue-2180-*; issue-0195/0630/676/2543 tests updated for the new
 code. macOS .mm edits for #2466 not compiled; GUI checks pending.
 
+### RD-0020 / #2003 / #2007 - slide media settings - DONE 2026-11-12 (after 2026.2.0)
+RD-0020 DATA LOSS: CTiming.buildTree rebuilt the timing root on every animation edit and dropped the
+p:video/p:audio media nodes (mute, volume, loop, hide, full screen); they are now carried over (sdkjs
+8cdef5ad4c; test rd-0020-media-node-kept-on-animation-test.js). #2003 Playback > Mute for video/audio, and the
+players no longer let a remembered volume override the file's mute (sdkjs 3d36688e80, web-apps 28c61dfec1,
+desktop-sdk b4273817; test issue-2003-media-mute). #2007 "Hide while not playing", honoured in the show -
+decks already carrying PowerPoint's showWhenStopped="0" now hide the video as PowerPoint does (sdkjs
+7eef14211f, web-apps 93947f7455; test issue-2007-*). GUI checks pending.
+
 ## Root-caused, not fixed
+
+### #2008 / #2006 / #2005 / #2002 / #2550 / #1968 - slide media playback options - not done
+Data survives for full screen, rewind (cTn fill), loop (repeatCount); both players lack an end-of-media
+hook and full-screen handling (#2008 also has a FullScreen/Fullscreen key mismatch and reads fullScrn from
+the wrong object). #2002 trim (p14:trim) is LOST on save: core Ext::toXmlWriter never writes it and sdkjs
+skips the record. #2550 needs a mediacall preset class and a Media gallery (about a day; queued to eg);
+#1968 is covered by #2550 (PowerPoint-made triggers already play since #878).
+
 
 ### #1592 - copy to the X PRIMARY selection (Linux) - not simple in CEF 109
 The editors' canvas selection never reaches a DOM selection, so Chromium never sets PRIMARY; needs an

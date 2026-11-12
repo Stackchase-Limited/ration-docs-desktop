@@ -8,11 +8,11 @@ behind its own commits when this was written, and several commit messages cite
 test directories that have never existed. Nothing here is typed in by hand, so
 nothing here can claim a test that is not on disk.
 
-- **245 issues** with at least one fix commit
-- **203** have a test artifact in `fork-fix-tests/`
+- **247 issues** with at least one fix commit
+- **205** have a test artifact in `fork-fix-tests/`
 - **42** do not - the fix is asserted by its commit message only
 - **35** fix commits carry no issue number (defects found in passing)
-- **19** defects found by our own testing (RD-NNNN), 19 with a test - counted separately from upstream issues
+- **20** defects found by our own testing (RD-NNNN), 20 with a test - counted separately from upstream issues
 
 A row here means a commit exists. It does **not** mean the fix was verified;
 that is what the Test column is for. See the verification status section of
@@ -126,6 +126,8 @@ that is what the Test column is for. See the verification status section of
 | [#2031](https://github.com/ONLYOFFICE/DesktopEditors/issues/2031) | desktop-apps | `fb27173cb1` | `issue-2031-installer-assoc-selection` | 2026-11-10 |
 | [#2022](https://github.com/ONLYOFFICE/DesktopEditors/issues/2022) | core | `b398371970` | `issue-2022-csv-last-row` | 2026-09-15 |
 | [#2010](https://github.com/ONLYOFFICE/DesktopEditors/issues/2010) | sdkjs | `29c78b83b5` | `issue-2010-pdf-outline-page-range-test.js` | 2026-11-11 |
+| [#2007](https://github.com/ONLYOFFICE/DesktopEditors/issues/2007) | sdkjs, web-apps | `7eef14211f` `93947f7455` | `issue-2007-media-hide-while-not-playing-test.js` | 2026-11-12 |
+| [#2003](https://github.com/ONLYOFFICE/DesktopEditors/issues/2003) | desktop-sdk, sdkjs, web-apps | `3d36688e80` `28c61dfec1` `b427381748` | `issue-2003-media-mute` | 2026-11-12 |
 | [#2000](https://github.com/ONLYOFFICE/DesktopEditors/issues/2000) | desktop-sdk | `5eaf9b64f3` | `issue-2000-network-share-save` | 2026-11-11 |
 | [#1967](https://github.com/ONLYOFFICE/DesktopEditors/issues/1967) | desktop-apps, desktop-sdk | `daa44229e7` `df19207858` | `issue-1967-managed-plugin-policy` | 2026-11-11 |
 | [#1947](https://github.com/ONLYOFFICE/DesktopEditors/issues/1947) | desktop-apps | `f205870618` | `issue-1947-linux-landscape-print` | 2026-11-05 |
@@ -280,6 +282,7 @@ They have not been demonstrated.
 
 | ID | Where | Commit | Test | Landed | What |
 |---|---|---|---|---|---|
+| RD-0020 | sdkjs | `8cdef5ad4c` | `rd-0020-media-node-kept-on-animation-test.js` | 2026-11-12 | adding, changing or removing an animation dropped the slide's video/audio settin |
 | RD-0019 | desktop-apps | `6870915119` | `rd-0019-handoff-utf8` | 2026-11-12 | a second launch handed a non-ASCII path garbled to a first instance in a non-UTF |
 | RD-0018 | core | `ccddc3317b` | `rd-0018-emf-svg-empty-text-dx` | 2026-11-12 | EMF to SVG wrote through a null pointer for an empty text record with character  |
 | RD-0017 | core | `72e231853b` | `rd-0017-odp-table-no-auto-styles` | 2026-11-12 | an ODP table in a document without office:automatic-styles crashed x2t on open;  |
