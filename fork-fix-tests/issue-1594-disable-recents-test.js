@@ -157,7 +157,9 @@ const appSettings = { useai: true, keeprecents: true };
 const names = ['$', 'sdk', 'localStorage', '$userName', '$chOpenMode', '$optsLang', '$optsUIScaling', '$optsUITheme',
 	'$optsLaunchMode', '$optsAutoupdateMode', '$optsSpellcheckMode', '$chGpu', '$chUseAI', '$chKeepRecents',
 	'appSettings', '$btnApply', '$panel', '_validate_user_name', '_lock_createnew'];
-const apply = new Function(...names, applySrc + '\nreturn _on_btn_apply;')(
+// selects/switches added to the page later are not set here (undefined), as when hidden
+const extras = [...new Set(applySrc.match(/\$(?:opts|ch)\w+/g))].filter((n) => !names.includes(n));
+const apply = new Function(...names, ...extras, applySrc + '\nreturn _on_btn_apply;')(
 	$, sdk, localStorage, field('Ann'), checkbox(false), hidden, undefined, undefined,
 	undefined, undefined, undefined, undefined, checkbox(true), checkbox(false),
 	appSettings, btn, {}, () => true, () => {});
@@ -171,7 +173,7 @@ assert.strictEqual(cleared, 1, 'switching the list off did not clear the files a
 // switching it back on does not clear anything
 cleared = 0; sent.length = 0;
 appSettings.keeprecents = false;
-new Function(...names, applySrc + '\nreturn _on_btn_apply;')(
+new Function(...names, ...extras, applySrc + '\nreturn _on_btn_apply;')(
 	$, sdk, localStorage, field('Ann'), checkbox(false), hidden, undefined, undefined,
 	undefined, undefined, undefined, undefined, checkbox(true), checkbox(true),
 	appSettings, btn, {}, () => true, () => {})({});

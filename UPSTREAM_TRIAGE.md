@@ -959,6 +959,19 @@ removed (8ef70c799). Known, not fixed: an empty ~/.local/share/ONLYOFFICE is cre
 also move build output paths); with QT_SCALE_FACTOR=2 a saved full-work-area window may open with its
 status bar off-screen (observed once). The package needs glibc 2.39 (Ubuntu 24.04+ / Debian 13+).
 
+### #2504 / #926 / #1085 / #220 - choose the window title bar in Settings (Linux) - DONE 2026-11-12 (after 2026.2.0)
+Start page "Title bar: Built-in / System (window manager)" (restart), stored in the existing `titlebar`
+key the --system-title-bar/--custom-title-bar switches used; a stored system title bar no longer shows
+the document name twice in the editor header (desktop-apps dedc2f770; test
+issue-2504-title-bar-setting-test.js). #1085 button-style choice and #220 left-side buttons in the
+built-in bar not done. GUI check on Linux pending; earlier 9.0 reports of a crash with the system title
+bar not reproduced by reading (null check 6b1d57d60 present) - check on the Linux box before shipping.
+
+### #1899 - window buttons: "Close only" option (Linux) - DONE 2026-11-12 (after 2026.2.0)
+"Window buttons: Minimize, maximize and close / Close only" (restart); createTopPanel hides
+minimize/maximize, editor title stays centred (desktop-apps b61080a05; test
+issue-1899-window-buttons-close-only-test.js).
+
 ## Root-caused, not fixed
 
 ### #83 - CSV delimiter/encoding cannot be chosen on save - design decision
@@ -2255,6 +2268,10 @@ xls. The reporter's actual ask is an override - "open this in Spreadsheet
 anyway". Not investigated in depth.
 
 ## Not reproducible or not testable here
+
+### #1310 - remove the editor's second header row - product decision, not done
+A compact-header redesign of web-apps' Header view (where each control goes); multi-day and a product call.
+
 
 ### #1389 - comment balloons in "Only markup / no balloons" - by design
 Simple markup suppresses only track-change balloons (as Word); comments have their own switch, File >

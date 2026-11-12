@@ -8,9 +8,9 @@ behind its own commits when this was written, and several commit messages cite
 test directories that have never existed. Nothing here is typed in by hand, so
 nothing here can claim a test that is not on disk.
 
-- **209 issues** with at least one fix commit
-- **170** have a test artifact in `fork-fix-tests/`
-- **39** do not - the fix is asserted by its commit message only
+- **214 issues** with at least one fix commit
+- **172** have a test artifact in `fork-fix-tests/`
+- **42** do not - the fix is asserted by its commit message only
 - **36** fix commits carry no issue number (defects found in passing)
 - **19** defects found by our own testing (RD-NNNN), 19 with a test - counted separately from upstream issues
 
@@ -45,6 +45,7 @@ that is what the Test column is for. See the verification status section of
 | [#2508](https://github.com/ONLYOFFICE/DesktopEditors/issues/2508) | desktop-apps, sdkjs | `e4f39b0651` `41937bbe3d` | `issue-2508-cell-caret-blink-test.js` | 2026-11-05 |
 | [#2507](https://github.com/ONLYOFFICE/DesktopEditors/issues/2507) | core | `a3c904494a` | `issue-2507-numbering-lvl-order` | 2026-10-27 |
 | [#2506](https://github.com/ONLYOFFICE/DesktopEditors/issues/2506) | core, sdkjs | `a1e8e1c060` `7f89b00088` | `issue-2506-jpx-gray-colorspace` | 2026-11-04 |
+| [#2504](https://github.com/ONLYOFFICE/DesktopEditors/issues/2504) | desktop-apps | `dedc2f7701` | `issue-2504-title-bar-setting-test.js` | 2026-11-12 |
 | [#2503](https://github.com/ONLYOFFICE/DesktopEditors/issues/2503) | desktop-sdk | `c430d3b140` `58801fea59` | `issue-2503-xkb-region-adjective` | 2026-11-04 |
 | [#2502](https://github.com/ONLYOFFICE/DesktopEditors/issues/2502) | sdkjs | `d303d6b9f0` | `issue-2502-empty-shape-text-pr-test.js` | 2026-11-04 |
 | [#2501](https://github.com/ONLYOFFICE/DesktopEditors/issues/2501) | desktop-apps | `276791931d` | `issue-2501-linux-screen-change-rescale` | 2026-11-12 |
@@ -120,6 +121,7 @@ that is what the Test column is for. See the verification status section of
 | [#1943](https://github.com/ONLYOFFICE/DesktopEditors/issues/1943) | desktop-sdk, sdkjs | `b12cc75a46` `3f9d60fc61` | `issue-1943-presenter-video-sync` | 2026-11-11 |
 | [#1942](https://github.com/ONLYOFFICE/DesktopEditors/issues/1942) | desktop-sdk | `f5635e16ec` | `issue-1942-slideshow-video-controls` | 2026-11-11 |
 | [#1922](https://github.com/ONLYOFFICE/DesktopEditors/issues/1922) | desktop-sdk, sdkjs | `39b0fd827b` `d97740fb73` `83724834dc` | `issue-1922-video-volume` | 2026-11-11 |
+| [#1899](https://github.com/ONLYOFFICE/DesktopEditors/issues/1899) | desktop-apps | `b61080a052` | `issue-1899-window-buttons-close-only-test.js` | 2026-11-12 |
 | [#1855](https://github.com/ONLYOFFICE/DesktopEditors/issues/1855) | core | `4116fbeb76` | `issue-1855-pdf-outline-pagemode` | 2026-09-15 |
 | [#1847](https://github.com/ONLYOFFICE/DesktopEditors/issues/1847) | desktop-apps | `b76fc9693a` | `issue-1847-reopen-closed-tab` | 2026-11-12 |
 | [#1829](https://github.com/ONLYOFFICE/DesktopEditors/issues/1829) | desktop-apps | `d269d54a3c` | `issue-1829-user-name-chars` | 2026-11-12 |
@@ -237,8 +239,11 @@ They have not been demonstrated.
 | [#1720](https://github.com/ONLYOFFICE/DesktopEditors/issues/1720) | desktop-apps | `b361bdbb93` | - | 2026-09-12 |
 | [#1669](https://github.com/ONLYOFFICE/DesktopEditors/issues/1669) | desktop-apps | `40d7b4b5a7` | - | 2026-09-12 |
 | [#1482](https://github.com/ONLYOFFICE/DesktopEditors/issues/1482) | sdkjs | `6392fa067a` | - | 2026-09-12 |
+| [#1085](https://github.com/ONLYOFFICE/DesktopEditors/issues/1085) | desktop-apps | `dedc2f7701` | - | 2026-11-12 |
+| [#926](https://github.com/ONLYOFFICE/DesktopEditors/issues/926) | desktop-apps | `dedc2f7701` | - | 2026-11-12 |
 | [#459](https://github.com/ONLYOFFICE/DesktopEditors/issues/459) | core, sdkjs | `875663096b` `67f4a0c2f3` | - | 2026-09-12 |
 | [#328](https://github.com/ONLYOFFICE/DesktopEditors/issues/328) | sdkjs | `6884d875b3` | - | 2026-11-11 |
+| [#220](https://github.com/ONLYOFFICE/DesktopEditors/issues/220) | desktop-apps | `dedc2f7701` | - | 2026-11-12 |
 
 ## Our own findings (RD-NNNN) - corpus runs and testing
 
