@@ -1013,6 +1013,14 @@ in most-recently-used order (52e500360, off by default). #2436 option: colour st
 type (c2acc77f5, off by default); 7d706cb3c resolves the shared settings hunks. Tests issue-0201-*,
 issue-1363-* (2), issue-1177-*, issue-2139-*, issue-2436-*. GUI checks pending on all.
 
+### #1905 / #1521 / #2160 / #2033 - spreadsheet and numeral requests - DONE 2026-11-12 (after 2026.2.0)
+#1905 Move sheet to a new workbook acted as Copy; the sheets are now deleted here once the new tab has them
+(sdkjs d829164103). #1521 option: highlight the active row/column (None / both / row / column, off by
+default; sdkjs b749c681ab, web-apps 92fcc5c556). #2160 Numeral "Context": Hindi digits in RTL paragraphs,
+Arabic elsewhere (sdkjs 84afc71c38, web-apps aaa725f624). #2033 Persian (Jalali) calendar in number formats
+[$-fa-IR,16] / [$-xx0429] (sdkjs 177bd1c53b). Tests issue-1905-*, issue-1521-*, issue-2160-*, issue-2033-*.
+GUI checks pending (row/column tint, Move dialog, numeral combo).
+
 ## Root-caused, not fixed
 
 ### #1694 - save as XLS and DOC - blocked by the converter
@@ -2004,6 +2012,11 @@ made about the cause.
 
 ## Already fixed in our 9.4 baseline - no action
 
+### #1166 - spreadsheet weekday/month autofill
+Already in 9.4 (upstream 45855): Monday/Tuesday, Mon/Tue, January, Jan all extend in docbuilder.
+Default page margins for new documents and the other asks are product calls / features.
+
+
 ### #1223 - default AutoCorrect language
 Covered by #143's "Default document language" (drives spellcheck and the AutoCorrect exceptions
 language). Gap: presentations' placeholder text keeps an explicit lang="en-US".
@@ -2334,6 +2347,11 @@ xls. The reporter's actual ask is an override - "open this in Spreadsheet
 anyway". Not investigated in depth.
 
 ## Not reproducible or not testable here
+
+### #278 - custom error bars from sheet columns - UI missing only
+The model reads, draws and round-trips c:errBars with custom plus/minus refs (both directions); only a
+"Format error bars" dialog with range pickers is missing - more than a day and a UI design.
+
 
 ### #584 - group tabs when there are too many - product decision
 The tab bars scroll (win-linux CTabBar, macOS ASCTabsControl); a grouping tab is a new tab-bar design on
