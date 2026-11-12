@@ -8,10 +8,10 @@ behind its own commits when this was written, and several commit messages cite
 test directories that have never existed. Nothing here is typed in by hand, so
 nothing here can claim a test that is not on disk.
 
-- **189 issues** with at least one fix commit
-- **150** have a test artifact in `fork-fix-tests/`
+- **188 issues** with at least one fix commit
+- **149** have a test artifact in `fork-fix-tests/`
 - **39** do not - the fix is asserted by its commit message only
-- **35** fix commits carry no issue number (defects found in passing)
+- **36** fix commits carry no issue number (defects found in passing)
 - **3** defects found by our own testing (RD-NNNN), 3 with a test - counted separately from upstream issues
 
 A row here means a commit exists. It does **not** mean the fix was verified;
@@ -150,7 +150,6 @@ that is what the Test column is for. See the verification status section of
 | [#925](https://github.com/ONLYOFFICE/DesktopEditors/issues/925) | sdkjs | `49123ea9fe` | `issue-925-french-guillemets-nbsp-test.js` | 2026-11-11 |
 | [#905](https://github.com/ONLYOFFICE/DesktopEditors/issues/905) | desktop-apps, desktop-sdk | `eea379f8aa` `11818b6036` | `issue-905-gtk-filter-case` | 2026-11-11 |
 | [#902](https://github.com/ONLYOFFICE/DesktopEditors/issues/902) | sdkjs | `e2d1b5afd8` `e2d1b5afd8` | `issue-902-csv-plain-save-active-sheet-test.js` | 2026-11-11 |
-| [#883](https://github.com/ONLYOFFICE/DesktopEditors/issues/883) | sdkjs | `0bb6ae9857` | `issue-0883-frequency-bin-order` | 2026-11-12 |
 | [#878](https://github.com/ONLYOFFICE/DesktopEditors/issues/878) | sdkjs | `06157857a8` `78aab3b128` | `issue-0878-slideshow-video-autoplay-test.js` | 2026-11-11 |
 | [#790](https://github.com/ONLYOFFICE/DesktopEditors/issues/790) | desktop-apps | `7f1090d9cf` | `issue-790-linux-dialog-utf8` | 2026-11-11 |
 | [#706](https://github.com/ONLYOFFICE/DesktopEditors/issues/706) | desktop-apps | `a877e2fc4c` | `issue-706-saveas-dotted-name` | 2026-11-11 |
@@ -232,6 +231,7 @@ They have not been demonstrated.
 
 | Where | Commit | Landed | What |
 |---|---|---|---|
+| sdkjs | `0bb6ae9857` | 2026-11-12 | #883: FREQUENCY returned its counts in sorted-bin order and took text bins as 0; counts  |
 | sdkjs | `33475b76ae` | 2026-11-11 | #73: Cmd+Up/Down on macOS moved one line in text; now they go to the start/end of the te |
 | web-apps | `52091f33cc` | 2026-10-17 | feat(api): host actions in the File menu — Duplicate, Email, Move to trash |
 | web-apps | `c9b503d06a` | 2026-10-10 | feat(mobile): let the mobile editors edit in the open-source build |

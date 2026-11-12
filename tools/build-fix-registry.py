@@ -28,6 +28,14 @@ FIX_SUBJECT = re.compile(
     re.I)
 
 
+# Commits whose "#NNNN:" names an issue they do not actually fix: the reported defect was already
+# fixed (see UPSTREAM_TRIAGE.md) and the commit fixes a different defect in the same code. Kept out of
+# the count so the registry never credits an issue for work that is not its reported bug.
+NOT_THE_REPORTED_DEFECT = {
+    '883': 'FREQUENCY was already vertical in 9.4; sdkjs 0bb6ae9857 fixes bin order, a different defect',
+}
+
+
 def git(repo, *args):
     return subprocess.run(['git', '-C', os.path.join(ROOT, repo)] + list(args),
                           capture_output=True, text=True).stdout
@@ -108,6 +116,10 @@ def collect():
             nums += re.findall(r'^\s*#(\d{3,4})\s*[:\-]', body, re.M)
             nums += re.findall(r'Upstream report:[^\n]*?#(\d{3,4})\b', body, re.I)
             entry = {'repo': repo, 'sha': sha[:10], 'date': date, 'subject': subject}
+            if not nums:
+                unnumbered.append(entry)
+                continue
+            nums = [n for n in nums if n not in NOT_THE_REPORTED_DEFECT]
             if not nums:
                 unnumbered.append(entry)
                 continue
