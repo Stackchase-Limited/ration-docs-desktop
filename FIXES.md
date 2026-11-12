@@ -8,10 +8,10 @@ behind its own commits when this was written, and several commit messages cite
 test directories that have never existed. Nothing here is typed in by hand, so
 nothing here can claim a test that is not on disk.
 
-- **234 issues** with at least one fix commit
-- **192** have a test artifact in `fork-fix-tests/`
+- **236 issues** with at least one fix commit
+- **194** have a test artifact in `fork-fix-tests/`
 - **42** do not - the fix is asserted by its commit message only
-- **38** fix commits carry no issue number (defects found in passing)
+- **35** fix commits carry no issue number (defects found in passing)
 - **19** defects found by our own testing (RD-NNNN), 19 with a test - counted separately from upstream issues
 
 A row here means a commit exists. It does **not** mean the fix was verified;
@@ -214,6 +214,8 @@ that is what the Test column is for. See the verification status section of
 | [#167](https://github.com/ONLYOFFICE/DesktopEditors/issues/167) | web-apps | `35bc28f2f3` | `issue-0167-word-count-shortcut-test.js` | 2026-11-12 |
 | [#143](https://github.com/ONLYOFFICE/DesktopEditors/issues/143) | web-apps | `869747e03c` | `issue-0143-default-doc-language-test.js` | 2026-11-12 |
 | [#139](https://github.com/ONLYOFFICE/DesktopEditors/issues/139) | core | `fd679c60c1` `fd679c60c1` | `issue-139-pptx-invalid-xml-chars` | 2026-09-15 |
+| [#83](https://github.com/ONLYOFFICE/DesktopEditors/issues/83) | desktop-apps, desktop-sdk | `8dc58c3989` `6afd78afa0` | `issue-0083-csv-save-keeps-options` | 2026-11-12 |
+| [#73](https://github.com/ONLYOFFICE/DesktopEditors/issues/73) | sdkjs | `33475b76ae` | `issue-0073-mac-cmd-up-down-test.js` | 2026-11-11 |
 
 ## Not verified - commit message only
 
@@ -294,9 +296,6 @@ They have not been demonstrated.
 | Where | Commit | Landed | What |
 |---|---|---|---|
 | sdkjs | `0bb6ae9857` | 2026-11-12 | #883: FREQUENCY returned its counts in sorted-bin order and took text bins as 0; counts  |
-| desktop-apps | `8dc58c3989` | 2026-11-12 | #83: Save As can now write a semicolon-separated csv |
-| desktop-sdk | `6afd78afa0` | 2026-11-12 | #83: Ctrl+S on a csv opened with a semicolon or a non-UTF-8 code page rewrote it as comm |
-| sdkjs | `33475b76ae` | 2026-11-11 | #73: Cmd+Up/Down on macOS moved one line in text; now they go to the start/end of the te |
 | web-apps | `52091f33cc` | 2026-10-17 | feat(api): host actions in the File menu — Duplicate, Email, Move to trash |
 | web-apps | `c9b503d06a` | 2026-10-10 | feat(mobile): let the mobile editors edit in the open-source build |
 | desktop-apps | `7cd9fea4d0` | 2026-10-09 | Point the Fastlane release lane at the Ration Docs app |

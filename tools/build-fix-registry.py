@@ -112,9 +112,9 @@ def collect():
             #   Land #2245: ...                     (subject)
             #   #2136: ONLYOFFICE segfaults when... (opening a body line)
             #   Upstream report: ONLYOFFICE/DesktopEditors#1720
-            nums = re.findall(r'#(\d{3,4})\b', subject)
-            nums += re.findall(r'^\s*#(\d{3,4})\s*[:\-]', body, re.M)
-            nums += re.findall(r'Upstream report:[^\n]*?#(\d{3,4})\b', body, re.I)
+            nums = re.findall(r'#(\d{2,4})\b', subject)
+            nums += re.findall(r'^\s*#(\d{2,4})\s*[:\-]', body, re.M)
+            nums += re.findall(r'Upstream report:[^\n]*?#(\d{2,4})\b', body, re.I)
             entry = {'repo': repo, 'sha': sha[:10], 'date': date, 'subject': subject}
             if not nums:
                 unnumbered.append(entry)
