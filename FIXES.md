@@ -8,8 +8,8 @@ behind its own commits when this was written, and several commit messages cite
 test directories that have never existed. Nothing here is typed in by hand, so
 nothing here can claim a test that is not on disk.
 
-- **220 issues** with at least one fix commit
-- **178** have a test artifact in `fork-fix-tests/`
+- **225 issues** with at least one fix commit
+- **183** have a test artifact in `fork-fix-tests/`
 - **42** do not - the fix is asserted by its commit message only
 - **36** fix commits carry no issue number (defects found in passing)
 - **19** defects found by our own testing (RD-NNNN), 19 with a test - counted separately from upstream issues
@@ -64,6 +64,7 @@ that is what the Test column is for. See the verification status section of
 | [#2448](https://github.com/ONLYOFFICE/DesktopEditors/issues/2448) | sdkjs | `6957873dd2` | `issue-2448-placeholder-idx-test.js` | 2026-11-04 |
 | [#2445](https://github.com/ONLYOFFICE/DesktopEditors/issues/2445) | build_tools | `176b23eee3` | `issue-2445-symbol-closure` | 2026-09-14 |
 | [#2443](https://github.com/ONLYOFFICE/DesktopEditors/issues/2443) | sdkjs | `ea70b2855c` | `issue-2443-recalc-lock-test.js` | 2026-09-14 |
+| [#2436](https://github.com/ONLYOFFICE/DesktopEditors/issues/2436) | desktop-apps | `c2acc77f57` | `issue-2436-tab-type-colors-test.js` | 2026-11-12 |
 | [#2434](https://github.com/ONLYOFFICE/DesktopEditors/issues/2434) | desktop-apps | `8944f201c3` | `issue-2434-loopback-bind` | 2026-09-14 |
 | [#2433](https://github.com/ONLYOFFICE/DesktopEditors/issues/2433) | core | `65a056a5f1` | `issue-2433-charmap-not-erased` | 2026-09-13 |
 | [#2429](https://github.com/ONLYOFFICE/DesktopEditors/issues/2429) | desktop-apps | `32b6769934` | `issue-2429-saveas-extension` | 2026-09-12 |
@@ -100,6 +101,7 @@ that is what the Test column is for. See the verification status section of
 | [#2187](https://github.com/ONLYOFFICE/DesktopEditors/issues/2187) | core | `b4a57ad44e` `b4a57ad44e` | `issue-2187-shape-macro` | 2026-09-15 |
 | [#2161](https://github.com/ONLYOFFICE/DesktopEditors/issues/2161) | desktop-apps | `4ab3fb37ec` | `issue-2161-landscape-print-margins` | 2026-09-15 |
 | [#2147](https://github.com/ONLYOFFICE/DesktopEditors/issues/2147) | desktop-apps | `2441a039db` | `issue-2147-color-printing` | 2026-09-15 |
+| [#2139](https://github.com/ONLYOFFICE/DesktopEditors/issues/2139) | desktop-apps | `52e500360b` | `issue-2139-ctrl-tab-recent-order-test.js` | 2026-11-12 |
 | [#2131](https://github.com/ONLYOFFICE/DesktopEditors/issues/2131) | desktop-sdk, sdkjs | `3c780add0b` `6e140c36ca` | `issue-2131-video-aspect` | 2026-11-10 |
 | [#2119](https://github.com/ONLYOFFICE/DesktopEditors/issues/2119) | sdkjs | `ff0514e5b7` | `issue-2119-shift-drag-insert-rows-test.js` | 2026-11-11 |
 | [#2113](https://github.com/ONLYOFFICE/DesktopEditors/issues/2113) | core | `4a3252194b` `4a3252194b` | `issue-2113-ods-pivot-table` | 2026-09-15 |
@@ -143,6 +145,7 @@ that is what the Test column is for. See the verification status section of
 | [#1433](https://github.com/ONLYOFFICE/DesktopEditors/issues/1433) | desktop-apps | `a314de8d2f` | `issue-1433-gsettings-missing-schema` | 2026-11-12 |
 | [#1372](https://github.com/ONLYOFFICE/DesktopEditors/issues/1372) | core | `39a34e13b3` | `issue-1372-csv-locale-date-and-numfmt` | 2026-09-15 |
 | [#1364](https://github.com/ONLYOFFICE/DesktopEditors/issues/1364) | sdkjs | `ef815d5784` `ef815d5784` | `issue-1364-single-cell-copy-test.js` | 2026-09-15 |
+| [#1363](https://github.com/ONLYOFFICE/DesktopEditors/issues/1363) | desktop-apps, web-apps | `73e0f992ea` `3ff2db754b` | `issue-1363-start-page-web-links-test.js` | 2026-11-12 |
 | [#1362](https://github.com/ONLYOFFICE/DesktopEditors/issues/1362) | desktop-sdk | `679ebd742f` | `issue-1362-samba-lock` | 2026-09-15 |
 | [#1359](https://github.com/ONLYOFFICE/DesktopEditors/issues/1359) | core | `af68137e07` `af68137e07` | `issue-1359-x2t-bad-alloc` | 2026-09-15 |
 | [#1323](https://github.com/ONLYOFFICE/DesktopEditors/issues/1323) | core | `b6672e6780` | `issue-1323-docx-zip-entry-order` | 2026-09-15 |
@@ -151,6 +154,7 @@ that is what the Test column is for. See the verification status section of
 | [#1233](https://github.com/ONLYOFFICE/DesktopEditors/issues/1233) | sdkjs | `3b3a0125ea` | `issue-1233-paste-image-download-async-test.js` | 2026-11-12 |
 | [#1230](https://github.com/ONLYOFFICE/DesktopEditors/issues/1230) | desktop-apps | `5c8da46e06` | `issue-1230-mac-language-new-editors` | 2026-11-12 |
 | [#1194](https://github.com/ONLYOFFICE/DesktopEditors/issues/1194) | sdkjs | `aa8e849c33` | `issue-1194-touchpad-subpixel-scroll-test.js` | 2026-11-11 |
+| [#1177](https://github.com/ONLYOFFICE/DesktopEditors/issues/1177) | desktop-apps | `ae489fe2a6` | `issue-1177-reapply-file-associations-test.js` | 2026-11-12 |
 | [#1167](https://github.com/ONLYOFFICE/DesktopEditors/issues/1167) | desktop-apps | `82e255608f` | `issue-1167-google-doc-link` | 2026-11-11 |
 | [#1144](https://github.com/ONLYOFFICE/DesktopEditors/issues/1144) | desktop-apps, desktop-sdk | `68827a107d` `bdbd5c3508` | `issue-1144-recover-list-dates` | 2026-11-12 |
 | [#1031](https://github.com/ONLYOFFICE/DesktopEditors/issues/1031) | core | `9e6c96b316` | `issue-1031-wmf-ansi-codepage` | 2026-11-11 |
@@ -194,6 +198,7 @@ that is what the Test column is for. See the verification status section of
 | [#247](https://github.com/ONLYOFFICE/DesktopEditors/issues/247) | sdkjs | `4acf06a079` | `issue-0247-mac-edit-cell-key-test.js` | 2026-11-12 |
 | [#222](https://github.com/ONLYOFFICE/DesktopEditors/issues/222) | sdkjs, web-apps | `9f04793a12` `1fd3361a6e` `6c1edee61f` | `issue-0222-two-initial-capitals-test.js` | 2026-11-12 |
 | [#206](https://github.com/ONLYOFFICE/DesktopEditors/issues/206) | sdkjs | `19a6e7a7bd` | `issue-0206-paste-stylesheet-spacing-test.js` | 2026-11-12 |
+| [#201](https://github.com/ONLYOFFICE/DesktopEditors/issues/201) | desktop-apps | `cfbce81387` | `issue-0201-remove-recent-folder-test.js` | 2026-11-12 |
 | [#200](https://github.com/ONLYOFFICE/DesktopEditors/issues/200) | desktop-apps | `283bb57d3f` | `issue-0200-ctrl-n-new-document` | 2026-11-12 |
 | [#195](https://github.com/ONLYOFFICE/DesktopEditors/issues/195) | desktop-sdk | `7e446b0c96` | `issue-0195-system-hunspell-dictionaries` | 2026-11-12 |
 | [#182](https://github.com/ONLYOFFICE/DesktopEditors/issues/182) | sdkjs | `2c08a678ee` | `issue-0182-autofit-custom-width-test.js` | 2026-11-11 |

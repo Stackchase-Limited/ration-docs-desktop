@@ -1004,6 +1004,15 @@ issue-0630-remove-from-dictionary, -ui-test.js). Dialog not GUI-checked.
 Scans /usr/share/hunspell and myspell for <lang>_<REGION> UTF-8 dictionaries we do not ship; ours always
 win (desktop-sdk 7e446b0c; test issue-0195-system-hunspell-dictionaries). Not run in a Linux app yet.
 
+### #201 / #1363 / #1177 / #2139 / #2436 - start page and tabs - DONE 2026-11-12 (after 2026.2.0)
+#201 right-click Recent folders: Open, Pin/Unpin, Remove from list (desktop-apps cfbce8138). #1363 the
+editors' Feedback & Support hint and the About links say they open the web browser (desktop-apps
+3ff2db754, web-apps 73e0f992ea). #1177 Windows Settings "Make Ration Docs the default app for all
+supported files" (ae489fe2a; association.cpp not compiled - no Windows build here). #2139 option: Ctrl+Tab
+in most-recently-used order (52e500360, off by default). #2436 option: colour strip on tabs by document
+type (c2acc77f5, off by default); 7d706cb3c resolves the shared settings hunks. Tests issue-0201-*,
+issue-1363-* (2), issue-1177-*, issue-2139-*, issue-2436-*. GUI checks pending on all.
+
 ## Root-caused, not fixed
 
 ### #1694 - save as XLS and DOC - blocked by the converter
@@ -2325,6 +2334,11 @@ xls. The reporter's actual ask is an override - "open this in Spreadsheet
 anyway". Not investigated in depth.
 
 ## Not reproducible or not testable here
+
+### #584 - group tabs when there are too many - product decision
+The tab bars scroll (win-linux CTabBar, macOS ASCTabsControl); a grouping tab is a new tab-bar design on
+two native implementations. Smallest follow-up if chosen: a "List all tabs" menu button.
+
 
 ### #1310 - remove the editor's second header row - product decision, not done
 A compact-header redesign of web-apps' Header view (where each control goes); multi-day and a product call.
