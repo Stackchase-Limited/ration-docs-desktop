@@ -1021,6 +1021,18 @@ Arabic elsewhere (sdkjs 84afc71c38, web-apps aaa725f624). #2033 Persian (Jalali)
 [$-fa-IR,16] / [$-xx0429] (sdkjs 177bd1c53b). Tests issue-1905-*, issue-1521-*, issue-2160-*, issue-2033-*.
 GUI checks pending (row/column tint, Move dialog, numeral combo).
 
+### #83 / #2321 / #2258 / #2404 / #1522 / #2130 - parked design suggestions resolved - DONE 2026-11-12 (after 2026.2.0)
+#83 DATA INTEGRITY: Ctrl+S on a CSV opened with another delimiter/code page rewrote it as comma/UTF-8 (shown
+with real x2t); the open-time options are now kept for Ctrl+S, Save As offers a semicolon CSV (desktop-sdk
+6afd78af, desktop-apps 8dc58c398). #2321 option: portal file dialog on X11 (116bd6a1d, off by default).
+#2258 option: Ctrl+D/Ctrl+R fill down/right in the grid, shape text keeps Ctrl+R (sdkjs 343dd2ce50, web-apps
+d4d05aaed8, off by default). #2404 the app decided "portable" from the current directory's package.config;
+now beside the executable, and make_zip.ps1 documented/guarded (f379f0bf7). #1522 GTK_IM_MODULE=fcitx only
+when XMODIFIERS says fcitx and it is unset (301edac68). #2130 --disable-lcd-text when the desktop's Xft.rgba
+is "none" - follows the user's own desktop setting, no change otherwise (desktop-sdk 54c6d5d6). Tests
+issue-0083-*, issue-2321-*, issue-2258-*, issue-2404-*, issue-1522-*, issue-2130-*. Windows not compiled;
+Linux GUI checks pending.
+
 ## Root-caused, not fixed
 
 ### #1694 - save as XLS and DOC - blocked by the converter
