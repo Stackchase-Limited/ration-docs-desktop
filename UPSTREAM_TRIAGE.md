@@ -778,6 +778,20 @@ issue-1433-gsettings-missing-schema).
 initSpecialPasteData called _callback() on null paste_data and then dereferenced it; added the return
 (sdkjs 12e566a791; test rd-0003-special-paste-null-data-test.js).
 
+### #572 - PDF export recompressed most JPEG photos - FIXED 2026-11-12
+NSImageReSaver::CorrectImage (core PdfFile/SrcWriter/Image.cpp) re-encoded a JPEG at q85 whenever
+"Adobe"/"Photoshop" appeared in its first 10 KB - true of nearly every XMP packet and Photoshop APP13,
+so photos from Photoshop, Lightroom, Preview/sips and many cameras lost quality. Now the frame header
+decides: re-encode only CMYK/YCCK or APP14 Adobe (core eb2c12c2b7; test issue-0572-pdf-jpeg-passthrough;
+relinked x2t: a sips q100 JPEG now embeds byte-identical). PNG -> JPEG q85 is unchanged upstream design.
+
+### #1829 - user names with a comma or ' refused; & # + % broke the editor on macOS - FIXED 2026-11-12
+The start page's name whitelist refused "Doe, John" and O'Brien (typographic '). On macOS the editor URL
+parameters were joined unencoded, so "Tom & Jerry" became "Tom ", "C# Team" lost lang/theme, and
+"100% Smith" threw URIError and no editor opened. Whitelist widened; macOS percent-encodes the parameters
+as Windows/Linux do (desktop-apps d269d54a3; test issue-1829-user-name-chars). Needs a loginpage and app
+rebuild to ship; not GUI-checked.
+
 ## Root-caused, not fixed
 
 ### #1233 - paste of web content with images freezes the editor - root-caused, not fixed
@@ -1750,6 +1764,15 @@ made about the cause.
 
 ## Already fixed in our 9.4 baseline - no action
 
+### #2231 - file picker non-responsive (GNOME 49 Wayland)
+Duplicate of #2168, fixed in our tree (desktop-apps 006ee3415: XDG portal on Wayland);
+issue-2168-wayland-file-dialog passes (10/10), 7/10 before. Not run live.
+
+### #2065 - "Light yellow" tooltip for a light green
+Upstream 6df663f546/0821289f30 added light greens/blues/oranges to the colour-name map; the reporter's
+E2F0D9 now names "Light Green", and a scan of every theme tint/shade finds no cross-family names.
+
+
 ### #2468 - AI agent merged arguments of sequential MCP tool calls
 Our desktop-sdk c865aace + 073ae7ba (#2461) already fix it (upstream bug 84216 has no desktop-sdk commit
 up to v10.0.0.176); issue-2461-ollama-tool-args-test.js fails on c865aace^ with this exact symptom.
@@ -2052,6 +2075,18 @@ xls. The reporter's actual ask is an override - "open this in Spreadsheet
 anyway". Not investigated in depth.
 
 ## Not reproducible or not testable here
+
+### #339 - YouTube plugin video does not play in the slideshow - feature gap
+The plugin's OLE object plays in edit/view mode; in the slideshow CommonController.js:1652-1656 handles
+only desktop media files, so a click goes to the next slide. Never implemented (upstream 36175 open).
+
+### #2272 - AI grammar checker slow - cannot occur in our build
+Its grammar/spelling run on the text-annotation API, which our sdkjs stubs out (Document.js
+InitCustomTextAnnotator); no onParagraphText/AnnotationRange in the payload.
+
+### #1251 - macOS tab logo has poor contrast - not applicable to our icon
+Our dark/light tab logos, composited on the inactive/active tab colours, are about 6:1 and 9:1+.
+
 
 ### #1400 - Debian trixie install appears to fail - not in 9.4
 7.5's postinst called update-desktop-database unguarded; upstream removed it (0cf8f92ca). Our .deb built

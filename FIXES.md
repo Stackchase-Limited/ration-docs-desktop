@@ -8,8 +8,8 @@ behind its own commits when this was written, and several commit messages cite
 test directories that have never existed. Nothing here is typed in by hand, so
 nothing here can claim a test that is not on disk.
 
-- **184 issues** with at least one fix commit
-- **145** have a test artifact in `fork-fix-tests/`
+- **186 issues** with at least one fix commit
+- **147** have a test artifact in `fork-fix-tests/`
 - **39** do not - the fix is asserted by its commit message only
 - **35** fix commits carry no issue number (defects found in passing)
 - **3** defects found by our own testing (RD-NNNN), 3 with a test - counted separately from upstream issues
@@ -119,6 +119,7 @@ that is what the Test column is for. See the verification status section of
 | [#1942](https://github.com/ONLYOFFICE/DesktopEditors/issues/1942) | desktop-sdk | `f5635e16ec` | `issue-1942-slideshow-video-controls` | 2026-11-11 |
 | [#1922](https://github.com/ONLYOFFICE/DesktopEditors/issues/1922) | desktop-sdk, sdkjs | `39b0fd827b` `d97740fb73` `83724834dc` | `issue-1922-video-volume` | 2026-11-11 |
 | [#1855](https://github.com/ONLYOFFICE/DesktopEditors/issues/1855) | core | `4116fbeb76` | `issue-1855-pdf-outline-pagemode` | 2026-09-15 |
+| [#1829](https://github.com/ONLYOFFICE/DesktopEditors/issues/1829) | desktop-apps | `d269d54a3c` | `issue-1829-user-name-chars` | 2026-11-12 |
 | [#1760](https://github.com/ONLYOFFICE/DesktopEditors/issues/1760) | sdkjs | `9f3cc5dd87` | `issue-1760-copy-picture-image-png-test.js` | 2026-11-10 |
 | [#1710](https://github.com/ONLYOFFICE/DesktopEditors/issues/1710) | desktop-apps | `eecac8e789` | `issue-1710-flatpak-single-instance` | 2026-11-12 |
 | [#1672](https://github.com/ONLYOFFICE/DesktopEditors/issues/1672) | sdkjs, web-apps | `e88d90ee71` `c32ac680e4` `73d504525b` | `issue-1672-hidden-slides-pdf-print-test.js` | 2026-11-10 |
@@ -155,6 +156,7 @@ that is what the Test column is for. See the verification status section of
 | [#676](https://github.com/ONLYOFFICE/DesktopEditors/issues/676) | sdkjs | `d32100e8a1` `d32100e8a1` | `issue-676-nautilus-image-paste-test.js` | 2026-09-15 |
 | [#661](https://github.com/ONLYOFFICE/DesktopEditors/issues/661) | desktop-apps | `706e29c812` | `issue-0661-linux-start-rect-workarea` | 2026-11-11 |
 | [#619](https://github.com/ONLYOFFICE/DesktopEditors/issues/619) | desktop-sdk | `946e4d8f6d` | `issue-619-template-opens-as-new` | 2026-11-11 |
+| [#572](https://github.com/ONLYOFFICE/DesktopEditors/issues/572) | core | `eb2c12c2b7` | `issue-0572-pdf-jpeg-passthrough` | 2026-11-12 |
 | [#565](https://github.com/ONLYOFFICE/DesktopEditors/issues/565) | sdkjs | `aa43ce0290` | `issue-0565-accent-dotless-ij-test.js` | 2026-11-11 |
 | [#560](https://github.com/ONLYOFFICE/DesktopEditors/issues/560) | desktop-apps | `27578a09e7` | `issue-0560-mac-paper-size` | 2026-11-11 |
 | [#547](https://github.com/ONLYOFFICE/DesktopEditors/issues/547) | sdkjs | `ba80ae077e` | `issue-0547-plain-save-pdf-layout-test.js` | 2026-11-11 |
