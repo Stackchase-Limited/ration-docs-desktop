@@ -119,7 +119,9 @@ function runMain(storage, opts) {
 	assert.ok(getDef, 'Main.getDefaultSlideSize missing');
 	const start = mainJs.indexOf('// #2137: the slide size a new blank desktop presentation gets');
 	assert.ok(start !== -1, 'Main #2137 block missing');
-	const end = mainJs.indexOf('me.loadAutoCorrectSettings();', start);
+	// the #2137 block ends at the next marked block (#527 follows it) or at loadAutoCorrectSettings
+	const ends = ['// #527:', 'me.loadAutoCorrectSettings();'].map((m) => mainJs.indexOf(m, start)).filter((i) => i !== -1);
+	const end = Math.min(...ends);
 	const block = mainJs.slice(start, end);
 	const calls = [];
 	const me = {

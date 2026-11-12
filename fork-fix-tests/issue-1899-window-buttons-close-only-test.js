@@ -88,6 +88,8 @@ const cpp = `
 #include <QSettings>
 #include <QJsonObject>
 #include <QJsonDocument>
+#include <QJsonArray>
+#include <QScreen>
 #include <QWidget>
 #include <QLabel>
 #include <QHBoxLayout>
@@ -205,7 +207,7 @@ cd /t
 g++ -std=c++17 -fPIC -w -o wb main.cpp $(pkg-config --cflags --libs Qt5Widgets)
 HOME=/t/home QT_QPA_PLATFORM=offscreen ./wb ${steps.map((s) => `'${s}'`).join(' ')} 2>/dev/null
 `);
-	const r = spawnSync('docker', ['run', '--rm', '-v', `${tmp}:/t`, IMAGE, 'sh', '/t/run.sh'], { encoding: 'utf8' });
+	const r = spawnSync('docker', ['run', '--rm', '--memory=2g', '-v', `${tmp}:/t`, IMAGE, 'sh', '/t/run.sh'], { encoding: 'utf8' });
 	if (r.status !== 0) {
 		process.stderr.write((r.stdout || '') + (r.stderr || ''));
 		throw new Error('native harness failed to build/run');

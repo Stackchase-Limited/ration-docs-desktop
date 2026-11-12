@@ -1191,6 +1191,21 @@ AscWord.ComplexScriptLineBreaker; sdkjs f302f97ceb, web-apps f1d5ed2a3f) - x2t d
 structured-reference branch after a sheet prefix; sdkjs e09e6b2cd5). Tests issue-2566-odp-import,
 issue-0371-thai-line-break-test.js, issue-0159-indirect-sheet-table-test.js.
 
+### #1548 / #1828 / #2008 / #527 / #348 and RD-0030 / RD-0031 - DONE 2026-11-13
+#1548 slideshow screen on Windows/Linux: "Slideshow screen" setting (Automatic default, desktop-apps 56c65c602); a slideshow
+from a window off the desktop edge crashed (screenAt null -> QList::at(count) abort / null deref; f0ccf9f00); with three
+screens a presenter on the middle screen got the slideshow on the same screen - now the primary or next (f5d2cebf6, a
+default change in that broken case only). #1828 Orca on Linux: a running screen reader (org.a11y.Status.ScreenReaderEnabled)
+or --force-renderer-accessibility turns on Chromium accessibility and ACCESSIBILITY_ENABLED (35f7c442c). #2008 a fullScrn
+slide video fills the slide show while playing and returns at the end, macOS and Qt (sdkjs d1ba4197ba, desktop-sdk f3d90689).
+#527 "Default presentation language" for new blank presentations (web-apps 16a617195b). #348 a slide paragraph with marL=0
+and a negative indent started its first line outside the text box; now clamped to the inset as PowerPoint does, checked
+against the PowerPoint thumbnail in the reporter's file (sdkjs b258d6e942). RD-0030 security: dropped / inserted / save-
+dialog file names were put into executed JS unescaped - a name with `"` could inject script (desktop-sdk 1fea875f).
+RD-0031 "copy sheet to new workbook" replayed the source's changes0.json onto the copy - edits from other sheets landed
+on it (4b3f8ce5). Linux syntax-compiled; GUI checks pending; Qt multimedia units not Linux-compiled (no QtMultimedia in
+the image). #1330 (optional update service, ek wt) held: its Wine test could not run.
+
 ## Root-caused, not fixed
 
 ### #2566 (remaining) - ODP bullets: wrapped lines start left of the bullet text
@@ -2687,6 +2702,28 @@ xls. The reporter's actual ask is an override - "open this in Spreadsheet
 anyway". Not investigated in depth.
 
 ## Not reproducible or not testable here
+
+### #1032 (re-checked 2026-11-13) - floating table ~720tw right of the margin - offset source not established
+Reporter's Word 2021 PDF (TS2.pdf): table left edge at 92.8pt against a 56.7pt margin, offset 36.1pt = 722tw (pages 1, 2).
+Our x2t puts the table at the margin (diff exactly 36.09pt). tblpPr vertAnchor=text tblpY=1, no tblpX/horzAnchor/tblInd;
+Normal Table tblInd=0; compatibilityMode 15. Only 720s in the package: unused "Body Text" ind left=720 and an overridden
+numbering hanging indent. Needs Word or LibreOffice to vary one attribute at a time; no fix.
+
+### #2539 - v10 cannot connect to a self-hosted portal (HEAD /api/2.0/capabilities 404) - not in our 9.4 code
+The v10 React start page (routes/clouds/index.jsx checkPortal, still in v10.0.0.176) checks the portal with fetch HEAD and
+counts a 404 as unreachable. Our start page (dialogconnect.js _require_portal_info) sends GET through $.ajax /
+AscSimpleRequest. Run against a HEAD-404/GET-200 server: ours connects, v10 refuses. Upstream's hotfix (bug 84507) is not
+public yet. If we ever take the v10 start page, change the check to GET.
+
+### #2495 - macOS 10.0: Nextcloud files open in a separate window - not reproduced
+Reported as a 10.0 regression (9.4.0 works). Our path CheckPopup -> IsExternalCloudEditor("/apps/onlyoffice/") -> CREATETAB
+-> AppDelegate onCEFCreateTab opens a window only with editor-window-mode=1; upstream did not change CheckPopup up to
+v10.0.0.176 and our #1664 link policy touches only external links. Needs our macOS build + Nextcloud 31 to confirm.
+
+### #1393 - Linux: GNOME Online Accounts (Google Drive) files take ~1 min to open - not reproduced
+Needs a GOA Google account. Traced: .desktop Exec %U without X-GIO-NoFuse, so the app likely gets the gvfsd-fuse path,
+treats it as local, opens it read-write with an fcntl lock and writes a .~lock marker in the Drive folder - each a Google
+API round trip. Next: strace the open on the Linux box before choosing a fix (option: read-only/no marker on gvfs paths).
 
 ### #1730 - KDE Plasma 6 kwin_scene_opengl GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT - not ours
 Logged by kwin_wayland, not by our process; upstream closed it as KWin bug 491751 (fixed Plasma 6.6+). The app keeps working.

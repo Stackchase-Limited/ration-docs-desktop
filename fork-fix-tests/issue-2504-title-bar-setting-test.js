@@ -90,6 +90,9 @@ const priv = block(winbase, find(winbase, 'class CWindowBase::CWindowBasePrivate
 
 const cpp = `
 #include <QCoreApplication>
+#include <QApplication>
+#include <QScreen>
+#include <QJsonArray>
 #include <QSettings>
 #include <QJsonObject>
 #include <QJsonDocument>
@@ -177,7 +180,7 @@ struct App {
 };
 
 int main(int argc, char** argv) {
-	QCoreApplication qa(argc, argv);
+	QApplication qa(argc, argv);      // settings:init lists the screens (#1548)
 	App app;
 	for (int i = 1; i < argc; i++) {
 		std::string c = argv[i];
@@ -223,10 +226,10 @@ try {
 	fs.writeFileSync(path.join(tmp, 'main.cpp'), cpp);
 	fs.writeFileSync(path.join(tmp, 'run.sh'), `set -e
 cd /t
-g++ -std=c++17 -fPIC -w -o tb main.cpp $(pkg-config --cflags --libs Qt5Core)
-HOME=/t/home XDG_CONFIG_HOME=/t/home/.config XDG_CONFIG_DIRS=/t/etc ./tb ${steps.map((s) => `'${s}'`).join(' ')}
+g++ -std=c++17 -fPIC -w -o tb main.cpp $(pkg-config --cflags --libs Qt5Widgets)
+QT_QPA_PLATFORM=offscreen HOME=/t/home XDG_CONFIG_HOME=/t/home/.config XDG_CONFIG_DIRS=/t/etc ./tb ${steps.map((s) => `'${s}'`).join(' ')}
 `);
-	const r = spawnSync('docker', ['run', '--rm', '-v', `${tmp}:/t`, IMAGE, 'sh', '/t/run.sh'], { encoding: 'utf8' });
+	const r = spawnSync('docker', ['run', '--rm', '--memory=2g', '-v', `${tmp}:/t`, IMAGE, 'sh', '/t/run.sh'], { encoding: 'utf8' });
 	if (r.status !== 0) {
 		process.stderr.write((r.stdout || '') + (r.stderr || ''));
 		throw new Error('native harness failed to build/run');
