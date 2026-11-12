@@ -839,6 +839,33 @@ sent it. web-apps passes it to editorConfig.location; macOS sends NSLocale's cou
 in a US/CA Region starts in inches (web-apps 367ff6911d, desktop-apps 1591170a48; test
 issue-0432-os-region-units). Windows reads the system (not user) locale; Linux C locale sends EN.
 
+### #1594 - no way to stop keeping recent files - FIXED 2026-11-12
+New start-page switch "Keep a list of recent files" (on by default); off clears the list, stops
+recording (Recents_Add/Recents_Load check disable-recents), and on Windows/Linux stops adding to the
+system recent documents (desktop-sdk 7597f17a, desktop-apps 2d2ba2b25a; test
+issue-1594-disable-recents-test.js). Not GUI-checked; needs an app rebuild.
+
+### #1513 - pinned recent files vanished or showed twice - FIXED 2026-11-12
+Pinning existed but our search history (2fa3fc844) made panelrecent's find('.file-list-body') match two
+lists, so pinned rows went into the hidden one or appeared twice; now children() (desktop-apps
+fc625f1ea2; test issue-1513-pinned-recents-test.js; checked live in an app clone). Not fixed: no lasting
+pin marker in the reskinned list; "0 files" count after load.
+
+### #167 - no shortcut for the word count - FIXED 2026-11-12
+Ctrl+Shift+G / Cmd+Shift+G (Word's key) opens File > Document Info with the counts (web-apps 35bc28f2f3;
+test issue-0167-word-count-shortcut-test.js; live via CDP). The macOS menu's Find Previous on
+Cmd+Shift+G needs a GUI check.
+
+### #617 - Insert > Image > From file took one picture - FIXED 2026-11-12
+All four editors request several files and insert all of them (AscCommon.getDesktopImageUrls); the macOS
+open panel allows multiple selection when asked (sdkjs 4dcd75bc18, desktop-apps 2fceb40b24; test
+issue-0617-insert-multiple-images-test.js). Side effect: other macOS multi-file callers now get several
+files, as on Windows/Linux. Needs an app rebuild and GUI check.
+
+### #670 - no "Report an issue" link in About - FIXED 2026-11-12
+Start-page About and the native macOS About window link to https://ration.works/support (the SUPPORT_URL
+already in package/Makefile) (desktop-apps ab21b214c8, d8de43be2e; test issue-0670-about-report-issue-test.js).
+
 ## Root-caused, not fixed
 
 ### #83 - CSV delimiter/encoding cannot be chosen on save - design decision
@@ -1817,6 +1844,12 @@ rather than reason from the issue text alone it is left unverified. No claim is
 made about the cause.
 
 ## Already fixed in our 9.4 baseline - no action
+
+### #949 - Print Selection
+Already in 9.4: right-click "Print selection" in documents/PDF, the print range in spreadsheets, thumbnails
+in presentations; in an app clone GenerateSelectionPrint held only the selected paragraph. A "Selection"
+entry in File > Print is upstream ticket 58285 (design).
+
 
 ### #2231 - file picker non-responsive (GNOME 49 Wayland)
 Duplicate of #2168, fixed in our tree (desktop-apps 006ee3415: XDG portal on Wayland);
