@@ -1110,6 +1110,16 @@ app clone with lldb (#69, #1814). Tab-UI redesign not done.
 gave no message for unreadable files; TIFF now goes to tesseract and failures are reported (onlyoffice.github.io
 94a3e9c5 on ration/v10-backports). Tests issue-780-*, issue-211-*.
 
+### #1695 / #888 / #736 / #1355 / #141 - themes, languages, fonts - DONE 2026-11-12 (after 2026.2.0)
+#1695 the full custom-theme examples were invalid JSON and missed ~55 tokens; now valid and complete, with where
+to put them (web-apps c1f5d70991; no custom themes on macOS yet). #888 example dark theme with coloured headers,
+and the native Visio header read a non-existent token (web-apps 23698b98ea, desktop-apps 18fd77fc1). #736 the PDF
+loading page was white in dark document mode and the document one ignored the theme's page colour (web-apps
+0a9d55094d). #1355 az / eu / ms translations shipped but were not selectable; now in the language lists - Linux
+with such a system locale now starts in it (desktop-apps 76994a700). #141 Windows: fonts activated by Adobe
+Creative Cloud (CoreSync livetype) are found (core a60044ddd3; macOS already sees them via CoreText). Tests
+issue-1695-*, issue-0888-*, issue-0736-*, issue-1355-*, issue-0141-*.
+
 ## Root-caused, not fixed
 
 ### #959 / #874 / #2339 / #1215 (rest) - not small
@@ -2468,6 +2478,12 @@ xls. The reporter's actual ask is an override - "open this in Spreadsheet
 anyway". Not investigated in depth.
 
 ## Not reproducible or not testable here
+
+### #877 / #1722 - per-language default shortcuts; icon themes - product decisions
+#877: any action can already be rebound per editor; locale-specific default sets change everyone's defaults.
+#1722: a theme JSON can already carry its own icon sprites ("icons": {"sprite-buttons-base-url"}); an
+independent icon-set setting is new UI in six places.
+
 
 ### #739 / #361 / #778 / #1238 / #1611 / #2535 / #2039 / #1858 / #1929 / #60 - triaged 2026-11-12
 #739 Restrict Editing / forms protection already works in 9.4 (checked end to end); Forms tab only for form

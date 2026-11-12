@@ -8,8 +8,8 @@ behind its own commits when this was written, and several commit messages cite
 test directories that have never existed. Nothing here is typed in by hand, so
 nothing here can claim a test that is not on disk.
 
-- **265 issues** with at least one fix commit
-- **223** have a test artifact in `fork-fix-tests/`
+- **270 issues** with at least one fix commit
+- **228** have a test artifact in `fork-fix-tests/`
 - **42** do not - the fix is asserted by its commit message only
 - **35** fix commits carry no issue number (defects found in passing)
 - **20** defects found by our own testing (RD-NNNN), 20 with a test - counted separately from upstream issues
@@ -151,6 +151,7 @@ that is what the Test column is for. See the verification status section of
 | [#1814](https://github.com/ONLYOFFICE/DesktopEditors/issues/1814) | desktop-apps | `607339b530` | `issue-1814-mac-move-tab-to-new-window` | 2026-11-12 |
 | [#1760](https://github.com/ONLYOFFICE/DesktopEditors/issues/1760) | sdkjs | `9f3cc5dd87` | `issue-1760-copy-picture-image-png-test.js` | 2026-11-10 |
 | [#1710](https://github.com/ONLYOFFICE/DesktopEditors/issues/1710) | desktop-apps | `eecac8e789` | `issue-1710-flatpak-single-instance` | 2026-11-12 |
+| [#1695](https://github.com/ONLYOFFICE/DesktopEditors/issues/1695) | web-apps | `c1f5d70991` | `issue-1695-theme-template-test.js` | 2026-11-12 |
 | [#1674](https://github.com/ONLYOFFICE/DesktopEditors/issues/1674) | desktop-apps | `6093e48df2` | `issue-1674-save-on-close-test.js` | 2026-11-12 |
 | [#1672](https://github.com/ONLYOFFICE/DesktopEditors/issues/1672) | sdkjs, web-apps | `e88d90ee71` `c32ac680e4` `73d504525b` | `issue-1672-hidden-slides-pdf-print-test.js` | 2026-11-10 |
 | [#1664](https://github.com/ONLYOFFICE/DesktopEditors/issues/1664) | core, desktop-apps, desktop-sdk, onlyoffice.github.io, sdkjs, web-apps | `0228100ad6` `ff6eb2e4e3` `b0a9cfb763` | `issue-1664-no-remote-scripts-test.js` | 2026-11-11 |
@@ -173,6 +174,7 @@ that is what the Test column is for. See the verification status section of
 | [#1363](https://github.com/ONLYOFFICE/DesktopEditors/issues/1363) | desktop-apps, web-apps | `73e0f992ea` `3ff2db754b` | `issue-1363-start-page-web-links-test.js` | 2026-11-12 |
 | [#1362](https://github.com/ONLYOFFICE/DesktopEditors/issues/1362) | desktop-sdk | `679ebd742f` | `issue-1362-samba-lock` | 2026-09-15 |
 | [#1359](https://github.com/ONLYOFFICE/DesktopEditors/issues/1359) | core | `af68137e07` `af68137e07` | `issue-1359-x2t-bad-alloc` | 2026-09-15 |
+| [#1355](https://github.com/ONLYOFFICE/DesktopEditors/issues/1355) | desktop-apps | `76994a7004` | `issue-1355-interface-languages-test.js` | 2026-11-12 |
 | [#1323](https://github.com/ONLYOFFICE/DesktopEditors/issues/1323) | core | `b6672e6780` | `issue-1323-docx-zip-entry-order` | 2026-09-15 |
 | [#1297](https://github.com/ONLYOFFICE/DesktopEditors/issues/1297) | core | `1f81e91eca` | `issue-1297-csv-compaction-skip` | 2026-09-15 |
 | [#1292](https://github.com/ONLYOFFICE/DesktopEditors/issues/1292) | web-apps | `9e2a4c5e94` | `issue-1292-context-menu-letters-test.js` | 2026-11-12 |
@@ -196,6 +198,7 @@ that is what the Test column is for. See the verification status section of
 | [#925](https://github.com/ONLYOFFICE/DesktopEditors/issues/925) | sdkjs | `49123ea9fe` | `issue-925-french-guillemets-nbsp-test.js` | 2026-11-11 |
 | [#905](https://github.com/ONLYOFFICE/DesktopEditors/issues/905) | desktop-apps, desktop-sdk | `eea379f8aa` `11818b6036` | `issue-905-gtk-filter-case` | 2026-11-11 |
 | [#902](https://github.com/ONLYOFFICE/DesktopEditors/issues/902) | sdkjs | `e2d1b5afd8` `e2d1b5afd8` | `issue-902-csv-plain-save-active-sheet-test.js` | 2026-11-11 |
+| [#888](https://github.com/ONLYOFFICE/DesktopEditors/issues/888) | desktop-apps, web-apps | `23698b98ea` `18fd77fc1f` | `issue-0888-dark-colored-headers-test.js` | 2026-11-12 |
 | [#878](https://github.com/ONLYOFFICE/DesktopEditors/issues/878) | sdkjs | `06157857a8` `78aab3b128` | `issue-0878-slideshow-video-autoplay-test.js` | 2026-11-11 |
 | [#870](https://github.com/ONLYOFFICE/DesktopEditors/issues/870) | sdkjs | `34252d945d` | `issue-0870-zoom-steps-below-50-test.js` | 2026-11-12 |
 | [#858](https://github.com/ONLYOFFICE/DesktopEditors/issues/858) | desktop-apps | `483116cf19` | `issue-0858-mac-full-screen-shortcut` | 2026-11-12 |
@@ -204,6 +207,7 @@ that is what the Test column is for. See the verification status section of
 | [#780](https://github.com/ONLYOFFICE/DesktopEditors/issues/780) | desktop-apps | `a52f7eca42` | `issue-780-insert-metafile-test.js` | 2026-11-12 |
 | [#766](https://github.com/ONLYOFFICE/DesktopEditors/issues/766) | desktop-apps | `8c8ec5f91b` | `issue-0766-mac-middle-click-tab-close` | 2026-11-12 |
 | [#746](https://github.com/ONLYOFFICE/DesktopEditors/issues/746) | sdkjs, web-apps | `c951cbc881` `2518219af3` | `issue-0746-default-font-test.js` | 2026-11-12 |
+| [#736](https://github.com/ONLYOFFICE/DesktopEditors/issues/736) | web-apps | `0a9d55094d` | `issue-0736-dark-loading-page-test.js` | 2026-11-12 |
 | [#706](https://github.com/ONLYOFFICE/DesktopEditors/issues/706) | desktop-apps | `a877e2fc4c` | `issue-706-saveas-dotted-name` | 2026-11-11 |
 | [#694](https://github.com/ONLYOFFICE/DesktopEditors/issues/694) | desktop-sdk | `963c2394ad` | `issue-0694-linux-qt-scale-factor` | 2026-11-11 |
 | [#676](https://github.com/ONLYOFFICE/DesktopEditors/issues/676) | sdkjs | `d32100e8a1` `d32100e8a1` | `issue-676-nautilus-image-paste-test.js` | 2026-09-15 |
@@ -240,6 +244,7 @@ that is what the Test column is for. See the verification status section of
 | [#179](https://github.com/ONLYOFFICE/DesktopEditors/issues/179) | web-apps | `459948889e` | `issue-0179-shortcuts-search-test.js` | 2026-11-12 |
 | [#167](https://github.com/ONLYOFFICE/DesktopEditors/issues/167) | web-apps | `35bc28f2f3` | `issue-0167-word-count-shortcut-test.js` | 2026-11-12 |
 | [#143](https://github.com/ONLYOFFICE/DesktopEditors/issues/143) | web-apps | `869747e03c` | `issue-0143-default-doc-language-test.js` | 2026-11-12 |
+| [#141](https://github.com/ONLYOFFICE/DesktopEditors/issues/141) | core | `a60044ddd3` | `issue-0141-adobe-fonts-windows` | 2026-11-12 |
 | [#139](https://github.com/ONLYOFFICE/DesktopEditors/issues/139) | core | `fd679c60c1` `fd679c60c1` | `issue-139-pptx-invalid-xml-chars` | 2026-09-15 |
 | [#100](https://github.com/ONLYOFFICE/DesktopEditors/issues/100) | core, sdkjs | `48a2f86930` `87ae50a92a` | `issue-0100-docvars-core` | 2026-11-12 |
 | [#83](https://github.com/ONLYOFFICE/DesktopEditors/issues/83) | desktop-apps, desktop-sdk | `8dc58c3989` `6afd78afa0` | `issue-0083-csv-save-keeps-options` | 2026-11-12 |
