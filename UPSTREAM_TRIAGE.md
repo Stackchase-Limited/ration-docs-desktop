@@ -1157,6 +1157,30 @@ issue-2002-media-trim, issue-2002-trim-playback, issue-2005-media-loop, issue-20
 compile (Docker down), Qt player actually playing, GUI; docx (wp15) trim is not written; fill="remove" for Rewind not
 checked against a PowerPoint-made file.
 
+### RD-0021..RD-0027 - converter crashes and hangs from the second corpus pass - DONE 2026-11-13
+About 3,100 public files (LibreOffice core qa data, Apache POI test-data, IDPF epub3 samples, PyMuPDF resources) run one
+at a time with a 1.5 GB watchdog. RD-0021 .doc comment-range bookmark tag read without bounds (WordDocument.cpp:394-437,
+SIGSEGV; core 020ab05c8f). RD-0022 save as ODT: content control size from an empty font-size stack
+(DocxConverter.cpp:691, SIGSEGV; c8b4a69f59). RD-0023 ODF number-columns-repeated="-1" read as 4294967295 and
+allocated per column (table.cpp:91,234, >1.5 GB from a 2.8 KB file; ae54ea08c1). RD-0024 POLE CollectStreams recursed
+forever on a looping OLE directory - hit by the format checker for every OLE file (pole.cpp:2396; e26964a596). RD-0025
+.ppt container skip used a shadowed lPosition=0, so the reader re-parsed the stream (Records.cpp:180,214, >60 s;
+cccd6bc2e3). RD-0026 .doc row properties with no PAPX grpprl (TablePropertyExceptions.cpp:59, SIGSEGV; 9e403b506b).
+RD-0027 .doc main-text loop ran to FIB.ccpText past the real text, rebuilding a table per character
+(MainDocumentMapping.cpp:134, >120 s -> 1 s; bf8072c917). Tests fork-fix-tests/rd-0021..rd-0027-*. 30 normal .ppt and
+60 normal .doc files convert identically before and after. macOS only compiled.
+
+### RD-0028 - encrypted .xls/.doc/.ppt crashed: stale libCryptoPPLib.a (build defect, no source change) - FIXED IN BUILD 2026-11-13
+core eb34e8e49c (cherry-picked 2026-10-27) added virtual ~Decryptor() as the first virtual of CRYPT::Decryptor.
+CryptTransform.cpp is compiled into libCryptoPPLib.a (Common/3dParty/cryptopp/project), which .rd-work/bin/corebuild.sh
+skipped (it excludes 3dParty), so the Mac library dated 2026-09-19 kept the old vtable: IsVerify() ran the deleting
+destructor (ASan heap-use-after-free, GlobalsSubstream.cpp:220/222). POI 35897-type4.xls segfaulted in the Mac test
+app's x2t (2026-11-12) and the 2026-11-05 payload x2t; after rebuilding the library it reports "password required" (90).
+corebuild.sh now always rebuilds the cryptopp project. The 2026.1.0 dmg (2026-09-11) predates the change. build_tools
+builds the cryptopp project with the rest, so a clean build is fine; any machine building incrementally must rebuild it.
+Linux 2026.2.0 .deb not yet checked (box unreachable 2026-11-13). Test rd-0028-cryptopp-lib-stale-vtable (RD_LIB).
+No commit claims it, so the registry does not count it.
+
 ## Root-caused, not fixed
 
 ### #2008 - play a slide video full screen - about half a day
@@ -3797,6 +3821,13 @@ the list-style default size and lost bullets/spacing, and an emptied paragraph s
 (sdkjs, #2502 commit). By design: "set 30 pt, shows 27 pt" is the shape's normAutofit shrinking text to fit.
 
 ## Latent problems found in passing, not yet fixed
+
+### Converter fuzz crashes from the 2026-11-13 corpus pass - not fixed yet (RD candidates)
+LibreOffice ww6 ofz21385-1.doc wild memmove in VMLPictureMapping::CopyPicture; ww8 forcepoint50-grfanchor-1.doc NULL in
+DocumentMapping::writeRun; ww8 ofz57592-1.doc FooterMapping::Apply on empty AllPapxFkps; memory blowups ww6 hang-1,
+crash-4, crash-7 and ww8 hang-1.doc; POI HWPF/HSLF clusterfuzz files, Fuzzed.doc, 57272_corrupted_usereditatom.ppt;
+ASan heap over-reads in PropertyExceptions::ReadExceptions and StyleSheetInformation. ww6 crash-3.doc runs out of
+memory after RD-0021.
 
 **An ODS-round-tripped form control lands at a nonsense row.** `controlPr/anchor`
 comes back as `<xdr:row>18446744071562068031</xdr:row>` - an unsigned underflow.

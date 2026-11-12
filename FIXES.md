@@ -12,7 +12,7 @@ nothing here can claim a test that is not on disk.
 - **240** have a test artifact in `fork-fix-tests/`
 - **42** do not - the fix is asserted by its commit message only
 - **35** fix commits carry no issue number (defects found in passing)
-- **20** defects found by our own testing (RD-NNNN), 20 with a test - counted separately from upstream issues
+- **27** defects found by our own testing (RD-NNNN), 27 with a test - counted separately from upstream issues
 
 A row here means a commit exists. It does **not** mean the fix was verified;
 that is what the Test column is for. See the verification status section of
@@ -317,6 +317,13 @@ They have not been demonstrated.
 
 | ID | Where | Commit | Test | Landed | What |
 |---|---|---|---|---|---|
+| RD-0027 | core | `bf8072c917` | `rd-0027-doc-main-text-past-end` | 2026-11-12 | a .doc whose FIB counts more main-text characters than the file holds kept x2t c |
+| RD-0026 | core | `9e403b506b` | `rd-0026-doc-table-row-no-papx` | 2026-11-12 | a .doc table row whose end has no paragraph properties crashed x2t; the row is n |
+| RD-0025 | core | `cccd6bc2e3` | `rd-0025-ppt-container-overrun-seek` | 2026-11-12 | a .ppt container whose records overran its length sent the reader back to the st |
+| RD-0024 | core | `e26964a596` | `rd-0024-cfb-directory-loop` | 2026-11-12 | a compound (OLE) file whose directory entries link back in a loop made x2t recur |
+| RD-0023 | core | `ae54ea08c1` | `rd-0023-odf-columns-repeated-limit` | 2026-11-12 | an ODF table column or cell repeated "-1" (or any huge count) made x2t allocate  |
+| RD-0022 | core | `c8b4a69f59` | `rd-0022-odt-sdt-no-font-size` | 2026-11-12 | saving as ODT a document whose date/text/list content control has no font size i |
+| RD-0021 | core | `020ab05c8f` | `rd-0021-doc-annot-bookmark-tag` | 2026-11-12 | a .doc whose comment-range bookmarks have no tag data, or fewer end positions th |
 | RD-0020 | sdkjs | `8cdef5ad4c` | `rd-0020-media-node-kept-on-animation-test.js` | 2026-11-12 | adding, changing or removing an animation dropped the slide's video/audio settin |
 | RD-0019 | desktop-apps | `6870915119` | `rd-0019-handoff-utf8` | 2026-11-12 | a second launch handed a non-ASCII path garbled to a first instance in a non-UTF |
 | RD-0018 | core | `ccddc3317b` | `rd-0018-emf-svg-empty-text-dx` | 2026-11-12 | EMF to SVG wrote through a null pointer for an empty text record with character  |
