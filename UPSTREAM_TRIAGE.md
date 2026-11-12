@@ -792,6 +792,24 @@ parameters were joined unencoded, so "Tom & Jerry" became "Tom ", "C# Team" lost
 as Windows/Linux do (desktop-apps d269d54a3; test issue-1829-user-name-chars). Needs a loginpage and app
 rebuild to ship; not GUI-checked.
 
+### #615 (part 1) - page background painted without w:displayBackgroundShape - FIXED 2026-11-12
+Word shows a w:background only when settings.xml has displayBackgroundShape (ECMA 17.15.1.25). core
+BinaryWriterD never passed the flag and BinaryReaderD turned it on at every save, so we painted the page
+and every save made Word paint it too. A Background DisplayShape byte (c_oSerBackgroundType 100: absent /
+on / val=0) now carries the flag both ways; sdkjs draws the page only when it is on or the colour was set
+in the editor (core 4dc21d337a, sdkjs ecd1f58829; tests issue-0615-display-background-shape-core and
+-test.js). Test app: the reporter's file edited and saved keeps <w:background w:color="00B8FF"> and gets
+no flag. Part 2 (the wrapped "4.1") remains open. Also #883 follow-up: FREQUENCY now returns counts in the
+bins' original order and ignores text/bool bins, as Excel/LibreOffice (sdkjs 0bb6ae9857; test
+issue-0883-frequency-bin-order, docbuilder).
+
+### #2501 - changing resolution / moving screens breaks the layout (Linux) - FIXED 2026-11-12
+The CEF editor re-zooms for its screen on every resize, but the Qt chrome is re-scaled only by
+CWindowBase::updateScaling, which on Linux nothing has called since upstream cdc9803fe (2022) - so after a
+screen change the tabs stayed at the old scale. CWindowPlatform::event now re-runs updateScaling (deferred)
+on QEvent::ScreenChangeInternal (desktop-apps 276791931; test issue-2501-linux-screen-change-rescale, real
+Qt on a two-output weston). Real mixed-DPI screens not run.
+
 ## Root-caused, not fixed
 
 ### #1233 - paste of web content with images freezes the editor - root-caused, not fixed
@@ -2075,6 +2093,32 @@ xls. The reporter's actual ask is an override - "open this in Spreadsheet
 anyway". Not investigated in depth.
 
 ## Not reproducible or not testable here
+
+### #348 - pptx first line left of the box with indent<0, marL=0 - rule not established
+ECMA and MS-OI29500 say nothing about clamping; LibreOffice clamps only bulleted paragraphs; POI ignores
+indent for non-bulleted ones. Needs a PowerPoint rendering before changing paragraph layout.
+
+### #1032 - floating table ~720tw right of the margin - offset source not established
+MS-OI29500 2.1.162 defaults put the table at the margin, as we do; the only 720 in the file is a numbering
+hanging indent that the heading style overrides. Needs Word experiments.
+
+### #2481 - Caps Lock ignored (Wayland + XWayland) - not in our code
+Nothing in our tree handles letter case; Chromium decides it from the XWayland keymap. Not reproduced.
+
+### #2287 / #1522 - fcitx candidate scaling / fcitx5 on Plasma 6 Wayland - environment
+fcitx draws its own window; the thread fixed it in xwayland-satellite. #1522: we force xcb, so GTK's X11
+IM module needs GTK_IM_MODULE=fcitx, which Plasma 6 advises unsetting; a launcher default is possible but
+untested.
+
+### #2518 - content smaller than the surface under niri - 10.0 only
+The band is 10.0's self-drawn shadow (#2229); our 9.4 frame has a 3px border, no shadow margin.
+
+### #2285 / #1861 - editor fills only part of the window (niri, sway) - probably #694
+Both screenshots show the CEF area scaled down by 1/1.3 and 1/1.5 with full-width Qt chrome - #694's
+symptom (fixed, desktop-sdk 963c2394) if QT_SCALE_FACTOR was set; the reporters did not say. Not claimed.
+
+### #1208 / #1353 - Hyprland/sway unusable; maximise flicker - reported fixed in 8.x/9.0.4 by users
+
 
 ### #339 - YouTube plugin video does not play in the slideshow - feature gap
 The plugin's OLE object plays in edit/view mode; in the slideshow CommonController.js:1652-1656 handles

@@ -8,8 +8,8 @@ behind its own commits when this was written, and several commit messages cite
 test directories that have never existed. Nothing here is typed in by hand, so
 nothing here can claim a test that is not on disk.
 
-- **186 issues** with at least one fix commit
-- **147** have a test artifact in `fork-fix-tests/`
+- **189 issues** with at least one fix commit
+- **150** have a test artifact in `fork-fix-tests/`
 - **39** do not - the fix is asserted by its commit message only
 - **35** fix commits carry no issue number (defects found in passing)
 - **3** defects found by our own testing (RD-NNNN), 3 with a test - counted separately from upstream issues
@@ -47,6 +47,7 @@ that is what the Test column is for. See the verification status section of
 | [#2506](https://github.com/ONLYOFFICE/DesktopEditors/issues/2506) | core, sdkjs | `a1e8e1c060` `7f89b00088` | `issue-2506-jpx-gray-colorspace` | 2026-11-04 |
 | [#2503](https://github.com/ONLYOFFICE/DesktopEditors/issues/2503) | desktop-sdk | `c430d3b140` `58801fea59` | `issue-2503-xkb-region-adjective` | 2026-11-04 |
 | [#2502](https://github.com/ONLYOFFICE/DesktopEditors/issues/2502) | sdkjs | `d303d6b9f0` | `issue-2502-empty-shape-text-pr-test.js` | 2026-11-04 |
+| [#2501](https://github.com/ONLYOFFICE/DesktopEditors/issues/2501) | desktop-apps | `276791931d` | `issue-2501-linux-screen-change-rescale` | 2026-11-12 |
 | [#2490](https://github.com/ONLYOFFICE/DesktopEditors/issues/2490) | core | `003448ba5a` | `issue-2490-freetype-export-gaps` | 2026-11-04 |
 | [#2485](https://github.com/ONLYOFFICE/DesktopEditors/issues/2485) | sdkjs | `d2d908d3b7` | `issue-2485-pivot-recalc-lock-test.js` | 2026-11-04 |
 | [#2482](https://github.com/ONLYOFFICE/DesktopEditors/issues/2482) | core | `e56c05efdd` | `issue-2482-comment-paraid` | 2026-10-27 |
@@ -149,6 +150,7 @@ that is what the Test column is for. See the verification status section of
 | [#925](https://github.com/ONLYOFFICE/DesktopEditors/issues/925) | sdkjs | `49123ea9fe` | `issue-925-french-guillemets-nbsp-test.js` | 2026-11-11 |
 | [#905](https://github.com/ONLYOFFICE/DesktopEditors/issues/905) | desktop-apps, desktop-sdk | `eea379f8aa` `11818b6036` | `issue-905-gtk-filter-case` | 2026-11-11 |
 | [#902](https://github.com/ONLYOFFICE/DesktopEditors/issues/902) | sdkjs | `e2d1b5afd8` `e2d1b5afd8` | `issue-902-csv-plain-save-active-sheet-test.js` | 2026-11-11 |
+| [#883](https://github.com/ONLYOFFICE/DesktopEditors/issues/883) | sdkjs | `0bb6ae9857` | `issue-0883-frequency-bin-order` | 2026-11-12 |
 | [#878](https://github.com/ONLYOFFICE/DesktopEditors/issues/878) | sdkjs | `06157857a8` `78aab3b128` | `issue-0878-slideshow-video-autoplay-test.js` | 2026-11-11 |
 | [#790](https://github.com/ONLYOFFICE/DesktopEditors/issues/790) | desktop-apps | `7f1090d9cf` | `issue-790-linux-dialog-utf8` | 2026-11-11 |
 | [#706](https://github.com/ONLYOFFICE/DesktopEditors/issues/706) | desktop-apps | `a877e2fc4c` | `issue-706-saveas-dotted-name` | 2026-11-11 |
@@ -156,6 +158,7 @@ that is what the Test column is for. See the verification status section of
 | [#676](https://github.com/ONLYOFFICE/DesktopEditors/issues/676) | sdkjs | `d32100e8a1` `d32100e8a1` | `issue-676-nautilus-image-paste-test.js` | 2026-09-15 |
 | [#661](https://github.com/ONLYOFFICE/DesktopEditors/issues/661) | desktop-apps | `706e29c812` | `issue-0661-linux-start-rect-workarea` | 2026-11-11 |
 | [#619](https://github.com/ONLYOFFICE/DesktopEditors/issues/619) | desktop-sdk | `946e4d8f6d` | `issue-619-template-opens-as-new` | 2026-11-11 |
+| [#615](https://github.com/ONLYOFFICE/DesktopEditors/issues/615) | core, sdkjs | `4dc21d337a` `ecd1f58829` | `issue-0615-display-background-shape-test.js` | 2026-11-12 |
 | [#572](https://github.com/ONLYOFFICE/DesktopEditors/issues/572) | core | `eb2c12c2b7` | `issue-0572-pdf-jpeg-passthrough` | 2026-11-12 |
 | [#565](https://github.com/ONLYOFFICE/DesktopEditors/issues/565) | sdkjs | `aa43ce0290` | `issue-0565-accent-dotless-ij-test.js` | 2026-11-11 |
 | [#560](https://github.com/ONLYOFFICE/DesktopEditors/issues/560) | desktop-apps | `27578a09e7` | `issue-0560-mac-paper-size` | 2026-11-11 |
