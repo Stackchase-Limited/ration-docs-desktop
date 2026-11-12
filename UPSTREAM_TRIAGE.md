@@ -1181,7 +1181,23 @@ builds the cryptopp project with the rest, so a clean build is fine; any machine
 Linux 2026.2.0 .deb not yet checked (box unreachable 2026-11-13). Test rd-0028-cryptopp-lib-stale-vtable (RD_LIB).
 No commit claims it, so the registry does not count it.
 
+### #2566 / #371 / #159 - ODP import layout; Thai line breaking (option); INDIRECT to a table on another sheet - DONE 2026-11-13
+#2566 three ODP->PPTX defects on the reporter's file: text before <text:line-break/> was dropped (regression 9c8b739d0e;
+pptx_text_context add_line_break; core 1ee6da4394), every nested <text:list> added an empty paragraph (d398a242da), outline
+levels 2+ took level 1's size (OutlineLevelStyle; 9b6b021247). 60 corpus ODPs: no crashes, changes only where expected.
+#371 option "Break Thai, Lao, Khmer and Myanmar lines between words" (off by default; Intl.Segmenter word boundaries in
+AscWord.ComplexScriptLineBreaker; sdkjs f302f97ceb, web-apps f1d5ed2a3f) - x2t docx->PDF breaks as the reporter expects.
+#159 INDIRECT("Sheet!Table[Column]") gave #REF!, so validation lists had no drop-down (cINDIRECT parseReference had no
+structured-reference branch after a sheet prefix; sdkjs e09e6b2cd5). Tests issue-2566-odp-import,
+issue-0371-thai-line-break-test.js, issue-0159-indirect-sheet-table-test.js.
+
 ## Root-caused, not fixed
+
+### #2566 (remaining) - ODP bullets: wrapped lines start left of the bullet text
+pptx_text_context Impl::ApplyListProperties (~381-399) writes text:min-label-width as a positive indent and
+text:space-before as marL (indent=+0.75cm marL=0). Impress legacy lists need marL=space-before+min-label-width,
+indent=-min-label-width. The positive indent is a deliberate upstream condition with special cases; changing it needs a
+corpus comparison against LibreOffice renderings.
 
 ### #2008 - play a slide video full screen - about half a day
 sdkjs Image.js getPlayerData sets "FullScreen" but client_renderer_wrapper.cpp CallMediaPlayerCommand reads "Fullscreen";
@@ -2579,6 +2595,11 @@ If anyone still reproduces it, suspect Wayland client-side decorations: check
 `QMainWindow::minimumSize()` at runtime there and set it on the `QWindow` too.
 
 ## Deliberate behaviour - product decision, not a defect
+
+### #1983 - object position capped at 1583.717 pt in Advanced settings - by design (matches Word)
+X/Y spinners are limited to +-55.87 cm (web-apps ImageSettingsAdvanced.js:594/619 and the PE/SSE/PDF dialogs), the app-wide
+22-inch limit (sdkjs word/Editor/Common.js:673 MAX_MM_VALUE = 558.7, also the maximum page size). 1583.7 pt is Word's own
+position limit; the largest page is 55.88 cm, so every on-page position is reachable. Not float32 precision.
 
 ### #2470 - the "A4" slide size is 275.2 x 190.5 mm, not 210 x 297 mm
 
