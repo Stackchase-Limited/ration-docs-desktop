@@ -8,8 +8,8 @@ behind its own commits when this was written, and several commit messages cite
 test directories that have never existed. Nothing here is typed in by hand, so
 nothing here can claim a test that is not on disk.
 
-- **214 issues** with at least one fix commit
-- **172** have a test artifact in `fork-fix-tests/`
+- **217 issues** with at least one fix commit
+- **175** have a test artifact in `fork-fix-tests/`
 - **42** do not - the fix is asserted by its commit message only
 - **36** fix commits carry no issue number (defects found in passing)
 - **19** defects found by our own testing (RD-NNNN), 19 with a test - counted separately from upstream issues
@@ -122,6 +122,7 @@ that is what the Test column is for. See the verification status section of
 | [#1942](https://github.com/ONLYOFFICE/DesktopEditors/issues/1942) | desktop-sdk | `f5635e16ec` | `issue-1942-slideshow-video-controls` | 2026-11-11 |
 | [#1922](https://github.com/ONLYOFFICE/DesktopEditors/issues/1922) | desktop-sdk, sdkjs | `39b0fd827b` `d97740fb73` `83724834dc` | `issue-1922-video-volume` | 2026-11-11 |
 | [#1899](https://github.com/ONLYOFFICE/DesktopEditors/issues/1899) | desktop-apps | `b61080a052` | `issue-1899-window-buttons-close-only-test.js` | 2026-11-12 |
+| [#1885](https://github.com/ONLYOFFICE/DesktopEditors/issues/1885) | sdkjs | `d54317276d` | `issue-1885-pdf-shape-hyperlinks-test.js` | 2026-11-12 |
 | [#1855](https://github.com/ONLYOFFICE/DesktopEditors/issues/1855) | core | `4116fbeb76` | `issue-1855-pdf-outline-pagemode` | 2026-09-15 |
 | [#1847](https://github.com/ONLYOFFICE/DesktopEditors/issues/1847) | desktop-apps | `b76fc9693a` | `issue-1847-reopen-closed-tab` | 2026-11-12 |
 | [#1829](https://github.com/ONLYOFFICE/DesktopEditors/issues/1829) | desktop-apps | `d269d54a3c` | `issue-1829-user-name-chars` | 2026-11-12 |
@@ -156,6 +157,7 @@ that is what the Test column is for. See the verification status section of
 | [#1018](https://github.com/ONLYOFFICE/DesktopEditors/issues/1018) | sdkjs | `26cb022b7c` `26cb022b7c` | `issue-1018-autofit-column-scan-test.js` | 2026-09-15 |
 | [#1004](https://github.com/ONLYOFFICE/DesktopEditors/issues/1004) | desktop-apps | `867bdbe7eb` | `issue-1004-template-associations` | 2026-11-11 |
 | [#1000](https://github.com/ONLYOFFICE/DesktopEditors/issues/1000) | sdkjs | `0bd49ef617` | `issue-1000-idle-paint-loop-test.js` | 2026-11-11 |
+| [#982](https://github.com/ONLYOFFICE/DesktopEditors/issues/982) | desktop-sdk, sdkjs, web-apps | `ab8d889574` `08a278ff9c` `37781973d6` | `issue-0982-save-copy` | 2026-11-12 |
 | [#963](https://github.com/ONLYOFFICE/DesktopEditors/issues/963) | sdkjs | `bbb6f9ee63` | `issue-963-save-open-cell-edit-test.js` | 2026-09-12 |
 | [#927](https://github.com/ONLYOFFICE/DesktopEditors/issues/927) | sdkjs | `d60507f1e5` `981db8c0e0` | `issue-927-paste-lone-cr-test.js` | 2026-11-11 |
 | [#925](https://github.com/ONLYOFFICE/DesktopEditors/issues/925) | sdkjs | `49123ea9fe` | `issue-925-french-guillemets-nbsp-test.js` | 2026-11-11 |
@@ -180,6 +182,7 @@ that is what the Test column is for. See the verification status section of
 | [#560](https://github.com/ONLYOFFICE/DesktopEditors/issues/560) | desktop-apps | `27578a09e7` | `issue-0560-mac-paper-size` | 2026-11-11 |
 | [#547](https://github.com/ONLYOFFICE/DesktopEditors/issues/547) | sdkjs | `ba80ae077e` | `issue-0547-plain-save-pdf-layout-test.js` | 2026-11-11 |
 | [#531](https://github.com/ONLYOFFICE/DesktopEditors/issues/531) | sdkjs | `df3a283c13` | `issue-0531-fit-filtered-rows-test.js` | 2026-11-11 |
+| [#517](https://github.com/ONLYOFFICE/DesktopEditors/issues/517) | desktop-sdk, sdkjs, web-apps | `b5d8ce9cd5` `ed400de638` `3ce41d0683` | `issue-0517-new-file-save-format` | 2026-11-12 |
 | [#482](https://github.com/ONLYOFFICE/DesktopEditors/issues/482) | web-apps | `7ddbfa80c2` | `issue-0482-csv-row-limit-warning-test.js` | 2026-11-11 |
 | [#432](https://github.com/ONLYOFFICE/DesktopEditors/issues/432) | desktop-apps, web-apps | `367ff6911d` `1591170a48` | `issue-0432-os-region-units` | 2026-11-12 |
 | [#388](https://github.com/ONLYOFFICE/DesktopEditors/issues/388) | desktop-apps, web-apps | `896bea2db7` `674be1df21` | `issue-0388-mac-edit-menu-undo` | 2026-11-11 |

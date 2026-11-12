@@ -972,7 +972,35 @@ bar not reproduced by reading (null check 6b1d57d60 present) - check on the Linu
 minimize/maximize, editor title stays centred (desktop-apps b61080a05; test
 issue-1899-window-buttons-close-only-test.js).
 
+### #982 - save a copy in another format without changing the open document - DONE 2026-11-12 (after 2026.2.0)
+Any desktop Save As into an editable format made the new file the open document (an xlsx saved as CSV
+became a CSV). The existing "Save Copy as..." is now shown on desktop and writes the chosen format while
+the open document keeps its path, format and lock (sdkjs ab8d889574, desktop-sdk 37781973, web-apps
+08a278ff9c; test issue-0982-save-copy). Hidden under blockchain encryption. GUI flow not run.
+
+### #517 - choose the format for new documents - DONE 2026-11-12 (option, default unchanged)
+Advanced settings "Format for new documents": Office Open XML (default) or OpenDocument; the first save
+of a new document preselects it (sdkjs b5d8ce9cd5, desktop-sdk 3ce41d06, web-apps ed400de638; test
+issue-0517-new-file-save-format). Dialogs not GUI-checked.
+
+### #1885 - hyperlinks on slide shapes/pictures/groups missing from PDF export - FIXED 2026-11-12
+Only text hyperlinks were emitted; Slide.draw never passed cNvPr.hlinkClick. Linked objects now become
+URI or page links, recursing into groups (sdkjs d54317276d; test issue-1885-pdf-shape-hyperlinks-test.js).
+Spreadsheet cell hyperlinks still not exported to PDF.
+
 ## Root-caused, not fixed
+
+### #1694 - save as XLS and DOC - blocked by the converter
+docx->doc is a stub (doc.h docx_dir2doc returns error 80); the XLS writer is unfinished (values survive
+but the compound file is truncated - "OLE2 MSAT is corrupt") and not wired to the editor save path.
+Needs a CFB writer fix plus fidelity work.
+
+### #132 / #1313 / #930 - PDF image quality option; printer defaults; copies per sheet - not small
+#132: non-JPEG images are always re-encoded JPEG q85 (PdfWriter LoadImage); a lossless option needs a
+setting through web-apps, sdkjs, x2t params and a new CPdfFile setter. #1313: print panels reset Sides;
+following system defaults needs native duplex/colour queries on three platforms. #930: N-up/label printing
+is a new page-composition feature.
+
 
 ### #83 - CSV delimiter/encoding cannot be chosen on save - design decision
 Desktop Save As always sends m_nCsvTxtEncoding 46 / delimiter 4 (fileconverter.h:1101-1109); the web-apps
