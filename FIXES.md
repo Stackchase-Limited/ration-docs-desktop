@@ -8,8 +8,8 @@ behind its own commits when this was written, and several commit messages cite
 test directories that have never existed. Nothing here is typed in by hand, so
 nothing here can claim a test that is not on disk.
 
-- **217 issues** with at least one fix commit
-- **175** have a test artifact in `fork-fix-tests/`
+- **220 issues** with at least one fix commit
+- **178** have a test artifact in `fork-fix-tests/`
 - **42** do not - the fix is asserted by its commit message only
 - **36** fix commits carry no issue number (defects found in passing)
 - **19** defects found by our own testing (RD-NNNN), 19 with a test - counted separately from upstream issues
@@ -174,6 +174,7 @@ that is what the Test column is for. See the verification status section of
 | [#670](https://github.com/ONLYOFFICE/DesktopEditors/issues/670) | desktop-apps | `d8de43be2e` `ab21b214c8` | `issue-0670-about-report-issue-test.js` | 2026-11-12 |
 | [#669](https://github.com/ONLYOFFICE/DesktopEditors/issues/669) | desktop-apps | `ec03992720` | `issue-0669-about-package-type` | 2026-11-12 |
 | [#661](https://github.com/ONLYOFFICE/DesktopEditors/issues/661) | desktop-apps | `706e29c812` | `issue-0661-linux-start-rect-workarea` | 2026-11-11 |
+| [#630](https://github.com/ONLYOFFICE/DesktopEditors/issues/630) | desktop-sdk, sdkjs, web-apps | `50339e12a4` `3f20b3a7fc` `852aa207af` | `issue-0630-remove-from-dictionary` | 2026-11-12 |
 | [#619](https://github.com/ONLYOFFICE/DesktopEditors/issues/619) | desktop-sdk | `946e4d8f6d` | `issue-619-template-opens-as-new` | 2026-11-11 |
 | [#617](https://github.com/ONLYOFFICE/DesktopEditors/issues/617) | desktop-apps, sdkjs | `4dcd75bc18` `2fceb40b24` | `issue-0617-insert-multiple-images-test.js` | 2026-11-12 |
 | [#615](https://github.com/ONLYOFFICE/DesktopEditors/issues/615) | core, sdkjs | `4dc21d337a` `ecd1f58829` | `issue-0615-display-background-shape-test.js` | 2026-11-12 |
@@ -191,8 +192,10 @@ that is what the Test column is for. See the verification status section of
 | [#307](https://github.com/ONLYOFFICE/DesktopEditors/issues/307) | sdkjs | `67b7cbe97c` | `issue-0307-wrapped-overflow-valign-test.js` | 2026-11-11 |
 | [#281](https://github.com/ONLYOFFICE/DesktopEditors/issues/281) | desktop-sdk | `c8d2135de6` | `issue-0281-print-oversize-page` | 2026-11-11 |
 | [#247](https://github.com/ONLYOFFICE/DesktopEditors/issues/247) | sdkjs | `4acf06a079` | `issue-0247-mac-edit-cell-key-test.js` | 2026-11-12 |
+| [#222](https://github.com/ONLYOFFICE/DesktopEditors/issues/222) | sdkjs, web-apps | `9f04793a12` `1fd3361a6e` `6c1edee61f` | `issue-0222-two-initial-capitals-test.js` | 2026-11-12 |
 | [#206](https://github.com/ONLYOFFICE/DesktopEditors/issues/206) | sdkjs | `19a6e7a7bd` | `issue-0206-paste-stylesheet-spacing-test.js` | 2026-11-12 |
 | [#200](https://github.com/ONLYOFFICE/DesktopEditors/issues/200) | desktop-apps | `283bb57d3f` | `issue-0200-ctrl-n-new-document` | 2026-11-12 |
+| [#195](https://github.com/ONLYOFFICE/DesktopEditors/issues/195) | desktop-sdk | `7e446b0c96` | `issue-0195-system-hunspell-dictionaries` | 2026-11-12 |
 | [#182](https://github.com/ONLYOFFICE/DesktopEditors/issues/182) | sdkjs | `2c08a678ee` | `issue-0182-autofit-custom-width-test.js` | 2026-11-11 |
 | [#167](https://github.com/ONLYOFFICE/DesktopEditors/issues/167) | web-apps | `35bc28f2f3` | `issue-0167-word-count-shortcut-test.js` | 2026-11-12 |
 | [#143](https://github.com/ONLYOFFICE/DesktopEditors/issues/143) | web-apps | `869747e03c` | `issue-0143-default-doc-language-test.js` | 2026-11-12 |

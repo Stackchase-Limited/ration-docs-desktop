@@ -988,6 +988,22 @@ Only text hyperlinks were emitted; Slide.draw never passed cNvPr.hlinkClick. Lin
 URI or page links, recursing into groups (sdkjs d54317276d; test issue-1885-pdf-shape-hyperlinks-test.js).
 Spreadsheet cell hyperlinks still not exported to PDF.
 
+### #222 - correct TWo INitial CApitals - DONE 2026-11-12 (option, off by default)
+New autocorrect step + AutoCorrect checkbox in the document and presentation editors; skips CDs/IDs, units,
+words after a digit; Turkish/Azeri I -> ı; one undo step (sdkjs 1fd3361a6e + 9f04793a12, web-apps
+49cd3bbf26 + 6c1edee61f; test issue-0222-two-initial-capitals-test.js). Off by default by the
+product owner's rule that new behaviour is opt-in (Word ships it on).
+
+### #630 - remove a word from the user dictionary - DONE 2026-11-12
+Native spellchecker gains list/remove tasks (rewrites all.dic, reloads hunspell); api
+asc_spellCheckGetUserDictionary/RemoveFromDictionary; a "Dictionary..." dialog in the document,
+presentation and spreadsheet editors (desktop-sdk 852aa207, sdkjs 50339e12a4, web-apps 3f20b3a7fc; tests
+issue-0630-remove-from-dictionary, -ui-test.js). Dialog not GUI-checked.
+
+### #195 - use the system's hunspell dictionaries on Linux - DONE 2026-11-12
+Scans /usr/share/hunspell and myspell for <lang>_<REGION> UTF-8 dictionaries we do not ship; ours always
+win (desktop-sdk 7e446b0c; test issue-0195-system-hunspell-dictionaries). Not run in a Linux app yet.
+
 ## Root-caused, not fixed
 
 ### #1694 - save as XLS and DOC - blocked by the converter
@@ -1978,6 +1994,19 @@ rather than reason from the issue text alone it is left unverified. No claim is
 made about the cause.
 
 ## Already fixed in our 9.4 baseline - no action
+
+### #1223 - default AutoCorrect language
+Covered by #143's "Default document language" (drives spellcheck and the AutoCorrect exceptions
+language). Gap: presentations' placeholder text keeps an explicit lang="en-US".
+
+### #941 - switch spellcheck language with a shortcut
+"Spelling language detection" already follows the keyboard layout (checked in word and slide editors;
+Linux xkb fixed by #2503/#373, live toggle by #2543). A last-two-languages shortcut is a product call.
+
+### #1387 - edit language-specific autocorrect behaviour
+The concrete French non-breaking-space problem is the #2075 checkbox; a per-language rules editor is a
+new subsystem and a product call.
+
 
 ### #949 - Print Selection
 Already in 9.4: right-click "Print selection" in documents/PDF, the print range in spreadsheets, thumbnails
