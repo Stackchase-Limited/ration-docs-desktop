@@ -219,7 +219,8 @@ struct style_content { style_table_cell_properties *get_style_table_cell_propert
     style_table_row_properties *get_style_table_row_properties() { return 0; } };
 struct style_instance { style_content *content() { return 0; } };
 static style_table_cell_properties_attlist calc_table_cell_properties(style_instance *) { return style_table_cell_properties_attlist(); }
-struct styles_container_stub { style_instance *style_by_name(const std::wstring &, style_family::type, bool) { return 0; } };
+struct styles_container_stub { style_instance *style_by_name(const std::wstring &, style_family::type, bool) { return 0; }
+    style_instance *style_default_by_type(style_family::type) { return 0; } };   /* RD-0051 */
 struct odf_read_context { styles_container_stub s; styles_container_stub &styleContainer() { return s; } };
 
 struct office_element { virtual ~office_element() {} virtual void xlsx_convert(oox::xlsx_conversion_context &) {} };
@@ -271,6 +272,7 @@ struct xlsx_conversion_context {
     style_manager_stub &get_style_manager() { return sm; }
     table_metrics_stub &get_table_metrics() { return tm; }
     long current_table_row() { return tc.st.current; }
+    std::pair<double, double> getMaxDigitSize() { return std::pair<double, double>(7, 20); }   /* RD-0051 */
 };
 }
 namespace odf_reader {

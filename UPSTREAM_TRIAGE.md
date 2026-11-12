@@ -1206,6 +1206,19 @@ RD-0031 "copy sheet to new workbook" replayed the source's changes0.json onto th
 on it (4b3f8ce5). Linux syntax-compiled; GUI checks pending; Qt multimedia units not Linux-compiled (no QtMultimedia in
 the image). #1330 (optional update service, ek wt) held: its Wine test could not run.
 
+### RD-0050..RD-0056 (latent problems) and #2225 (Groq AI provider) - DONE 2026-11-13
+RD-0050 docbuilder aborted (SIGABRT) when x2t could not start, and a failed save reported success: failed execve exited 0,
+a crashed x2t counted as success (docbuilder_p.h; core fe4e8f5cfe). RD-0051 ODS round trip put a form control at row
+18446744071562068031: rows without explicit height were registered with height 0 and regions::search divided by it
+(table_xlsx.cpp, xlsx_table_metrics.cpp; de64a4e454). RD-0052 copying cells with a link: the <a> was never closed and
+href/title went into the clipboard HTML unescaped (attribute injection) (sdkjs cell/model/clipboard.js; 63d44e1c43).
+RD-0053 font ranges credited fonts with characters they lack - CSymbolSimpleChecker2 cleared its scratch marks from 0 and one
+byte short (84 code points on this Mac; ApplicationFontsWorker.cpp; 66e4c6ed0d). RD-0054 last range ended at nMaxSymbol-1
+(c7561e4bb0). RD-0055 a chart's macro was dropped through ODS (ConvertDrawing.cpp / xlsx_drawing.cpp; 46e22fe61e). RD-0056
+draw:frame wrote office:event-listeners before the frame content, invalid ODF 1.2 (draw_frame.cpp; 63425b8f66).
+#2225 Groq is now an AI agent provider (OpenAI-compatible at api.groq.com/openai/v1; desktop-sdk 46ddc076); IBM watsonx not
+added - it needs an IAM-token client, not a provider entry. Not checked: a live Groq request / CORS, GUI. macOS only compiled.
+
 ## Root-caused, not fixed
 
 ### #2566 (remaining) - ODP bullets: wrapped lines start left of the bullet text
@@ -2336,6 +2349,21 @@ rather than reason from the issue text alone it is left unverified. No claim is
 made about the cause.
 
 ## Already fixed in our 9.4 baseline - no action
+
+### Upstream "closed as fixed" issues checked 2026-11-13 (agent fa) - already in our code, or nothing to backport
+- #1656 data loss .docx (images): upstream bug 69036 fixed by core 812fae8f6c, cbbf650c56 - both ancestors of our branch (attachment never uploaded).
+- #1770 SUMIFS: reporter's xlsx recomputed in docbuilder gives 99/88/77/0 as expected (file holds stale cached #VALUE!).
+- #573 invisible headings: both reporter files to PDF with our x2t - headings visible and in the text layer (canvas not checked).
+- #671 PDF export ignores picture-fill opacity: alphaModFix 50% docx exports at (228,143,143) vs (200,30,30) - respected.
+- #1442 GOA Google Drive read-only: upstream fix (desktop-sdk 5f960986, CheckLockFilePath(file,1)) is in our filelocker.cpp.
+- #1715 Chinese garbled on macOS: core a865901405, e8ecb2cdfb, baf8321c61 (CoreText enumeration, Heiti/Songti) are in our tree.
+- #1619 templates page blank on Enter: the error is from ONLYOFFICE's remote gallery; ours is local (paneltemplates.js), remote off (#2235).
+- #586 cloud doc opens in browser: 6.1->6.2 provider-id rename; panelconnect.js:490-511 remaps unknown ids by name and re-saves.
+- #2540 filter arrows don't open: real cell editor, real mouse events, frozen panes/scroll/zoom 0.5-2 - menu opens every time;
+  upstream could not reproduce either. Untested lead: DocumentHolderExt.js:2065 ignores clicks while an earlier dlgFilter is set.
+- #493 Microsoft Store: distribution decision; depends on the Windows build/signing blocker.
+- #1675 open at last edited position: feature, in no upstream tag. Smallest version: per-path cursor position in localStorage
+  and a "Continue where you left off" tip on open - product call on the prompt.
 
 ### #1835 - HuggingChat models in AI - already supported
 The AI agent's "OpenAI Compatible" provider (desktop-sdk plugins/ai-agent/src/providers/openaicompatible/index.ts)
@@ -3879,6 +3907,12 @@ the list-style default size and lost bullets/spacing, and an emptied paragraph s
 (sdkjs, #2502 commit). By design: "set 30 pt, shows 27 pt" is the shape's normAutofit shrinking text to fit.
 
 ## Latent problems found in passing, not yet fixed
+
+### Latent-problem entries reviewed 2026-11-13 (agent ey) and not fixed
+CLocalFileLocker uninitialised pointer - already fixed (constructor sets m_pLocker = NULL). cefview forwards only x2t codes
+89/90/91 (93 never shown) - about a day across three submodules. Font collection judged by face 0 (ApplicationFonts.cpp:1138)
+- no real trigger here; needs a FreeType harness and a bitmap-first .ttc. character.js:141 binary search over an unsorted
+array - only loses a cache hit. Paragraph 0.01 mm past the page bottom - layout-engine risk, no page-count change.
 
 ### Converter fuzz crashes from the 2026-11-13 corpus pass - not fixed yet (RD candidates)
 LibreOffice ww6 ofz21385-1.doc wild memmove in VMLPictureMapping::CopyPicture; ww8 forcepoint50-grfanchor-1.doc NULL in
