@@ -90,6 +90,7 @@ struct CloseQueue { bool empty() { return !g_queueBusy; } };
 struct Private {
     void sendOpenFolderEvent(int) { ++g_openFolder; }
     bool sendCreateNewEvent(int) { return false; }      /* #200's Ctrl+N case shares the switch */
+    bool toggleWindowFullScreen(int) { return false; }  /* #858's F11 case shares the switch */
 };
 struct QTimer { template <class O, class F> static void singleShot(int, O *, F) {} };   /* #1847's Ctrl+Shift+T */
 struct AscAppManager { static void closeAppWindows() { ++g_quits; g_queueBusy = true; } };

@@ -1127,7 +1127,32 @@ and min OS, optional Developer ID Installer signing (desktop-apps 2ca197455; tes
 for Document / Spreadsheet / Presentation / PDF Form (desktop-apps 4d3ee8ad5; test validates them with
 desktop-file-validate). Neither is wired into the release build. #151/#2548 documented in DISTRIBUTION.md.
 
+### #858 / #2106 / #34 - F11 full screen; more Windows associations; main-window file drop - DONE 2026-11-12
+#858 on Windows/Linux F11 toggles whole-window full screen (tabs and title bar stay), F11 again leaves; slide show
+untouched (desktop-apps b205e256b; test issue-0858-f11-window-full-screen, Qt on Xvfb/XWayland). #2106 the Inno
+installer registers .dot .docm .xlt .ppsm .fodp .hwp .hwpx for Default apps (desktop-apps 0003042f3; test
+issue-2106-more-windows-associations, ISCC + silent install under Wine - flaky harness, not rerun after rebase,
+diff identical). #34 CMainWindow drop handlers were Linux-only; now on Windows too, with toLocalFile(),
+case-insensitive suffixes and non-local URLs refused (desktop-apps f7e1ac479; test issue-0034-main-window-file-drop).
+Windows code is not compiled yet; all three need Windows GUI checks.
+
 ## Root-caused, not fixed
+
+### Linux set_drop_files puts file names into JS unescaped (found 2026-11-12, agent ef) - not fixed
+desktop-sdk client_renderer_wrapper.cpp ~8455: set_drop_files builds a script with the dropped file names
+inside double quotes without escaping. A Linux file name containing `"` (legal there) breaks the script, and a
+crafted name could inject script into the start page. Windows is safe (`"` is illegal in names). Candidate RD.
+
+### #2026 - option to install for the current user only - not done (more than a day; Windows)
+package/inno/common.iss:73 PrivilegesRequired=admin, DefaultDirName={commonpf}. Per-user would need
+PrivilegesRequiredOverridesAllowed with {autopf}, converting 78 HKLM writes (_code.iss 62, common.iss 16) to HKA,
+the ~8 GET_REGISTRY_SYSTEM reads and association.cpp:159, and app-local CRT DLLs since vc_redist needs admin.
+The no-admin case is covered by the portable ZIP (#2404).
+
+### #646 - wasted UI space on Windows - design call
+9.4 can already hide left/right panels, status bar and toolbar (View tab, Ctrl+F1). What remains is merging the
+editor header row into the tab/title row (web compactHeader); on desktop that row is the caption/drag area, so it
+is a joint web-apps/desktop-apps design decision. No change.
 
 ### Packaging findings from the #2548/#1279 checks (2026-11-12) - not fixed
 1. `make rpm` cannot build with our branding: common.spec's non-ONLYOFFICE %files lists undefined
@@ -2157,6 +2182,14 @@ rather than reason from the issue text alone it is left unverified. No claim is
 made about the cause.
 
 ## Already fixed in our 9.4 baseline - no action
+
+### #662 - 150% scaling doesn't work on Windows - already fixed in 9.4
+On Windows 10+ IsUseSystemScaling() (desktop-sdk applicationmanager_p.h ~233) is on by default and Settings offers
+Auto or 100-200%. Running the real choose_scaling (utils.cpp:622): system 1.25/1.50/1.75 -> UI 1.25/1.50/1.75.
+
+### #303 - remove the GConf dependency (Linux) - already fixed in 9.4
+No GConf use in desktop-apps, desktop-sdk or build_tools (all "gconf" matches are pkgconfig); deb/rpm
+dependencies do not list it.
 
 ### #946 - use the system print dialog
 Already in 9.4: "Print using the system dialog" in every editor's print panel (web-apps c4ae376f8c); Windows

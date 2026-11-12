@@ -8,8 +8,8 @@ behind its own commits when this was written, and several commit messages cite
 test directories that have never existed. Nothing here is typed in by hand, so
 nothing here can claim a test that is not on disk.
 
-- **272 issues** with at least one fix commit
-- **230** have a test artifact in `fork-fix-tests/`
+- **274 issues** with at least one fix commit
+- **232** have a test artifact in `fork-fix-tests/`
 - **42** do not - the fix is asserted by its commit message only
 - **35** fix commits carry no issue number (defects found in passing)
 - **20** defects found by our own testing (RD-NNNN), 20 with a test - counted separately from upstream issues
@@ -122,6 +122,7 @@ that is what the Test column is for. See the verification status section of
 | [#2112](https://github.com/ONLYOFFICE/DesktopEditors/issues/2112) | sdkjs, web-apps | `96dcdf31dd` `fe6457de1f` | `issue-2112-dark-page-color-test.js` | 2026-11-12 |
 | [#2110](https://github.com/ONLYOFFICE/DesktopEditors/issues/2110) | desktop-sdk | `c5fa6b67af` | `issue-2110-mac-slide-print-fit` | 2026-11-10 |
 | [#2107](https://github.com/ONLYOFFICE/DesktopEditors/issues/2107) | desktop-sdk, onlyoffice.github.io | `ad09162aca` `34ab06d141` | `issue-2107-plugin-remove-native` | 2026-11-10 |
+| [#2106](https://github.com/ONLYOFFICE/DesktopEditors/issues/2106) | desktop-apps | `0003042f35` | `issue-2106-more-windows-associations` | 2026-11-12 |
 | [#2105](https://github.com/ONLYOFFICE/DesktopEditors/issues/2105) | desktop-apps | `2241a8a0e6` | `issue-2105-wayland-no-x` | 2026-09-14 |
 | [#2095](https://github.com/ONLYOFFICE/DesktopEditors/issues/2095) | sdkjs | `74d274f7d2` | `issue-2095-drop-document-opens-tab-test.js` | 2026-11-10 |
 | [#2090](https://github.com/ONLYOFFICE/DesktopEditors/issues/2090) | desktop-sdk, sdkjs, web-apps | `d295746b42` `03aad1a7fe` `7281e56ad6` | `issue-2090-default-text-direction-test.js` | 2026-11-11 |
@@ -202,7 +203,7 @@ that is what the Test column is for. See the verification status section of
 | [#888](https://github.com/ONLYOFFICE/DesktopEditors/issues/888) | desktop-apps, web-apps | `23698b98ea` `18fd77fc1f` | `issue-0888-dark-colored-headers-test.js` | 2026-11-12 |
 | [#878](https://github.com/ONLYOFFICE/DesktopEditors/issues/878) | sdkjs | `06157857a8` `78aab3b128` | `issue-0878-slideshow-video-autoplay-test.js` | 2026-11-11 |
 | [#870](https://github.com/ONLYOFFICE/DesktopEditors/issues/870) | sdkjs | `34252d945d` | `issue-0870-zoom-steps-below-50-test.js` | 2026-11-12 |
-| [#858](https://github.com/ONLYOFFICE/DesktopEditors/issues/858) | desktop-apps | `483116cf19` | `issue-0858-mac-full-screen-shortcut` | 2026-11-12 |
+| [#858](https://github.com/ONLYOFFICE/DesktopEditors/issues/858) | desktop-apps | `b205e256b8` `483116cf19` | `issue-0858-mac-full-screen-shortcut` | 2026-11-12 |
 | [#852](https://github.com/ONLYOFFICE/DesktopEditors/issues/852) | sdkjs, web-apps | `6eddf61a54` `8604aeacb2` | `issue-0852-shift-wheel-horizontal-test.js` | 2026-11-12 |
 | [#790](https://github.com/ONLYOFFICE/DesktopEditors/issues/790) | desktop-apps | `7f1090d9cf` | `issue-790-linux-dialog-utf8` | 2026-11-11 |
 | [#780](https://github.com/ONLYOFFICE/DesktopEditors/issues/780) | desktop-apps | `a52f7eca42` | `issue-780-insert-metafile-test.js` | 2026-11-12 |
@@ -252,6 +253,7 @@ that is what the Test column is for. See the verification status section of
 | [#83](https://github.com/ONLYOFFICE/DesktopEditors/issues/83) | desktop-apps, desktop-sdk | `8dc58c3989` `6afd78afa0` | `issue-0083-csv-save-keeps-options` | 2026-11-12 |
 | [#73](https://github.com/ONLYOFFICE/DesktopEditors/issues/73) | sdkjs | `33475b76ae` | `issue-0073-mac-cmd-up-down-test.js` | 2026-11-11 |
 | [#69](https://github.com/ONLYOFFICE/DesktopEditors/issues/69) | desktop-apps | `6aa7e7249c` | `issue-0069-mac-open-recent` | 2026-11-12 |
+| [#34](https://github.com/ONLYOFFICE/DesktopEditors/issues/34) | desktop-apps | `f7e1ac479f` | `issue-0034-main-window-file-drop` | 2026-11-12 |
 
 ## Not verified - commit message only
 
