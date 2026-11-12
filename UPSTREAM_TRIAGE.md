@@ -1085,6 +1085,13 @@ option: "Use this size for new presentations" in the Slide Size dialog (web-apps
 resources/themes/black-theme-dark.json.example; also fixed a page-fill colour that lost leading zeros
 (sdkjs 96dcdf31dd, web-apps fe6457de1f). Tests issue-2544-*, issue-2137-*, issue-2112-*. GUI checks pending.
 
+### #1872 - screen readers saw nothing on macOS (VoiceOver) - FIXED 2026-11-12 (after 2026.2.0)
+Nothing ever called CefBrowserHost::SetAccessibilityState, so Chromium kept the page's accessibility tree off
+and VoiceOver saw only the window title. NSAscApplication now handles AXEnhancedUserInterface /
+AXManualAccessibility and checks VoiceOver at launch; every browser is enabled while a screen reader runs
+(desktop-sdk 61e4e166, new header accessibility_state.h; test issue-1872-screen-reader-accessibility-test.js).
+No change without a screen reader. Document body is canvas and stays unreadable. Needs a real VoiceOver check.
+
 ## Root-caused, not fixed
 
 ### #959 / #874 / #2339 / #1215 (rest) - not small
@@ -2443,6 +2450,14 @@ xls. The reporter's actual ask is an override - "open this in Spreadsheet
 anyway". Not investigated in depth.
 
 ## Not reproducible or not testable here
+
+### #1828 / #2246 / #2093 / #1801 / #1913 / #420 - accessibility and UI features - triaged
+#1828 Linux screen readers: needs AT-SPI detection and a check that our CEF Linux build has ATK (then reuse
+#1872's state). #2246 accessibility checker, #1801 command search, #1913 ribbon customisation, #420 pin to
+quick access: new UI features / product decisions (QAT is a fixed set of six). #2093 touch: handled in
+CMobileTouchManager and the slideshow; the drawing-swipe case is fixed upstream (e3d29d39a4), the media-tap case
+needs a touch device.
+
 
 ### #289 / #1804 - slide sorter view; book cover - features
 #289: the thumbnails panel already multi-selects, drags, Ctrl(+Shift)+Up/Down moves; a grid sorter view

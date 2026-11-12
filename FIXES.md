@@ -8,8 +8,8 @@ behind its own commits when this was written, and several commit messages cite
 test directories that have never existed. Nothing here is typed in by hand, so
 nothing here can claim a test that is not on disk.
 
-- **257 issues** with at least one fix commit
-- **215** have a test artifact in `fork-fix-tests/`
+- **258 issues** with at least one fix commit
+- **216** have a test artifact in `fork-fix-tests/`
 - **42** do not - the fix is asserted by its commit message only
 - **35** fix commits carry no issue number (defects found in passing)
 - **20** defects found by our own testing (RD-NNNN), 20 with a test - counted separately from upstream issues
@@ -143,6 +143,7 @@ that is what the Test column is for. See the verification status section of
 | [#1905](https://github.com/ONLYOFFICE/DesktopEditors/issues/1905) | sdkjs | `d829164103` | `issue-1905-move-sheet-new-workbook-test.js` | 2026-11-12 |
 | [#1899](https://github.com/ONLYOFFICE/DesktopEditors/issues/1899) | desktop-apps | `b61080a052` | `issue-1899-window-buttons-close-only-test.js` | 2026-11-12 |
 | [#1885](https://github.com/ONLYOFFICE/DesktopEditors/issues/1885) | sdkjs | `d54317276d` | `issue-1885-pdf-shape-hyperlinks-test.js` | 2026-11-12 |
+| [#1872](https://github.com/ONLYOFFICE/DesktopEditors/issues/1872) | desktop-sdk | `61e4e166ab` | `issue-1872-screen-reader-accessibility-test.js` | 2026-11-12 |
 | [#1855](https://github.com/ONLYOFFICE/DesktopEditors/issues/1855) | core | `4116fbeb76` | `issue-1855-pdf-outline-pagemode` | 2026-09-15 |
 | [#1847](https://github.com/ONLYOFFICE/DesktopEditors/issues/1847) | desktop-apps | `b76fc9693a` | `issue-1847-reopen-closed-tab` | 2026-11-12 |
 | [#1829](https://github.com/ONLYOFFICE/DesktopEditors/issues/1829) | desktop-apps | `d269d54a3c` | `issue-1829-user-name-chars` | 2026-11-12 |
