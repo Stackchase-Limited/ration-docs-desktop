@@ -1148,6 +1148,18 @@ native parts compiled syntax-only (Linux, macOS), Windows not compiled.
 
 ## Root-caused, not fixed
 
+### #1453 / #561 - native Wayland (flatpak "can't run"; blurry under fractional scaling) - needs CEF upgrade
+win-linux/src/main.cpp forces QT_QPA_PLATFORM=xcb and GDK_BACKEND=x11; the bundled Qt has no wayland plugin and CEF
+109 has no usable Ozone/Wayland mode for our windowed embedding, so no-X sessions cannot work and the blur is XWayland
+upscaling an X11 client. #2105 (desktop-apps 2241a8a0e) already turns the segfault into a clear stderr message.
+Native Wayland = CEF upgrade (CEF_UPGRADE_PLAN.md, CEF 140+), Qt wayland plugin, portal dialogs (#2168). Workarounds:
+GNOME 47+ xwayland-native-scaling, Hyprland force_zero_scaling, KDE "apply scaling themselves".
+
+### #786 - wrong colours on 10-bit (depth 30) X11 displays - not reproduced
+No depth-30 X server here. CEF 109 draws into an X11 child window, Qt chrome uses xcb raster; either may assume
+8-bit visuals. Next: on depth 30 (or Xvfb -depth 30) compare Qt chrome with CEF content, GPU acceleration on/off,
+QT_XCB_FORCE_SOFTWARE_OPENGL.
+
 ### #278 - custom error bars from sheet ranges - UI and API missing (about two days)
 Error Bars menu (SE ChartTab.js:355) offers only None/Standard error/Percentage/Standard deviation via
 asc_ChartSettings.setDisplayErrorBars (sdkjs common/apiCommon.js:1839); CUST bars get a one-point numLit. The model
@@ -2573,6 +2585,14 @@ xls. The reporter's actual ask is an override - "open this in Spreadsheet
 anyway". Not investigated in depth.
 
 ## Not reproducible or not testable here
+
+### #1730 - KDE Plasma 6 kwin_scene_opengl GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT - not ours
+Logged by kwin_wayland, not by our process; upstream closed it as KWin bug 491751 (fixed Plasma 6.6+). The app keeps working.
+
+### #2549 - migrate to gtk3/gtk4 for Nixpkgs - not ours
+We link gtk+-3.0 (win-linux/defaults.pri) and the deb/rpm name no gtk2; the only gtk2 references are unused legacy
+files (desktop-sdk cef/windowsxp cefclient CMakeLists, core libvlc Dockerfiles). The stale gtk2 input was in the Nix
+package, removed by NixOS/nixpkgs PR 582158.
 
 ### #877 / #1722 - per-language default shortcuts; icon themes - product decisions
 #877: any action can already be rebound per editor; locale-specific default sets change everyone's defaults.
