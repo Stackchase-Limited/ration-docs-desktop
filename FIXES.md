@@ -8,8 +8,8 @@ behind its own commits when this was written, and several commit messages cite
 test directories that have never existed. Nothing here is typed in by hand, so
 nothing here can claim a test that is not on disk.
 
-- **302 issues** with at least one fix commit
-- **262** have a test artifact in `fork-fix-tests/`
+- **303 issues** with at least one fix commit
+- **263** have a test artifact in `fork-fix-tests/`
 - **40** do not - the fix is asserted by its commit message only
 - **35** fix commits carry no issue number (defects found in passing)
 - **48** defects found by our own testing (RD-NNNN), 48 with a test - counted separately from upstream issues
@@ -131,6 +131,7 @@ that is what the Test column is for. See the verification status section of
 | [#2107](https://github.com/ONLYOFFICE/DesktopEditors/issues/2107) | desktop-sdk, onlyoffice.github.io | `ad09162aca` `34ab06d141` | `issue-2107-plugin-remove-native` | 2026-11-10 |
 | [#2106](https://github.com/ONLYOFFICE/DesktopEditors/issues/2106) | desktop-apps | `0003042f35` | `issue-2106-more-windows-associations` | 2026-11-12 |
 | [#2105](https://github.com/ONLYOFFICE/DesktopEditors/issues/2105) | desktop-apps | `2241a8a0e6` | `issue-2105-wayland-no-x` | 2026-09-14 |
+| [#2100](https://github.com/ONLYOFFICE/DesktopEditors/issues/2100) | sdkjs, web-apps | `f9156829a2` `5598f8486c` | `issue-2100-ime-preedit-underline-test.js` | 2026-11-13 |
 | [#2095](https://github.com/ONLYOFFICE/DesktopEditors/issues/2095) | sdkjs | `74d274f7d2` | `issue-2095-drop-document-opens-tab-test.js` | 2026-11-10 |
 | [#2090](https://github.com/ONLYOFFICE/DesktopEditors/issues/2090) | desktop-sdk, sdkjs, web-apps | `d295746b42` `03aad1a7fe` `7281e56ad6` | `issue-2090-default-text-direction-test.js` | 2026-11-11 |
 | [#2075](https://github.com/ONLYOFFICE/DesktopEditors/issues/2075) | sdkjs, web-apps | `7a99b84860` `196bada5b0` | `issue-2075-french-punctuation-option-test.js` | 2026-11-12 |

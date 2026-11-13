@@ -1285,7 +1285,21 @@ error-bar refs, setErrValType stored the old errDir for undo (sdkjs cca3a897a9, 
 action in the Undo button tooltip" (off by default; ~65 English labels over 265 history ids; sdkjs cfc1f19761, web-apps
 8cd5171462). Tests rd-0040..rd-0049, issue-0278-*, issue-1064-*. GUI checks pending.
 
+### #2100 - option to stop underlining text while an input method composes it - DONE 2026-11-13
+The editor always underlined composition text (sdkjs line-draw-state.js addCompositeInputLine). The IME's own Pango styling
+cannot reach JS in CEF 109 (Chromium's GTK IM context turns it into ImeTextSpans only Blink's hidden textarea uses; EditContext is
+experimental in 109), so the user's wish is met with a switch: File > Advanced settings > "Underline text while an input method
+composes it" (on by default = unchanged; sdkjs f9156829a2, web-apps 5598f8486c). Document editor only. Test
+issue-2100-ime-preedit-underline-test.js. GUI check with fcitx5/IBus pending.
+
 ## Root-caused, not fixed
+
+### #2101 - IME surrounding text on Linux - Chromium limitation, not ours
+CEF 109 uses Chromium's GTK IM context (libcef imports gtk_im_multicontext_new / gtk_im_context_simple_new; GDK_BACKEND=x11).
+InputMethodAuraLinux calls SetSurroundingText, but InputMethodContextImplGtk::SetSurroundingText is an empty stub and
+retrieve-/delete-surrounding are never connected (TODO) - in 109 and still in 120/130/138. IBus therefore drops
+IBUS_CAP_SURROUNDING_TEXT for our editor (a plain GTK3 entry under the same IBus receives it). Only Ozone/Wayland text-input
+implements it. sdkjs's hidden textarea also holds only the last <=100 typed chars. Needs a patched CEF.
 
 ### #420 - pin any toolbar button to the quick access toolbar - more than a day, product calls open (re-checked 2026-11-13)
 The QAT is a fixed set (Header.js onChangeQuickAccess :342; createTitleButton :868; <app>quick-access-<name>). Toolbar buttons
@@ -2854,6 +2868,11 @@ xls. The reporter's actual ask is an override - "open this in Spreadsheet
 anyway". Not investigated in depth.
 
 ## Not reproducible or not testable here
+
+### #8 - Portuguese (ABNT2) dead keys, "CEF bug" - likely gone in 9.4, not verified live
+The 2016 cause was CEF issue 1813 (no IME/compose on Linux). CEF 109 creates gtk_im_context_simple (compose/dead keys) and a
+multicontext for IBus/fcitx; sdkjs text_input2.js passes dead keys through composition. The live check (setxkbmap br abnt2 +
+xdotool, with and without IBus) is scripted in .rd-work/wt/fk-tmp/w/run.sh but did not run - the Docker daemon died.
 
 ### Settled 2026-11-13 (agent fi) - not reproducible or not testable here
 #2191 save/create fails after hours (Flatpak): continuation of #2134/#2086 (fixed in 9.2.0); no logs; our #2081/#2202 make a
