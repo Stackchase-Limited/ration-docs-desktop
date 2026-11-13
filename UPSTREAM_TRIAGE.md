@@ -1219,6 +1219,18 @@ draw:frame wrote office:event-listeners before the frame content, invalid ODF 1.
 #2225 Groq is now an AI agent provider (OpenAI-compatible at api.groq.com/openai/v1; desktop-sdk 46ddc076); IBM watsonx not
 added - it needs an IAM-token client, not a provider entry. Not checked: a live Groq request / CORS, GUI. macOS only compiled.
 
+### #2275 / #1868 follow-ups and RD-0060 - DONE 2026-11-13
+#2275 spreadsheet &F printed "FILE=null" in a PDF saved from the desktop: HeaderFooter.js fell back to api.documentTitle,
+still the "null" placeholder in x2t (no DocumentTitle for an Editor.bin source); now uses formulaProps.docTitle from the
+save params and never prints the placeholder (sdkjs e773c13a4c). #1868 caret half: a saved workbook reopened at the
+open-time cursor (moving the caret records no change); the editor now sends "activeCells" in the save params and x2t
+applies it per sheet, frozen panes included (sdkjs 68457630dd, core d353ff8898; SaveParams gained a member - rebuild
+libBinDocument and PPTXFormatLib before x2t). RD-0060 compound files over ~7 MB had sector 0 instead of FREESECT in
+unused DIFAT slots, against MS-CFB 2.5 (cfcpp compoundfile.cpp AllocateDIFATSectorChain; core 88deda72e2) - no reader
+seen rejecting the old files. Tests issue-2275-header-filename-null-test.js, issue-1868-active-cell-save-test.js,
+issue-1868-active-cell-x2t, rd-0060-cfb-difat-freesect. Root-caused list reviewed by agent ez: most remaining entries are
+fixed elsewhere, features, or need Word/GUI to settle.
+
 ## Root-caused, not fixed
 
 ### #2566 (remaining) - ODP bullets: wrapped lines start left of the bullet text

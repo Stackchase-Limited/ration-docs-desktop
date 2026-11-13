@@ -12,7 +12,7 @@ nothing here can claim a test that is not on disk.
 - **251** have a test artifact in `fork-fix-tests/`
 - **40** do not - the fix is asserted by its commit message only
 - **35** fix commits carry no issue number (defects found in passing)
-- **36** defects found by our own testing (RD-NNNN), 36 with a test - counted separately from upstream issues
+- **37** defects found by our own testing (RD-NNNN), 37 with a test - counted separately from upstream issues
 
 A row here means a commit exists. It does **not** mean the fix was verified;
 that is what the Test column is for. See the verification status section of
@@ -90,7 +90,7 @@ that is what the Test column is for. See the verification status section of
 | [#2299](https://github.com/ONLYOFFICE/DesktopEditors/issues/2299) | web-apps | `55387961da` | `issue-2299-odd-even-print-test.js` | 2026-11-12 |
 | [#2296](https://github.com/ONLYOFFICE/DesktopEditors/issues/2296) | sdkjs | `8ad35f24cc` | `issue-2296-date-format-test.js` | 2026-09-15 |
 | [#2288](https://github.com/ONLYOFFICE/DesktopEditors/issues/2288) | sdkjs | `c996b1857c` | `issue-2288-row-indirect-false-cycle-test.js` | 2026-11-12 |
-| [#2275](https://github.com/ONLYOFFICE/DesktopEditors/issues/2275) | core, sdkjs | `eaec80a196` `0b819b2b9c` | `issue-2275-header-filename-null-test.js` | 2026-09-15 |
+| [#2275](https://github.com/ONLYOFFICE/DesktopEditors/issues/2275) | core, sdkjs | `eaec80a196` `e773c13a4c` `0b819b2b9c` | `issue-2275-header-filename-null-test.js` | 2026-11-13 |
 | [#2274](https://github.com/ONLYOFFICE/DesktopEditors/issues/2274) | build_tools, desktop-apps | `3bde9a8b96` `f26bd0673a` | `issue-2274-qt-library-closure` | 2026-09-14 |
 | [#2271](https://github.com/ONLYOFFICE/DesktopEditors/issues/2271) | desktop-sdk | `ee8f1fdf95` | `issue-2271-new-doc-template-lang` | 2026-11-11 |
 | [#2269](https://github.com/ONLYOFFICE/DesktopEditors/issues/2269) | sdkjs | `280811aeca` | `issue-2269-cf-parent-test.js` | 2026-09-14 |
@@ -156,7 +156,7 @@ that is what the Test column is for. See the verification status section of
 | [#1899](https://github.com/ONLYOFFICE/DesktopEditors/issues/1899) | desktop-apps | `b61080a052` | `issue-1899-window-buttons-close-only-test.js` | 2026-11-12 |
 | [#1885](https://github.com/ONLYOFFICE/DesktopEditors/issues/1885) | sdkjs | `d54317276d` | `issue-1885-pdf-shape-hyperlinks-test.js` | 2026-11-12 |
 | [#1872](https://github.com/ONLYOFFICE/DesktopEditors/issues/1872) | desktop-sdk | `61e4e166ab` | `issue-1872-screen-reader-accessibility-test.js` | 2026-11-12 |
-| [#1868](https://github.com/ONLYOFFICE/DesktopEditors/issues/1868) | core, sdkjs | `4ec75acf9a` `687b24ecc9` | `issue-1868-active-cell-save-test.js` | 2026-09-12 |
+| [#1868](https://github.com/ONLYOFFICE/DesktopEditors/issues/1868) | core, sdkjs | `d353ff8898` `4ec75acf9a` `68457630dd` | `issue-1868-active-cell-x2t` | 2026-11-13 |
 | [#1864](https://github.com/ONLYOFFICE/DesktopEditors/issues/1864) | sdkjs, web-apps | `5f7ad1f89c` `1ecc12124b` | `issue-1864-print-preview-wait-test.js` | 2026-11-12 |
 | [#1855](https://github.com/ONLYOFFICE/DesktopEditors/issues/1855) | core | `4116fbeb76` | `issue-1855-pdf-outline-pagemode` | 2026-09-15 |
 | [#1847](https://github.com/ONLYOFFICE/DesktopEditors/issues/1847) | desktop-apps | `ccb7f894af` `b76fc9693a` | `issue-1847-reopen-closed-tab` | 2026-11-12 |
@@ -326,6 +326,7 @@ They have not been demonstrated.
 
 | ID | Where | Commit | Test | Landed | What |
 |---|---|---|---|---|---|
+| RD-0060 | core | `88deda72e2` | `rd-0060-cfb-difat-freesect` | 2026-11-13 | a compound file over ~7 MB (e.g. a password-protected save) listed sector 0 in i |
 | RD-0056 | core | `63425b8f66` | `rd-0056-odf-frame-event-listeners-order` | 2026-11-13 | ODF draw:frame wrote office:event-listeners before the frame content, which the  |
 | RD-0055 | core | `46e22fe61e` | `rd-0055-ods-chart-macro` | 2026-11-13 | a macro assigned to a chart was dropped when saving as ODS; the chart's binding  |
 | RD-0054 | core | `c7561e4bb0` | `rd-0054-font-ranges-last-end` | 2026-11-13 | the font ranges table ended its last range at U+10FFFE although it covers U+10FF |
