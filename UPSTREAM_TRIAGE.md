@@ -2373,6 +2373,19 @@ made about the cause.
 
 ## Already fixed in our 9.4 baseline - no action
 
+### #1436 - files not saved on Synology/NAS - fixed by our #2480 work (reproduced 2026-11-13 on gvfs sftp)
+Real upstream 7.5.1 CFileLockerGIO + SaveFile against a `gio mount sftp://` share: SaveFile=SUCCESS but the share keeps the OLD
+content - the report exactly. Upstream v9.4.1.22 fails the #2480 sftp test (18 checks); our branch passes. Cause: g_file_append_to
+in CFileLockerGIO::Lock (desktop-sdk e2062290, first in v7.5.0.1 - "7.4.1 works, 7.5.0 broken"); fixed by our 565af3d1 and
+17e125e1 (save to a sibling temp, move over). smb:// (Samba 4.15 and 4.19) does not reproduce, so the Synology/SMB variant is
+unconfirmed. Not credited in FIXES.md: no commit claims #1436.
+
+### #2145 - random SIGSEGV in libascdocumentscore.so - same mechanism as #2136/#2355, covered by our fixes
+The thread's symbolised trace: Ctrl+; opens GTK3's emoji chooser -> pango -> cairo-ft -> crash inside libgraphics.so (bundled
+FreeType interposition); our crash handler then crashed in OnDestroyWindow (fixed by #2476). First real GNU ld check of
+graphics.version: 207 exported FT symbols without it, 0 with it; LD_DEBUG shows cairo/fontconfig binding 67 FT symbols to
+libgraphics without the script, all 73 to libfreetype with it. The crash itself not reproduced (no real GTK/Wayland session).
+
 ### Upstream "closed as fixed" issues checked 2026-11-13 (agent fa) - already in our code, or nothing to backport
 - #1656 data loss .docx (images): upstream bug 69036 fixed by core 812fae8f6c, cbbf650c56 - both ancestors of our branch (attachment never uploaded).
 - #1770 SUMIFS: reporter's xlsx recomputed in docbuilder gives 99/88/77/0 as expected (file holds stale cached #VALUE!).
@@ -2753,6 +2766,13 @@ xls. The reporter's actual ask is an override - "open this in Spreadsheet
 anyway". Not investigated in depth.
 
 ## Not reproducible or not testable here
+
+### E5 re-attempts 2026-11-13 (agent fe) - still not reproduced
+#2456 Copy Style loses font in tables: real word engine in docbuilder, 72 variants (table style, language, text/cell/caret
+source and target) - font, size, bold carried in all; needs the reporter's file. #2080 Linux/XWayland layout: unknown layout
+gives -1, nothing sent; mapping covered by #2503 tests; GNOME Wayland XWayland keymap not testable here. #2452 no PowerPoint
+thumbnail in the reporter's pptx, so no reference. #1916 Windows native context menu at 200% needs a CefContextMenuHandler
+(feature-sized). #2551 Windows lost canvas; #2529 no file; #2512, #2460, #2496 10.0-only; #2453 by design; #1894 bad install.
 
 ### #347 / #342 re-checked 2026-11-13 against PowerPoint thumbnails
 #347 vertical spacing: with the bundled fonts (Calibri -> Carlito) our render matches the thumbnail within one pixel; the
