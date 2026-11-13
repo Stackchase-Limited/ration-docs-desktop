@@ -95,6 +95,7 @@ namespace Spreadsheet {
     void PrepareSi() { prepared = true; }   // a member write: NULL this is a SEGV
     void PrepareTableFormula() { prepared = prepared && true; }
     void ReadSheetData() { prepared = prepared && true; }
+    void PrepareSheetStrings() {}           // RD-0105 (called after ReadSheetData)
   };
 } }
 struct CSVReader { int Read(const std::wstring&, OOX::Spreadsheet::CXlsx&, UINT, const std::wstring&, _INT32) { return 0; } };

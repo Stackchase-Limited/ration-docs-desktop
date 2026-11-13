@@ -1,0 +1,15 @@
+# Issues fixed by a commit that does not name them (settled 2026-11-13, see UPSTREAM_TRIAGE.md
+# "Fixed by our commits that do not name the issue"). One line: issue  repo  commit.
+# build-fix-registry.py counts a line only if the commit exists and is on the repo's current branch.
+# Duplicates of issues already counted (#151 -> #2404, #1740 -> #1760) are deliberately not listed.
+402   sdkjs        9b733e650e
+1179  sdkjs        9b733e650e
+1509  sdkjs        80b81cf77e
+2310  sdkjs        80b81cf77e
+2442  sdkjs        3bfc7d6c76
+2442  web-apps     94024b16c2
+1333  sdkjs        0a8f5abc77
+1016  sdkjs        0a8f5abc77
+2081  desktop-sdk  51e9e27032
+626   web-apps     869747e03c
+466   desktop-apps ee934cd076

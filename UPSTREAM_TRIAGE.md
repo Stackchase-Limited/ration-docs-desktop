@@ -1355,6 +1355,22 @@ base64 bin -> xlsb lost those numbers; the desktop's normal Save As xlsb (raw bi
 External Links update from an .xlsb and mail merge from an .xlsb (87d8fd27d1). 158 files: no differences except the intended.
 Tests rd-0102, rd-0103, rd-0104. Linux compile pending.
 
+### RD-0105..RD-0112 - xlsb text opening as 0, numbers saved as text, nondeterministic output - DONE 2026-11-13
+RD-0105 DATA LOSS ON OPEN: inline-string (BrtCellSt) and str (BrtFmlaString) cells of an .xlsb opened as 0 - WriteCell wrote
+their text as a double; new CXlsb::PrepareSheetStrings after ReadSheetData (core f15d357a24). Confirmed in the real cell editor.
+RD-0109 x2t's xlsb writer saved numbers as text: `#define DBL_MAX 15` in XlsxFormat/Common.cpp leaked into SheetData.cpp's unity
+build, so processCellType treated 17+ char numbers over 15 as text (aa16ec2c0d). Decision (user, 2026-11-13): ship both as Excel
+reads the file - xlsb files saved by older builds may show such numbers as text (e.g. "-25.780000000000001"), as Excel does.
+Uninitialised output fixed: RD-0106 WsProp syncRef (8e61bde8fa->see FIXES), RD-0107 sort-condition value, RD-0108 rgb colours
+without alpha got random alpha (now opaque; xlsb->xlsx styles change from 64xxxxxx to FFxxxxxx), RD-0110 PtgList colLast,
+RD-0111 phonetic runs. RD-0112 crash on xlsx -> xlsb with a colour sortCondition without dxfId. Corpus deterministic under stack
+and heap scribble. Tests rd-0105..rd-0112. Linux compile pending.
+
+### Upstream issues credited through tools/fix-claims.txt (2026-11-13)
+#402 #1179 #1509 #2310 #2442 #1333 #1016 #2081 #626 #466 are fixed by commits that do not name them (see "Fixed by our commits
+that do not name the issue"). With the user's agreement they are now counted via tools/fix-claims.txt; build-fix-registry.py
+checks every listed commit is on the current branch. Duplicates #151 and #1740 are not counted.
+
 ## Root-caused, not fixed
 
 ### #2101 - IME surrounding text on Linux - Chromium limitation, not ours
@@ -4144,6 +4160,13 @@ the list-style default size and lost bullets/spacing, and an emptied paragraph s
 (sdkjs, #2502 commit). By design: "set 30 pt, shows 27 pt" is the shape's normAutofit shrinking text to fit.
 
 ## Latent problems found in passing, not yet fixed
+
+### xlsb error cells and non-BMP text (found 2026-11-13, agent fy) - not fixed
+Error cells: WriteCell (BinaryWriterS.cpp:6127-6150) writes error codes but sdkjs Serialize.js:12410 reads an Error cell's value
+as a shared-string index - xlsb #DIV/0!/#N/A open blank, xlsx base64-bin errors show the first shared string; the C++ reader
+(BinaryReaderS.cpp:7177) expects codes, so the encoding needs a decision. Non-BMP text: pole.h convertWStringToUtf16 sizes by
+UTF-32 length (drops a trailing char per emoji on write) and convertUtf16ToWString returns trailing NULs on read; BiffString cch
+is in UTF-32 units - wide blast radius (DOC/PPT/VBA). Minor: WsProp GETBIT(flags2,16) on a BYTE; CFFlag uses long.
 
 ### PPT -> PPTX writes OLE objects as external links into x2t's temp folder (found 2026-11-13, agent ex) - being fixed (fm)
 Seen on POI 41246-1.ppt and others: TargetMode="External" relationships pointing at the temp dir - leaks a local path, broken link.

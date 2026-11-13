@@ -8,11 +8,11 @@ behind its own commits when this was written, and several commit messages cite
 test directories that have never existed. Nothing here is typed in by hand, so
 nothing here can claim a test that is not on disk.
 
-- **311 issues** with at least one fix commit
+- **321 issues** with at least one fix commit
 - **271** have a test artifact in `fork-fix-tests/`
-- **40** do not - the fix is asserted by its commit message only
+- **50** do not - the fix is asserted by its commit message only
 - **35** fix commits carry no issue number (defects found in passing)
-- **79** defects found by our own testing (RD-NNNN), 79 with a test - counted separately from upstream issues
+- **87** defects found by our own testing (RD-NNNN), 87 with a test - counted separately from upstream issues
 
 A row here means a commit exists. It does **not** mean the fix was verified;
 that is what the Test column is for. See the verification status section of
@@ -304,6 +304,7 @@ They have not been demonstrated.
 | [#2521](https://github.com/ONLYOFFICE/DesktopEditors/issues/2521) | desktop-apps, desktop-sdk, web-apps | `f735edd652` `47db1505ee` `3c472ce8e4` | - | 2026-10-27 |
 | [#2479](https://github.com/ONLYOFFICE/DesktopEditors/issues/2479) | core | `362883df08` | - | 2026-10-27 |
 | [#2444](https://github.com/ONLYOFFICE/DesktopEditors/issues/2444) | desktop-sdk | `69e66b984f` | - | 2026-09-13 |
+| [#2442](https://github.com/ONLYOFFICE/DesktopEditors/issues/2442) | sdkjs, web-apps | `3bfc7d6c76` `94024b16c2` | - | 2026-09-12 |
 | [#2435](https://github.com/ONLYOFFICE/DesktopEditors/issues/2435) | desktop-sdk | `5016ab558b` | - | 2026-09-14 |
 | [#2430](https://github.com/ONLYOFFICE/DesktopEditors/issues/2430) | core | `768b27a140` `9fa8cfaf56` | - | 2026-09-14 |
 | [#2418](https://github.com/ONLYOFFICE/DesktopEditors/issues/2418) | sdkjs | `e882bf0ccb` `9de65caf67` | - | 2026-09-12 |
@@ -313,6 +314,7 @@ They have not been demonstrated.
 | [#2395](https://github.com/ONLYOFFICE/DesktopEditors/issues/2395) | desktop-apps | `66fbc2d289` | - | 2026-09-14 |
 | [#2383](https://github.com/ONLYOFFICE/DesktopEditors/issues/2383) | desktop-sdk | `2360898ee1` | - | 2026-09-12 |
 | [#2312](https://github.com/ONLYOFFICE/DesktopEditors/issues/2312) | desktop-apps | `7dc7f4bb69` | - | 2026-09-12 |
+| [#2310](https://github.com/ONLYOFFICE/DesktopEditors/issues/2310) | sdkjs | `80b81cf77e` | - | 2026-09-12 |
 | [#2302](https://github.com/ONLYOFFICE/DesktopEditors/issues/2302) | desktop-apps | `2b764b07f0` | - | 2026-09-14 |
 | [#2293](https://github.com/ONLYOFFICE/DesktopEditors/issues/2293) | desktop-apps | `7fc64dc0ff` | - | 2026-09-14 |
 | [#2280](https://github.com/ONLYOFFICE/DesktopEditors/issues/2280) | core | `80e5c0ead3` `80e5c0ead3` | - | 2026-09-14 |
@@ -328,6 +330,7 @@ They have not been demonstrated.
 | [#2136](https://github.com/ONLYOFFICE/DesktopEditors/issues/2136) | core | `382bf81452` | - | 2026-09-12 |
 | [#2129](https://github.com/ONLYOFFICE/DesktopEditors/issues/2129) | onlyoffice.github.io | `936ff4b31e` | - | 2026-09-12 |
 | [#2082](https://github.com/ONLYOFFICE/DesktopEditors/issues/2082) | sdkjs | `f97c5c09ee` | - | 2026-09-12 |
+| [#2081](https://github.com/ONLYOFFICE/DesktopEditors/issues/2081) | desktop-sdk | `51e9e27032` | - | 2026-09-12 |
 | [#2018](https://github.com/ONLYOFFICE/DesktopEditors/issues/2018) | desktop-sdk | `f2fa3a96d1` | - | 2026-09-12 |
 | [#1954](https://github.com/ONLYOFFICE/DesktopEditors/issues/1954) | core | `ed28592a58` | - | 2026-09-14 |
 | [#1948](https://github.com/ONLYOFFICE/DesktopEditors/issues/1948) | web-apps | `58d1593b86` | - | 2026-09-12 |
@@ -335,10 +338,17 @@ They have not been demonstrated.
 | [#1748](https://github.com/ONLYOFFICE/DesktopEditors/issues/1748) | desktop-apps | `5b9d89fd88` | - | 2026-09-13 |
 | [#1720](https://github.com/ONLYOFFICE/DesktopEditors/issues/1720) | desktop-apps | `b361bdbb93` | - | 2026-09-12 |
 | [#1669](https://github.com/ONLYOFFICE/DesktopEditors/issues/1669) | desktop-apps | `40d7b4b5a7` | - | 2026-09-12 |
+| [#1509](https://github.com/ONLYOFFICE/DesktopEditors/issues/1509) | sdkjs | `80b81cf77e` | - | 2026-09-12 |
 | [#1482](https://github.com/ONLYOFFICE/DesktopEditors/issues/1482) | sdkjs | `6392fa067a` | - | 2026-09-12 |
+| [#1333](https://github.com/ONLYOFFICE/DesktopEditors/issues/1333) | sdkjs | `0a8f5abc77` | - | 2026-09-12 |
+| [#1179](https://github.com/ONLYOFFICE/DesktopEditors/issues/1179) | sdkjs | `9b733e650e` | - | 2026-09-12 |
 | [#1085](https://github.com/ONLYOFFICE/DesktopEditors/issues/1085) | desktop-apps | `dedc2f7701` | - | 2026-11-12 |
+| [#1016](https://github.com/ONLYOFFICE/DesktopEditors/issues/1016) | sdkjs | `0a8f5abc77` | - | 2026-09-12 |
 | [#926](https://github.com/ONLYOFFICE/DesktopEditors/issues/926) | desktop-apps | `dedc2f7701` | - | 2026-11-12 |
+| [#626](https://github.com/ONLYOFFICE/DesktopEditors/issues/626) | web-apps | `869747e03c` | - | 2026-11-12 |
+| [#466](https://github.com/ONLYOFFICE/DesktopEditors/issues/466) | desktop-apps | `ee934cd076` | - | 2026-09-14 |
 | [#459](https://github.com/ONLYOFFICE/DesktopEditors/issues/459) | core, sdkjs | `875663096b` `67f4a0c2f3` | - | 2026-09-12 |
+| [#402](https://github.com/ONLYOFFICE/DesktopEditors/issues/402) | sdkjs | `9b733e650e` | - | 2026-09-12 |
 | [#328](https://github.com/ONLYOFFICE/DesktopEditors/issues/328) | sdkjs | `6884d875b3` | - | 2026-11-11 |
 | [#220](https://github.com/ONLYOFFICE/DesktopEditors/issues/220) | desktop-apps | `dedc2f7701` | - | 2026-11-12 |
 
@@ -346,6 +356,14 @@ They have not been demonstrated.
 
 | ID | Where | Commit | Test | Landed | What |
 |---|---|---|---|---|---|
+| RD-0112 | core | `d179ace671` | `rd-0112-xlsb-color-sort-no-dxfid-crash` | 2026-11-13 | x2t crashed writing .xlsb when a sort condition sorts by cell/font colour withou |
+| RD-0111 | core | `24a9dbda62` | `rd-0111-xlsb-phonetic-run-garbage` | 2026-11-13 | shared strings with phonetic properties were written to .xlsb with uninitialised |
+| RD-0110 | core | `36f9fa5ab0` | `rd-0110-xlsb-table-ref-collast` | 2026-11-13 | a structured table reference written to .xlsb (Table1[Col], Table1[#All]) had an |
+| RD-0109 | core | `aa16ec2c0d` | `rd-0109-xlsb-long-number-as-text` | 2026-11-13 | numbers such as 25.78 were written to .xlsb as text (inline strings), on Save As |
+| RD-0108 | core | `5eb8c13c86` | `rd-0108-xlsx-rgb-color-random-alpha` | 2026-11-13 | a 6-digit rgb colour (no alpha) got a random alpha byte in the Editor.bin/xlsb/x |
+| RD-0107 | core | `3146952efa` | `rd-0107-xlsb-sort-condition-garbage` | 2026-11-13 | every .xlsb written with a sort condition carried 8 uninitialised bytes (BrtBegi |
+| RD-0106 | core | `a6cdb71117` | `rd-0106-xlsb-wsprop-short-syncref` | 2026-11-13 | an .xlsb sheet with a short BrtWsProp record got a random <sheetPr syncRef>, dif |
+| RD-0105 | core | `f15d357a24` | `rd-0105-xlsb-inline-strings-zero` | 2026-11-13 | an .xlsb's inline strings and str cells opened in the editor as 0 (text lost); t |
 | RD-0104 | core | `87d8fd27d1` | `rd-0104-xlsb-base64-bin-crash` | 2026-11-13 | x2t crashed converting any .xlsb to a base64 Editor.bin or to mail-merge JSON; t |
 | RD-0103 | core | `fa18fad69d` | `rd-0103-xlsb-typed-number-zero` | 2026-11-13 | every number of a typed cell (t="n" in xlsx, also via a base64 Editor.bin) was w |
 | RD-0102 | core | `bbf0cb118d` | `rd-0102-csv-cell-style-past-cellxfs` | 2026-11-13 | x2t crashed writing csv/json when a cell's style index has no cellXfs entry (no  |
@@ -474,4 +492,4 @@ as `Upstream report: ONLYOFFICE/DesktopEditors#NNNN`. These use none of
 them, usually because one commit closed several duplicate reports and
 named only the first.
 
-  #402 #1016 #1179 #1333 #1509 #1641 #2081 #2252 #2310 #2355 #2442
+  #1641 #2252 #2355

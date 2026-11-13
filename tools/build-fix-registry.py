@@ -131,6 +131,27 @@ def collect():
                 r['dates'].add(date)
                 if subject not in r['subjects']:
                     r['subjects'].append(subject)
+    # Issues fixed by a commit that does not name them, settled by hand in tools/fix-claims.txt.
+    # Each line is checked against git: the commit must exist and be on the repo's current branch,
+    # so a claim can never point at work that is not in the tree.
+    claims = os.path.join(ROOT, 'tools', 'fix-claims.txt')
+    if os.path.isfile(claims):
+        for line in open(claims):
+            f = line.split('#', 1)[0].split()
+            if len(f) != 3:
+                continue
+            n, repo, sha = f
+            ok = subprocess.run(['git', '-C', os.path.join(ROOT, repo), 'merge-base', '--is-ancestor',
+                                 sha, 'HEAD'], capture_output=True).returncode == 0
+            if not ok:
+                print('fix-claims.txt: %s %s %s is not on the current branch - not counted' % (n, repo, sha))
+                continue
+            date = git(repo, 'log', '-1', '--format=%ad', '--date=short', sha).strip()
+            subj = git(repo, 'log', '-1', '--format=%s', sha).strip()
+            r = rows.setdefault(n, {'issue': n, 'repos': set(), 'commits': [], 'dates': set(), 'subjects': []})
+            r['repos'].add(repo); r['commits'].append('%s:%s' % (repo, sha[:10])); r['dates'].add(date)
+            if subj not in r['subjects']:
+                r['subjects'].append(subj)
     for n, r in rows.items():
         r['tests'] = have_test.get(n, [])
     for n, r in internal.items():
