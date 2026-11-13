@@ -8,8 +8,8 @@ behind its own commits when this was written, and several commit messages cite
 test directories that have never existed. Nothing here is typed in by hand, so
 nothing here can claim a test that is not on disk.
 
-- **291 issues** with at least one fix commit
-- **251** have a test artifact in `fork-fix-tests/`
+- **293 issues** with at least one fix commit
+- **253** have a test artifact in `fork-fix-tests/`
 - **40** do not - the fix is asserted by its commit message only
 - **35** fix commits carry no issue number (defects found in passing)
 - **37** defects found by our own testing (RD-NNNN), 37 with a test - counted separately from upstream issues
@@ -249,7 +249,9 @@ that is what the Test column is for. See the verification status section of
 | [#388](https://github.com/ONLYOFFICE/DesktopEditors/issues/388) | desktop-apps, web-apps | `896bea2db7` `674be1df21` | `issue-0388-mac-edit-menu-undo` | 2026-11-11 |
 | [#371](https://github.com/ONLYOFFICE/DesktopEditors/issues/371) | sdkjs, web-apps | `f302f97ceb` `f1d5ed2a3f` | `issue-0371-thai-line-break-test.js` | 2026-11-13 |
 | [#348](https://github.com/ONLYOFFICE/DesktopEditors/issues/348) | sdkjs | `b258d6e942` | `issue-0348-pptx-negative-indent` | 2026-11-13 |
+| [#346](https://github.com/ONLYOFFICE/DesktopEditors/issues/346) | sdkjs | `37ea3d91f9` | `issue-0346-pptx-kerning` | 2026-11-13 |
 | [#344](https://github.com/ONLYOFFICE/DesktopEditors/issues/344) | sdkjs | `6884d875b3` | `issue-0344-pptx-sym-font-test.js` | 2026-11-11 |
+| [#343](https://github.com/ONLYOFFICE/DesktopEditors/issues/343) | sdkjs | `11054e3e63` | `issue-0343-pptx-tab-wrap-space-height` | 2026-11-13 |
 | [#334](https://github.com/ONLYOFFICE/DesktopEditors/issues/334) | sdkjs | `b7a1614833` | `issue-334-copy-math-justification-test.js` | 2026-11-11 |
 | [#322](https://github.com/ONLYOFFICE/DesktopEditors/issues/322) | web-apps | `62bf4b1e8b` | `issue-0322-comments-search-test.js` | 2026-11-12 |
 | [#307](https://github.com/ONLYOFFICE/DesktopEditors/issues/307) | sdkjs | `67b7cbe97c` | `issue-0307-wrapped-overflow-valign-test.js` | 2026-11-11 |

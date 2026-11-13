@@ -1231,6 +1231,17 @@ seen rejecting the old files. Tests issue-2275-header-filename-null-test.js, iss
 issue-1868-active-cell-x2t, rd-0060-cfb-difat-freesect. Root-caused list reviewed by agent ez: most remaining entries are
 fixed elsewhere, features, or need Word/GUI to settle.
 
+### #343 / #346 - slide text layout against PowerPoint's own thumbnails - DONE 2026-11-13
+References: docProps/thumbnail.jpeg saved by PowerPoint 14.0 in each reporter deck, compared with x2t PDF via pdftotext -bbox.
+#343 a default tab that would end past the right edge was clamped to the edge (Word's bug-32345 rule) - PowerPoint wraps it;
+and spaces were skipped when sizing a line - PowerPoint counts a 28pt trailing space. Both now DrawingML-only (sdkjs
+11054e3e63). #346 kern was dropped everywhere: read and skipped in Serialize.js, no CTextPr field, HarfBuzz kern bit never set,
+never written - so every save through sdkjs stripped all kern attributes (data loss) and slide text set unkerned wrapped where
+PowerPoint fits it. Now kept, written, used by the shaper when size >= kern, and part of the text-properties cache key (sdkjs
+37ea3d91f9). Behaviour change: decks/charts whose styles carry kern (PowerPoint's default) are now kerned; Word body text
+unchanged. Mixed-version co-editing would misread a change carrying Kern. Tests issue-0343-pptx-tab-wrap-space-height,
+issue-0346-pptx-kerning.
+
 ## Root-caused, not fixed
 
 ### #2566 (remaining) - ODP bullets: wrapped lines start left of the bullet text
@@ -2742,6 +2753,11 @@ xls. The reporter's actual ask is an override - "open this in Spreadsheet
 anyway". Not investigated in depth.
 
 ## Not reproducible or not testable here
+
+### #347 / #342 re-checked 2026-11-13 against PowerPoint thumbnails
+#347 vertical spacing: with the bundled fonts (Calibri -> Carlito) our render matches the thumbnail within one pixel; the
+wrap seen earlier came from a font cache without the bundled fonts (Calibri -> Avenir). #342 "planete" off-centre: agrees
+with the thumbnail within one pixel (2.8pt); sub-1% Tahoma advance differences cannot be resolved at 256px.
 
 ### #1032 (re-checked 2026-11-13) - floating table ~720tw right of the margin - offset source not established
 Reporter's Word 2021 PDF (TS2.pdf): table left edge at 92.8pt against a 56.7pt margin, offset 36.1pt = 722tw (pages 1, 2).
