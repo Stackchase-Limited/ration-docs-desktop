@@ -8,11 +8,11 @@ behind its own commits when this was written, and several commit messages cite
 test directories that have never existed. Nothing here is typed in by hand, so
 nothing here can claim a test that is not on disk.
 
-- **296 issues** with at least one fix commit
-- **256** have a test artifact in `fork-fix-tests/`
+- **300 issues** with at least one fix commit
+- **260** have a test artifact in `fork-fix-tests/`
 - **40** do not - the fix is asserted by its commit message only
 - **35** fix commits carry no issue number (defects found in passing)
-- **37** defects found by our own testing (RD-NNNN), 37 with a test - counted separately from upstream issues
+- **38** defects found by our own testing (RD-NNNN), 38 with a test - counted separately from upstream issues
 
 A row here means a commit exists. It does **not** mean the fix was verified;
 that is what the Test column is for. See the verification status section of
@@ -29,6 +29,7 @@ that is what the Test column is for. See the verification status section of
 | [#2556](https://github.com/ONLYOFFICE/DesktopEditors/issues/2556) | core | `273f1f6558` | `issue-2556-ods-hidden-rows` | 2026-11-10 |
 | [#2554](https://github.com/ONLYOFFICE/DesktopEditors/issues/2554) | sdkjs | `542e927821` | `issue-2554-slideshow-text-clip-test.js` | 2026-11-04 |
 | [#2553](https://github.com/ONLYOFFICE/DesktopEditors/issues/2553) | desktop-apps | `bb8dcab024` `e467dbac54` | `issue-2553-logout-cancelled` | 2026-11-04 |
+| [#2550](https://github.com/ONLYOFFICE/DesktopEditors/issues/2550) | sdkjs, web-apps | `8a4cb045f8` `c3c656be29` | `issue-2550-media-animations` | 2026-11-13 |
 | [#2547](https://github.com/ONLYOFFICE/DesktopEditors/issues/2547) | desktop-sdk | `47cbfdfb00` | `issue-2547-icloud-flock` | 2026-11-04 |
 | [#2546](https://github.com/ONLYOFFICE/DesktopEditors/issues/2546) | core | `47c38a34cd` | `issue-2546-csv-utf8-fallback` | 2026-11-04 |
 | [#2545](https://github.com/ONLYOFFICE/DesktopEditors/issues/2545) | sdkjs | `7557345509` | `issue-2545-ru-seconds-symbol-test.js` | 2026-11-04 |
@@ -53,6 +54,7 @@ that is what the Test column is for. See the verification status section of
 | [#2501](https://github.com/ONLYOFFICE/DesktopEditors/issues/2501) | desktop-apps | `276791931d` | `issue-2501-linux-screen-change-rescale` | 2026-11-12 |
 | [#2490](https://github.com/ONLYOFFICE/DesktopEditors/issues/2490) | core | `003448ba5a` | `issue-2490-freetype-export-gaps` | 2026-11-04 |
 | [#2485](https://github.com/ONLYOFFICE/DesktopEditors/issues/2485) | sdkjs | `d2d908d3b7` | `issue-2485-pivot-recalc-lock-test.js` | 2026-11-04 |
+| [#2484](https://github.com/ONLYOFFICE/DesktopEditors/issues/2484) | sdkjs | `1fccd3ade2` | `issue-2484-picture-transparent-color` | 2026-11-13 |
 | [#2482](https://github.com/ONLYOFFICE/DesktopEditors/issues/2482) | core | `e56c05efdd` | `issue-2482-comment-paraid` | 2026-10-27 |
 | [#2480](https://github.com/ONLYOFFICE/DesktopEditors/issues/2480) | desktop-sdk | `4c58fffa76` `17e125e137` `565af3d1d5` | `issue-2480-gio-save-recovery` | 2026-11-05 |
 | [#2477](https://github.com/ONLYOFFICE/DesktopEditors/issues/2477) | desktop-apps | `2ca1974555` | `issue-2477-macos-pkg` | 2026-11-12 |
@@ -68,6 +70,7 @@ that is what the Test column is for. See the verification status section of
 | [#2448](https://github.com/ONLYOFFICE/DesktopEditors/issues/2448) | sdkjs | `6957873dd2` | `issue-2448-placeholder-idx-test.js` | 2026-11-04 |
 | [#2445](https://github.com/ONLYOFFICE/DesktopEditors/issues/2445) | build_tools | `176b23eee3` | `issue-2445-symbol-closure` | 2026-09-14 |
 | [#2443](https://github.com/ONLYOFFICE/DesktopEditors/issues/2443) | sdkjs | `ea70b2855c` | `issue-2443-recalc-lock-test.js` | 2026-09-14 |
+| [#2437](https://github.com/ONLYOFFICE/DesktopEditors/issues/2437) | sdkjs | `5073b97d08` | `issue-2437-print-border-gaps-test.js` | 2026-11-13 |
 | [#2436](https://github.com/ONLYOFFICE/DesktopEditors/issues/2436) | desktop-apps | `c2acc77f57` | `issue-2436-tab-type-colors-test.js` | 2026-11-12 |
 | [#2434](https://github.com/ONLYOFFICE/DesktopEditors/issues/2434) | desktop-apps | `8944f201c3` | `issue-2434-loopback-bind` | 2026-09-14 |
 | [#2433](https://github.com/ONLYOFFICE/DesktopEditors/issues/2433) | core | `65a056a5f1` | `issue-2433-charmap-not-erased` | 2026-09-13 |
@@ -105,6 +108,7 @@ that is what the Test column is for. See the verification status section of
 | [#2234](https://github.com/ONLYOFFICE/DesktopEditors/issues/2234) | sdkjs | `96b4de581f` | `issue-2234-macro-protected-write-test.js` | 2026-09-14 |
 | [#2229](https://github.com/ONLYOFFICE/DesktopEditors/issues/2229) | desktop-apps | `1509c6228e` | `issue-2229-window-border-contrast` | 2026-09-15 |
 | [#2225](https://github.com/ONLYOFFICE/DesktopEditors/issues/2225) | desktop-sdk | `46ddc076c7` | `issue-2225-ai-agent-groq-provider-test.js` | 2026-11-13 |
+| [#2219](https://github.com/ONLYOFFICE/DesktopEditors/issues/2219) | onlyoffice.github.io | `3a3a69617b` | `issue-2219-grammar-prompt-test.js` | 2026-11-13 |
 | [#2216](https://github.com/ONLYOFFICE/DesktopEditors/issues/2216) | desktop-apps | `325ecd480a` | `issue-2216-gtk-system-theme` | 2026-09-14 |
 | [#2209](https://github.com/ONLYOFFICE/DesktopEditors/issues/2209) | core | `80298b5fc2` | `issue-2209-csv-trailing-empty-row` | 2026-09-15 |
 | [#2202](https://github.com/ONLYOFFICE/DesktopEditors/issues/2202) | desktop-sdk | `26887f3267` `f4b4f9906a` | `issue-2202-x2t-spawn-failure` | 2026-09-15 |
@@ -331,6 +335,7 @@ They have not been demonstrated.
 
 | ID | Where | Commit | Test | Landed | What |
 |---|---|---|---|---|---|
+| RD-0062 | core | `16b11bbdc0` | `rd-0062-rtf-font-name-spaces` | 2026-11-13 | RTF font names written as \uN lost their spaces on open; the whole name is now t |
 | RD-0060 | core | `88deda72e2` | `rd-0060-cfb-difat-freesect` | 2026-11-13 | a compound file over ~7 MB (e.g. a password-protected save) listed sector 0 in i |
 | RD-0056 | core | `63425b8f66` | `rd-0056-odf-frame-event-listeners-order` | 2026-11-13 | ODF draw:frame wrote office:event-listeners before the frame content, which the  |
 | RD-0055 | core | `46e22fe61e` | `rd-0055-ods-chart-macro` | 2026-11-13 | a macro assigned to a chart was dropped when saving as ODS; the chart's binding  |

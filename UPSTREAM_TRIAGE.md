@@ -1255,7 +1255,31 @@ current state as Editor.bin and opens it via the existing OpenBinaryAsNewFile ro
 changes (sdkjs fd08e90c1c, web-apps 37c2ce2b87). Tests issue-1675-resume-position-test.js, issue-1858-extract-pages-test.js,
 issue-2045-duplicate-tab-test.js. GUI checks pending.
 
+### #2550 / #2219 / #2484 / #2437 and RD-0062 - DONE 2026-11-13
+#2550 media Play/Pause/Stop animations: CTiming.createMediaCallEffect writes PowerPoint's form (presetClass="mediacall",
+p:cmd type="call" playFrom(0.0) / togglePause / stop); Media group in the Animation gallery; in a slide show the timeline
+command resets the repeat filter (a second Pause used to be dropped) and goes only to that media's player (sdkjs 8a4cb045f8,
+web-apps c3c656be29). Play is written with 1 ms duration (media length unknown). #2219 user-editable prompt for the AI
+grammar check (Grammar & Spelling > Settings; default prompt unchanged byte for byte; plugins 3a3a6961). #2484 a:clrChange is
+now drawn in the editor canvas (exact colour match, cached per image; sdkjs 1fccd3ade2) - PDF export and print still opaque
+(core renderer), no UI to set it. #2437 printed cell borders had a 0.375pt gap at every vertical border: CPdfPrinter drew
+odd-width lines on the coordinate, the layout assumes the screen's half-pixel shift (sdkjs 5073b97d08); underline/strikeout
+and sparkline axes in print move the same half pixel. RD-0062 RTF font names lost their spaces on open ("Times New Roman" ->
+"TimesNewRoman"): RtfFontTableReader::ExecuteText trimmed every \uN piece (DestinationCommand.cpp:3466; core 16b11bbdc0).
+Tests issue-2550-media-animations, issue-2219-grammar-prompt-test.js, issue-2484-picture-transparent-color,
+issue-2437-print-border-gaps-test.js, rd-0062-rtf-font-name-spaces. GUI checks pending.
+
 ## Root-caused, not fixed
+
+### #1876 - cloud documents open with an English UI on Windows - not fixed (needs GUI checks)
+The portal picks its language from navigator.language / Accept-Language; desktop-sdk cefapplication.cpp:394-470 sets neither
+CefSettings.locale nor accept_language_list, so Windows/macOS default to en-US while Linux follows LANG (the report exactly).
+Fix: pass the app's UI language (CLangater) to CEF as --lang / accept_language_list before Init_CEF - changes navigator.language
+for local editors and Chromium strings too, so needs Windows/macOS GUI checks.
+
+### #2438 - Linux freeze: deadlock on a full MessagePumpGlib wakeup pipe - in prebuilt CEF
+The blocking write end of Chromium's wakeup pipe is drained only by the main thread; the fix (O_NONBLOCK or deduplicated
+ScheduleWork) is a CEF/Chromium patch. Our only lever is shorter main-thread stalls during document load.
 
 ### #2566 (remaining) - ODP bullets: wrapped lines start left of the bullet text
 pptx_text_context Impl::ApplyListProperties (~381-399) writes text:min-label-width as a positive indent and
@@ -2386,6 +2410,21 @@ made about the cause.
 
 ## Already fixed in our 9.4 baseline - no action
 
+### Fixed by our commits that do not name the issue (settled 2026-11-13, agent fi)
+#402 and #1179 spell-check language 8192 from custom/neutral keyboard layouts - sdkjs 9b733e650e (LANGID validated).
+#1509 and #2310 inserted video wrong size / black square - sdkjs 80b81cf77e (sized from its poster). #1740 copied image pastes
+as an icon - duplicate of #1760 (sdkjs 9f3cc5dd87, image/png on the clipboard). #2442 default AutoFit of new text boxes - sdkjs
+3bfc7d6c76 + web-apps 94024b16c2. #1333 print selection to PDF prints all sheets - sdkjs 0a8f5abc77 (same as #1641). #1016 first
+half is #1333; the system Print path rasterising pages is by design. #2081 silent save failure with a stale .~lock -
+desktop-sdk 51e9e27032 (+5eaf9b64). #626 default language for new documents - web-apps 869747e03c (#143), option; #527 for
+presentations. #151 run without installing - duplicate of #2404 (desktop-apps f379f0bf71). #466 WebRTC window icon - #2397
+(desktop-apps ee934cd076, setDesktopFileName). #1330 - on held branch wip/1330 (Wine test not run).
+These are not credited in FIXES.md: no commit claims them.
+
+### #2068 - INDIRECT to another sheet reports a circular reference - already fixed in 9.4 base
+sdkjs 229e86604b ("Fix bug #76318"), an ancestor of our branch: recheckCellForCycle compares the worksheet too. Correction:
+fork-fix-tests/issue-2068-indirect-crosssheet/ cited by an earlier note does not exist.
+
 ### #1436 - files not saved on Synology/NAS - fixed by our #2480 work (reproduced 2026-11-13 on gvfs sftp)
 Real upstream 7.5.1 CFileLockerGIO + SaveFile against a `gio mount sftp://` share: SaveFile=SUCCESS but the share keeps the OLD
 content - the report exactly. Upstream v9.4.1.22 fails the #2480 sftp test (18 checks); our branch passes. Cause: g_file_append_to
@@ -2688,6 +2727,9 @@ If anyone still reproduces it, suspect Wayland client-side decorations: check
 
 ## Deliberate behaviour - product decision, not a defect
 
+### #2303 - "AGPL license has impossible terms" - legal question for the product owner and counsel
+About upstream LICENSE section 7 additions (logo retention vs trademark); relevant to us as a fork. No code change.
+
 ### #1983 - object position capped at 1583.717 pt in Advanced settings - by design (matches Word)
 X/Y spinners are limited to +-55.87 cm (web-apps ImageSettingsAdvanced.js:594/619 and the PE/SSE/PDF dialogs), the app-wide
 22-inch limit (sdkjs word/Editor/Common.js:673 MAX_MM_VALUE = 558.7, also the maximum page size). 1583.7 pt is Word's own
@@ -2736,6 +2778,16 @@ our 9.4 editor. No code change.
 
 ## Feature requests, not defects
 
+### Large features and out-of-scope requests (settled 2026-11-13, agent fi)
+#3 git integration (flat OOXML + semantic diff, multi-week). #99 equation toolbox - contextual equation toolbar and
+UnicodeMath/LaTeX input exist; a symbol palette panel does not. #314 global macros (app-level store through the #1664 sandbox).
+#410 Chrome OS (x64 .deb runs in Crostini; no package). #532 ms-word:/ms-office protocol (+WebDAV). #548 ODBC/REST data.
+#564 workspaces/bundles. #693 UI redesign (design call). #733 mail merge offline (canUseMailMerge needs the server;
+documenteditor Main.js:1883). #956 offline cloud sync. #1687 PDF text boxes reuse last style (small; not done). #1772 Qt6.
+#2044 WPS-style merge keeping all contents. #2391 voice dictation (OS dictation types through the normal input path).
+#2531 Google Drive integration. #2020 Ctrl+Shift+V = paste values (new shortcut; original report fixed). #33 FreeBSD (no CEF
+build). #645 nightly builds, #835 Debian repo, #2510 AppImage zsync - infrastructure/packaging, not code.
+
 ### #1959 - MyAnimeList XML opens in the document editor
 Not a detection bug. The files' root element is `<myanimelist>`.
 `core/Common/OfficeFileFormatChecker2.cpp:1683-1700` recognises Word 2003
@@ -2779,6 +2831,25 @@ xls. The reporter's actual ask is an override - "open this in Spreadsheet
 anyway". Not investigated in depth.
 
 ## Not reproducible or not testable here
+
+### Settled 2026-11-13 (agent fi) - not reproducible or not testable here
+#2191 save/create fails after hours (Flatpak): continuation of #2134/#2086 (fixed in 9.2.0); no logs; our #2081/#2202 make a
+failed write never look successful. #2405 Times New Roman missing on Flatpak: environment (no MS fonts); the toolbar shows
+the run's stored name, never the substitute. #2406 ligatures in EMS Serenissima: w14:ligatures="all" is honoured; shaping
+restarts at property changes and NBSP; needs the font (upstream bug 82447). #2396 arm64 Linux audio no controls: vaapisink
+warnings are GStreamer probing; untestable here. #2411 fcitx5 candidate window at 200% on Wayland: CEF/XWayland caret rect.
+#2440 no "+" next to Clouds: our start page always renders it (panels.js:79-83). #2555 Quick AI Action freeze: 10.0 feature,
+absent in our plugin. #326 Nextcloud U2F: CEF 109 Alloy has no WebAuthn UI; untested. #2372 MSI "Publisher Unknown":
+upstream's MSI; we publish no signed Windows installer yet.
+
+### E4 re-attempts 2026-11-13 (agent fd) - still not reproduced
+#2474 Ctrl+. crash (Linux): upstream 9.4.0.129 aarch64 tarball under Xvfb+openbox in Docker, no IME / IBus default / IBus with
+the emoji hotkey forced to Ctrl+. - app stayed alive, no XCB errors; Ctrl+. applied subscript. Current IBus defaults the emoji
+hotkey to Super+., so the IBus theory is weak; needs the reporter's backtrace (x86_64, GNOME/XWayland, Debian 13 untested).
+#2473 date filter October empty: German CSV via x2t into the real cell sdk, autofilter month m10 shows all three October rows;
+no autofilter commit between v9.4.0.129 and our HEAD; reporter says 10.0 works. #2446 numbered-list font/size not saved: real
+word sdk + x2t to DOCX/ODT keeps TNR 14 (whole selection and number-only); RTF lost the font name's spaces (RD-0062, fixed),
+not the size - needs the reporter's file. #2230 needs two live tabs + native clipboard; reporter says 10.0 works.
 
 ### E5 re-attempts 2026-11-13 (agent fe) - still not reproduced
 #2456 Copy Style loses font in tables: real word engine in docbuilder, 72 variants (table style, language, text/cell/caret
