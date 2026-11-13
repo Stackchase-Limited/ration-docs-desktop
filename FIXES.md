@@ -8,11 +8,11 @@ behind its own commits when this was written, and several commit messages cite
 test directories that have never existed. Nothing here is typed in by hand, so
 nothing here can claim a test that is not on disk.
 
-- **300 issues** with at least one fix commit
-- **260** have a test artifact in `fork-fix-tests/`
+- **302 issues** with at least one fix commit
+- **262** have a test artifact in `fork-fix-tests/`
 - **40** do not - the fix is asserted by its commit message only
 - **35** fix commits carry no issue number (defects found in passing)
-- **38** defects found by our own testing (RD-NNNN), 38 with a test - counted separately from upstream issues
+- **48** defects found by our own testing (RD-NNNN), 48 with a test - counted separately from upstream issues
 
 A row here means a commit exists. It does **not** mean the fix was verified;
 that is what the Test column is for. See the verification status section of
@@ -211,6 +211,7 @@ that is what the Test column is for. See the verification status section of
 | [#1167](https://github.com/ONLYOFFICE/DesktopEditors/issues/1167) | desktop-apps | `82e255608f` | `issue-1167-google-doc-link` | 2026-11-11 |
 | [#1166](https://github.com/ONLYOFFICE/DesktopEditors/issues/1166) | web-apps | `b541e516bf` | `issue-1166-default-page-margins-test.js` | 2026-11-12 |
 | [#1144](https://github.com/ONLYOFFICE/DesktopEditors/issues/1144) | desktop-apps, desktop-sdk | `68827a107d` `bdbd5c3508` | `issue-1144-recover-list-dates` | 2026-11-12 |
+| [#1064](https://github.com/ONLYOFFICE/DesktopEditors/issues/1064) | sdkjs, web-apps | `cfc1f19761` `8cd5171462` | `issue-1064-undo-label-ui-test.js` | 2026-11-13 |
 | [#1031](https://github.com/ONLYOFFICE/DesktopEditors/issues/1031) | core | `9e6c96b316` | `issue-1031-wmf-ansi-codepage` | 2026-11-11 |
 | [#1018](https://github.com/ONLYOFFICE/DesktopEditors/issues/1018) | sdkjs | `26cb022b7c` `26cb022b7c` | `issue-1018-autofit-column-scan-test.js` | 2026-09-15 |
 | [#1004](https://github.com/ONLYOFFICE/DesktopEditors/issues/1004) | desktop-apps | `867bdbe7eb` | `issue-1004-template-associations` | 2026-11-11 |
@@ -263,6 +264,7 @@ that is what the Test column is for. See the verification status section of
 | [#322](https://github.com/ONLYOFFICE/DesktopEditors/issues/322) | web-apps | `62bf4b1e8b` | `issue-0322-comments-search-test.js` | 2026-11-12 |
 | [#307](https://github.com/ONLYOFFICE/DesktopEditors/issues/307) | sdkjs | `67b7cbe97c` | `issue-0307-wrapped-overflow-valign-test.js` | 2026-11-11 |
 | [#281](https://github.com/ONLYOFFICE/DesktopEditors/issues/281) | desktop-sdk | `c8d2135de6` | `issue-0281-print-oversize-page` | 2026-11-11 |
+| [#278](https://github.com/ONLYOFFICE/DesktopEditors/issues/278) | sdkjs, web-apps | `cca3a897a9` `5fdc08a71f` | `issue-0278-custom-error-bars` | 2026-11-13 |
 | [#247](https://github.com/ONLYOFFICE/DesktopEditors/issues/247) | sdkjs | `4acf06a079` | `issue-0247-mac-edit-cell-key-test.js` | 2026-11-12 |
 | [#222](https://github.com/ONLYOFFICE/DesktopEditors/issues/222) | sdkjs, web-apps | `9f04793a12` `1fd3361a6e` `6c1edee61f` | `issue-0222-two-initial-capitals-test.js` | 2026-11-12 |
 | [#211](https://github.com/ONLYOFFICE/DesktopEditors/issues/211) | onlyoffice.github.io | `94a3e9c508` | `issue-211-ocr-tiff-test.js` | 2026-11-12 |
@@ -344,6 +346,16 @@ They have not been demonstrated.
 | RD-0052 | sdkjs | `63d44e1c43` | `rd-0052-cell-copy-html-link-markup-test.js` | 2026-11-13 | copying cells with an external link put an unclosed <a> and the raw URL/tooltip  |
 | RD-0051 | core | `de64a4e454` | `rd-0051-ods-anchor-zero-height-rows` | 2026-11-13 | a drawing or form control below rows without a height came back from ODS at row  |
 | RD-0050 | core | `fe4e8f5cfe` | `rd-0050-docbuilder-x2t-not-started` | 2026-11-13 | docbuilder took an x2t that could not start or crashed for a successful conversi |
+| RD-0049 | core | `92fd47c76c` | `rd-0049-doc-note-and-owner-loops` | 2026-11-13 | .doc footnote/endnote and comment-author loops never ended on a damaged file, wr |
+| RD-0048 | core | `66ed47007e` | `rd-0048-doc-lengths-past-stream` | 2026-11-13 | .doc lengths and counts far beyond the file made x2t allocate until killed; PLEX |
+| RD-0047 | core | `b371f1324f` | `rd-0047-doc-bin-table-past-stream` | 2026-11-13 | a .doc whose PAPX/CHPX bin table length runs past the table stream made x2t read |
+| RD-0046 | core | `f4b6ef229c` | `rd-0046-ppt-user-edit-loop` | 2026-11-13 | a .ppt whose UserEditAtom chain loops back kept x2t reading it until killed; eac |
+| RD-0045 | core | `1fb37219ba` | `rd-0045-doc-plcfhdd-last-cp` | 2026-11-13 | .doc header/footer table read one CP past its end, so an empty header came and w |
+| RD-0044 | core | `8fbcbd7f5b` | `rd-0044-ppt-unread-slide-record` | 2026-11-13 | a .ppt slide whose records could not be read crashed x2t; the slide is now writt |
+| RD-0043 | core | `318e3ef22a` | `rd-0043-doc-sprm-operand-past-grpprl` | 2026-11-13 | a .doc sprm cut short at the end of its grpprl was read past the buffer (and cou |
+| RD-0042 | core | `bde4995945` | `rd-0042-doc-short-read-lengths` | 2026-11-13 | .doc readers used the length a record claimed instead of the bytes the stream he |
+| RD-0041 | core | `53d1c57de2` | `rd-0041-doc-header-footer-no-papx-fkp` | 2026-11-13 | a .doc without paragraph FKPs crashed x2t in its headers, footers or text boxes; |
+| RD-0040 | core | `be84a20320` | `rd-0040-doc-chpx-fkp-crun-past-page` | 2026-11-13 | a .doc character FKP claiming more runs than its page holds left NULL run proper |
 | RD-0031 | desktop-sdk | `4b3f8ce58a` | `rd-0031-copy-sheet-new-workbook` | 2026-11-12 | a sheet copied to a new workbook could get the source's edits replayed on it; th |
 | RD-0030 | desktop-sdk | `1fea875f12` | `rd-0030-js-file-name-quoting` | 2026-11-12 | dropped, inserted and saved file names with a quote broke the generated JS (and  |
 | RD-0027 | core | `bf8072c917` | `rd-0027-doc-main-text-past-end` | 2026-11-12 | a .doc whose FIB counts more main-text characters than the file holds kept x2t c |

@@ -1269,7 +1269,30 @@ and sparkline axes in print move the same half pixel. RD-0062 RTF font names los
 Tests issue-2550-media-animations, issue-2219-grammar-prompt-test.js, issue-2484-picture-transparent-color,
 issue-2437-print-border-gaps-test.js, rd-0062-rtf-font-name-spaces. GUI checks pending.
 
+### RD-0040..RD-0049 (legacy .doc/.ppt fuzz crashes) and #278 / #1064 - DONE 2026-11-13
+All 40 corpus files (LibreOffice ww6/ww8, Apache POI HWPF/HSLF clusterfuzz, Fuzzed.doc, 57272) now convert or fail cleanly; 64
+normal files convert byte-identically before and after. RD-0040 CHPX FKP with crun>101 left NULL CHPXs (core be84a20320).
+RD-0041 header/footer/textbox mapping on an empty PAPX FKP list (53d1c57de2). RD-0042 six sites used the claimed length, not the
+bytes read - Word 6 picture memmove, ReadXst, STSHI, ListLevel, OLST, DOP grfitbid (bde4995945). RD-0043 sprm operand copied past
+the grpprl, -1 -> 4 GB memcpy (318e3ef22a). RD-0044 two PPT NULL derefs: unread slide record in WriteTiming, background element
+assert (8fbcbd7f5b). RD-0045 PlcfHdd shorter than 7 CPs read past the table - a normal file's header appeared ~5 runs in 8
+(1fb37219ba). RD-0046 looping UserEditAtom chain (f4b6ef229c). RD-0047 bin tables larger than the stream (b371f1324f). RD-0048
+PLEX, LFO count and Clx lengths capped by the stream (66ed47007e). RD-0049 footnote/endnote and annotation-owner loops that never
+ended (92fd47c76c). Linux compile not run (Docker down at the time).
+#278 custom error bars from sheet ranges: asc_ChartSettings.setCustomErrorBars + "Format error bars" dialog ("More options..."
+in both Error Bars menus); fixed on the way: get{Plus,Minus}DataRefs returned an empty CDataRefs, hasIntersection ignored
+error-bar refs, setErrValType stored the old errDir for undo (sdkjs cca3a897a9, web-apps 5fdc08a71f). #1064 option "Name the last
+action in the Undo button tooltip" (off by default; ~65 English labels over 265 history ids; sdkjs cfc1f19761, web-apps
+8cd5171462). Tests rd-0040..rd-0049, issue-0278-*, issue-1064-*. GUI checks pending.
+
 ## Root-caused, not fixed
+
+### #420 - pin any toolbar button to the quick access toolbar - more than a day, product calls open (re-checked 2026-11-13)
+The QAT is a fixed set (Header.js onChangeQuickAccess :342; createTitleButton :868; <app>quick-access-<name>). Toolbar buttons
+have no context menu and no registry from DOM element back to Common.UI.Button, so pinning needs a toolbar context menu, stable
+ids, a cloned title button mirroring icon/disabled/click, per-editor persistence and unpin entries. On Win/Linux the header row
+is the native title bar (Desktop.js titlebuttons :125-153, ceditorwindow_p.h), so in-page pins would not show there. Product
+calls: which buttons qualify; whether Win/Linux get pins (generic native title-button type). About two days for the in-page part.
 
 ### #1876 - cloud documents open with an English UI on Windows - not fixed (needs GUI checks)
 The portal picks its language from navigator.language / Accept-Language; desktop-sdk cefapplication.cpp:394-470 sets neither
@@ -4039,6 +4062,9 @@ the list-style default size and lost bullets/spacing, and an emptied paragraph s
 (sdkjs, #2502 commit). By design: "set 30 pt, shows 27 pt" is the shape's normAutofit shrinking text to fit.
 
 ## Latent problems found in passing, not yet fixed
+
+### PPT -> PPTX writes OLE objects as external links into x2t's temp folder (found 2026-11-13, agent ex) - being fixed (fm)
+Seen on POI 41246-1.ppt and others: TargetMode="External" relationships pointing at the temp dir - leaks a local path, broken link.
 
 ### Latent-problem entries reviewed 2026-11-13 (agent ey) and not fixed
 CLocalFileLocker uninitialised pointer - already fixed (constructor sets m_pLocker = NULL). cefview forwards only x2t codes
