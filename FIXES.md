@@ -8,11 +8,11 @@ behind its own commits when this was written, and several commit messages cite
 test directories that have never existed. Nothing here is typed in by hand, so
 nothing here can claim a test that is not on disk.
 
-- **303 issues** with at least one fix commit
-- **263** have a test artifact in `fork-fix-tests/`
+- **307 issues** with at least one fix commit
+- **267** have a test artifact in `fork-fix-tests/`
 - **40** do not - the fix is asserted by its commit message only
 - **35** fix commits carry no issue number (defects found in passing)
-- **48** defects found by our own testing (RD-NNNN), 48 with a test - counted separately from upstream issues
+- **53** defects found by our own testing (RD-NNNN), 53 with a test - counted separately from upstream issues
 
 A row here means a commit exists. It does **not** mean the fix was verified;
 that is what the Test column is for. See the verification status section of
@@ -139,9 +139,11 @@ that is what the Test column is for. See the verification status section of
 | [#2062](https://github.com/ONLYOFFICE/DesktopEditors/issues/2062) | sdkjs | `599f986ab7` | `issue-2062-latex-space-hang-test.js` | 2026-11-11 |
 | [#2056](https://github.com/ONLYOFFICE/DesktopEditors/issues/2056) | desktop-sdk | `6cd7c621ee` | `issue-2056-flush-before-success` | 2026-09-12 |
 | [#2045](https://github.com/ONLYOFFICE/DesktopEditors/issues/2045) | sdkjs, web-apps | `fd08e90c1c` `37c2ce2b87` | `issue-2045-duplicate-tab-test.js` | 2026-11-13 |
+| [#2044](https://github.com/ONLYOFFICE/DesktopEditors/issues/2044) | sdkjs, web-apps | `aaa4ed4698` `f6e57f4d84` | `issue-2044-merge-keep-content` | 2026-11-13 |
 | [#2033](https://github.com/ONLYOFFICE/DesktopEditors/issues/2033) | sdkjs | `177bd1c53b` | `issue-2033-persian-calendar-format-test.js` | 2026-11-12 |
 | [#2031](https://github.com/ONLYOFFICE/DesktopEditors/issues/2031) | desktop-apps | `fb27173cb1` | `issue-2031-installer-assoc-selection` | 2026-11-10 |
 | [#2022](https://github.com/ONLYOFFICE/DesktopEditors/issues/2022) | core | `b398371970` | `issue-2022-csv-last-row` | 2026-09-15 |
+| [#2020](https://github.com/ONLYOFFICE/DesktopEditors/issues/2020) | sdkjs, web-apps | `4b3250a966` `023d023fa9` | `issue-2020-paste-values-shortcut` | 2026-11-13 |
 | [#2010](https://github.com/ONLYOFFICE/DesktopEditors/issues/2010) | sdkjs | `29c78b83b5` | `issue-2010-pdf-outline-page-range-test.js` | 2026-11-11 |
 | [#2008](https://github.com/ONLYOFFICE/DesktopEditors/issues/2008) | desktop-sdk, sdkjs | `d1ba4197ba` `f3d9068983` | `issue-2008-media-full-screen` | 2026-11-13 |
 | [#2007](https://github.com/ONLYOFFICE/DesktopEditors/issues/2007) | sdkjs, web-apps | `7eef14211f` `93947f7455` | `issue-2007-media-hide-while-not-playing-test.js` | 2026-11-12 |
@@ -170,9 +172,11 @@ that is what the Test column is for. See the verification status section of
 | [#1829](https://github.com/ONLYOFFICE/DesktopEditors/issues/1829) | desktop-apps | `d269d54a3c` | `issue-1829-user-name-chars` | 2026-11-12 |
 | [#1828](https://github.com/ONLYOFFICE/DesktopEditors/issues/1828) | desktop-apps | `35f7c442c1` | `issue-1828-linux-screen-reader` | 2026-11-12 |
 | [#1814](https://github.com/ONLYOFFICE/DesktopEditors/issues/1814) | desktop-apps | `607339b530` | `issue-1814-mac-move-tab-to-new-window` | 2026-11-12 |
+| [#1801](https://github.com/ONLYOFFICE/DesktopEditors/issues/1801) | web-apps | `f069ce1f78` | `issue-1801-command-search` | 2026-11-13 |
 | [#1760](https://github.com/ONLYOFFICE/DesktopEditors/issues/1760) | sdkjs | `9f3cc5dd87` | `issue-1760-copy-picture-image-png-test.js` | 2026-11-10 |
 | [#1710](https://github.com/ONLYOFFICE/DesktopEditors/issues/1710) | desktop-apps | `eecac8e789` | `issue-1710-flatpak-single-instance` | 2026-11-12 |
 | [#1695](https://github.com/ONLYOFFICE/DesktopEditors/issues/1695) | web-apps | `c1f5d70991` | `issue-1695-theme-template-test.js` | 2026-11-12 |
+| [#1687](https://github.com/ONLYOFFICE/DesktopEditors/issues/1687) | sdkjs, web-apps | `b264368ba6` `bdc0d3f029` | `issue-1687-pdf-textbox-last-style` | 2026-11-13 |
 | [#1675](https://github.com/ONLYOFFICE/DesktopEditors/issues/1675) | sdkjs, web-apps | `c1be872fcf` `9754c42810` | `issue-1675-resume-position-test.js` | 2026-11-13 |
 | [#1674](https://github.com/ONLYOFFICE/DesktopEditors/issues/1674) | desktop-apps | `6093e48df2` | `issue-1674-save-on-close-test.js` | 2026-11-12 |
 | [#1672](https://github.com/ONLYOFFICE/DesktopEditors/issues/1672) | sdkjs, web-apps | `e88d90ee71` `c32ac680e4` `73d504525b` | `issue-1672-hidden-slides-pdf-print-test.js` | 2026-11-10 |
@@ -338,6 +342,11 @@ They have not been demonstrated.
 
 | ID | Where | Commit | Test | Landed | What |
 |---|---|---|---|---|---|
+| RD-0075 | core | `07ae492180` | `rd-0075-doc-huge-papx-past-data` | 2026-11-13 | a .doc huge PAPX or table-properties grpprl running past the Data stream made x2 |
+| RD-0074 | core | `a733a82513` | `rd-0074-doc-tab-sprm-short` | 2026-11-13 | a .doc tab-stop sprm shorter than its tab count made x2t read past the sprm; tab |
+| RD-0073 | core | `9a120ed6d4` | `rd-0073-doc-string-table-past-stream` | 2026-11-13 | a .doc string table entry running past the end of its stream made x2t convert me |
+| RD-0072 | core | `9c25d1be7a` | `rd-0072-doc-sepx-past-stream` | 2026-11-13 | a .doc whose section properties (SEPX) run past the end of the WordDocument stre |
+| RD-0070 | core | `73091a378a` | `rd-0070-ppt-ole-temp-path-link` | 2026-11-13 | .ppt OLE objects were written to .pptx as external links to x2t's temp file; the |
 | RD-0062 | core | `16b11bbdc0` | `rd-0062-rtf-font-name-spaces` | 2026-11-13 | RTF font names written as \uN lost their spaces on open; the whole name is now t |
 | RD-0060 | core | `88deda72e2` | `rd-0060-cfb-difat-freesect` | 2026-11-13 | a compound file over ~7 MB (e.g. a password-protected save) listed sector 0 in i |
 | RD-0056 | core | `63425b8f66` | `rd-0056-odf-frame-event-listeners-order` | 2026-11-13 | ODF draw:frame wrote office:event-listeners before the frame content, which the  |

@@ -72,7 +72,7 @@ enum SprmType { PAP, TAP };
 struct SinglePropertyModifier { int OpCode; SprmType Type; unsigned char* Arguments; unsigned int argumentsSize; };
 struct FormatUtils { static unsigned int BytesToUInt32(unsigned char*, int, int) { return 0; }
                      static unsigned short BytesToUInt16(unsigned char*, int, int) { return 0; } };
-struct VirtualStreamReader { VirtualStreamReader(POLE::Stream*, int, int) {} void Seek(int, int) {}
+struct VirtualStreamReader { VirtualStreamReader(POLE::Stream*, int, int) {} void Seek(int, int) {} unsigned long GetPosition() const { return 0; }
                              unsigned char* ReadBytes(int, bool) { return NULL; } };
 struct PropertyExceptions { std::vector<SinglePropertyModifier>* grpprl;
     PropertyExceptions() : grpprl(new std::vector<SinglePropertyModifier>()) {}

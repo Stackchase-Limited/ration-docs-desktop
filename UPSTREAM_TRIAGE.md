@@ -1292,6 +1292,21 @@ experimental in 109), so the user's wish is met with a switch: File > Advanced s
 composes it" (on by default = unchanged; sdkjs f9156829a2, web-apps 5598f8486c). Document editor only. Test
 issue-2100-ime-preedit-underline-test.js. GUI check with fcitx5/IBus pending.
 
+### #1801 / #2020 / #1687 / #2044, RD-0070 and RD-0072..RD-0075 - DONE 2026-11-13
+#1801 command search in the document, spreadsheet and presentation editors (Advanced setting, off by default; Alt+/ or
+Ctrl+Option+/ - Alt+Q is the chat panel): indexes rendered toolbar buttons and menu items by caption/hint, switches tab and
+clicks as an Alt key tip does, disabled items greyed (web-apps f069ce1f78). #2020 option: Ctrl+Shift+V pastes values only in
+the cell grid (sdkjs 4b3250a966, web-apps 023d023fa9); Paste Special > Values already drops source fonts. #1687 option: new PDF
+text boxes reuse the last box's fill, line and text style (sdkjs b264368ba6, web-apps bdc0d3f029). #2044 Merge menu "Merge and
+keep content" joins non-empty cells with line breaks, wrap on, one undo (sdkjs aaa4ed4698, web-apps f6e57f4d84).
+RD-0070 PPT -> PPTX wrote OLE objects as external links to x2t's temp file when the temp path contained a dot (extension taken
+from the whole path; ImageManager.cpp; core 73091a378a) - 23 of 215 corpus .ppt; DOC and XLS export checked clean. RD-0072 SEPX
+past the WordDocument stream (9c25d1be7a), RD-0073 string-table entry past its stream (9a120ed6d4), RD-0074 tab-stop sprm shorter
+than its count (a733a82513), RD-0075 huge PAPX / table grpprl past the Data stream (07ae492180). ASan over 468 corpus files: 0 real
+aborts after the fixes (28 .ppt container-overflow false positives from mixed instrumentation). Tests issue-1801-command-search,
+issue-2020-paste-values-shortcut, issue-1687-pdf-textbox-last-style, issue-2044-merge-keep-content, rd-0070, rd-0072..rd-0075.
+Linux compile pending for the core units (Docker down). GUI checks pending.
+
 ## Root-caused, not fixed
 
 ### #2101 - IME surrounding text on Linux - Chromium limitation, not ours
