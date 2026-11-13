@@ -1346,6 +1346,15 @@ of formats such as General" kg" (CSVWriter.cpp; 3606acc7de). 79 xlsx: csv identi
 of a C++-written Editor.bin came back one row low in bin -> xlsx (BinaryReaderS.cpp ReadCells; f5a02ff33e) - not reached from the
 desktop. Linux compile pending. Tests rd-0091..rd-0096, rd-0100, rd-0101.
 
+### RD-0102..RD-0104 - x2t crashes and zeroed numbers in CSV/JSON/XLSB paths - DONE 2026-11-13
+RD-0102 CSVWriter indexed cellXfs by a cell's style with no bounds/null check, and sharedStrings with no check at all - xlsx ->
+csv/json and Editor.bin -> csv crashed; the desktop's Save As CSV of an UNEDITED workbook reaches it (core bbf0cb118d).
+RD-0103 CCell::toBin wrote typed number cells (t="n") as 0 because realCache was filled only for untyped cells - xlsx -> xlsb and
+base64 bin -> xlsb lost those numbers; the desktop's normal Save As xlsb (raw bin) was not affected (fa18fad69d). RD-0104 every
+.xlsb crashed x2t converting to a base64 Editor.bin or mail-merge JSON (dynamic_cast<CXlsb*> of a plain CXlsx) - desktop
+External Links update from an .xlsb and mail merge from an .xlsb (87d8fd27d1). 158 files: no differences except the intended.
+Tests rd-0102, rd-0103, rd-0104. Linux compile pending.
+
 ## Root-caused, not fixed
 
 ### #2101 - IME surrounding text on Linux - Chromium limitation, not ours

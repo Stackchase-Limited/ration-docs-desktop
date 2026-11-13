@@ -12,7 +12,7 @@ nothing here can claim a test that is not on disk.
 - **271** have a test artifact in `fork-fix-tests/`
 - **40** do not - the fix is asserted by its commit message only
 - **35** fix commits carry no issue number (defects found in passing)
-- **76** defects found by our own testing (RD-NNNN), 76 with a test - counted separately from upstream issues
+- **79** defects found by our own testing (RD-NNNN), 79 with a test - counted separately from upstream issues
 
 A row here means a commit exists. It does **not** mean the fix was verified;
 that is what the Test column is for. See the verification status section of
@@ -346,6 +346,9 @@ They have not been demonstrated.
 
 | ID | Where | Commit | Test | Landed | What |
 |---|---|---|---|---|---|
+| RD-0104 | core | `87d8fd27d1` | `rd-0104-xlsb-base64-bin-crash` | 2026-11-13 | x2t crashed converting any .xlsb to a base64 Editor.bin or to mail-merge JSON; t |
+| RD-0103 | core | `fa18fad69d` | `rd-0103-xlsb-typed-number-zero` | 2026-11-13 | every number of a typed cell (t="n" in xlsx, also via a base64 Editor.bin) was w |
+| RD-0102 | core | `bbf0cb118d` | `rd-0102-csv-cell-style-past-cellxfs` | 2026-11-13 | x2t crashed writing csv/json when a cell's style index has no cellXfs entry (no  |
 | RD-0101 | core | `f5a02ff33e` | `rd-0101-xlsx-bin-cell-row` | 2026-11-13 | cells of a C++-written Editor.bin came back one row below their row (<row r="1"> |
 | RD-0100 | core | `3606acc7de` | `rd-0100-csv-general-numfmt` | 2026-11-13 | a number format built on General was written as "1000eneral" in json/csv export; |
 | RD-0096 | core | `558d235a1c` | `rd-0096-doc-blip-size-past-record` | 2026-11-13 | a .doc picture (blip) record claiming more bytes than it holds put uninitialised |
