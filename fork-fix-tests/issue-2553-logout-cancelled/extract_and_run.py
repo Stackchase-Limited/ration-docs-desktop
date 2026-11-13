@@ -153,6 +153,8 @@ namespace AscAppManager {
     static bool hasUnsavedChanges() { return g_unsaved; }
     static CMainWindow *mainWindow();
     static void closeAppWindows();
+    /* #1847 (restore session tabs) records the open documents from closeEvent; not part of #2553 */
+    static void rememberSessionDocuments() {}
 }
 
 /* ---- a top-level window with the real CMainWindow::closeEvent ---------- */

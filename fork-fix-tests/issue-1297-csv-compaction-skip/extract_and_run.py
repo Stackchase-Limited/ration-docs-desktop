@@ -191,6 +191,7 @@ static void runLoop(const std::wstring &input)
 
     bool bMsLimit     = false;
     bool bMsLimitCell = false;
+    bool bSheetFull   = false;  /* RD-0001 (2026-11-11) split the row-limit flag out of bMsLimit */
     bool bInQuote     = false;
     bool readToCache  = false;
 
@@ -202,7 +203,7 @@ static void runLoop(const std::wstring &input)
 
 %(parse_loop)s
 
-    (void)bMsLimit; (void)bMsLimitCell; (void)wcTab; (void)wcNewLineR;
+    (void)bMsLimit; (void)bMsLimitCell; (void)bSheetFull; (void)wcTab; (void)wcNewLineR;
     delete pRow;
     for (size_t i = 0; i < pWorksheet->m_oSheetData->m_arrItems.size(); ++i)
         delete pWorksheet->m_oSheetData->m_arrItems[i];

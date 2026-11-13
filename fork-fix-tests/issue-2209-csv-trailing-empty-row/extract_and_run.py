@@ -100,7 +100,7 @@ elif 'utf8_2_unicode_lenient' in utf8_fn:
 # Select it by what it does, not by position: it is the only `if` in the file
 # guarded on `nStartCell != nSize && !bMsLimit`.  Take its `else` too, since
 # that is the branch that releases the surplus row.
-m = re.search(r'^\tif \(nStartCell != nSize && !bMsLimit\)\s*$', src, re.M)
+m = re.search(r'^\tif \(nStartCell != nSize && !(?:bMsLimit|bSheetFull)\)\s*$', src, re.M)  # RD-0001 renamed the flag
 if not m:
     raise SystemExit('the `nStartCell != nSize && !bMsLimit` block was not found '
                      '- the extractor needs updating')
@@ -174,6 +174,7 @@ static Outcome runTail(const std::wstring &data, size_t nStartCellIn, size_t nSi
     INT nStartCell    = (INT)nStartCellIn;
     bool bMsLimit     = false;
     bool bMsLimitCell = false;
+    bool bSheetFull   = false;
     bool bIsWrap      = false;
     bool readToCache  = false;
     INT nIndexRow = 1, nIndexCol = 0;
@@ -182,7 +183,7 @@ static Outcome runTail(const std::wstring &data, size_t nStartCellIn, size_t nSi
 
 %(tail_block)s
 
-    (void)bMsLimitCell;
+    (void)bMsLimitCell; (void)bSheetFull;
     Outcome o;
     o.rows = pWorksheet->m_oSheetData->m_arrItems.size();
     o.released = g_released;
