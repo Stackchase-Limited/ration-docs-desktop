@@ -1307,6 +1307,23 @@ aborts after the fixes (28 .ppt container-overflow false positives from mixed in
 issue-2020-paste-values-shortcut, issue-1687-pdf-textbox-last-style, issue-2044-merge-keep-content, rd-0070, rd-0072..rd-0075.
 Linux compile pending for the core units (Docker down). GUI checks pending.
 
+### #289 / #99 / #733 / #420 and RD-0076..RD-0089 - DONE 2026-11-13
+#289 slide sorter: View tab "Slide Sorter" lays the thumbnails panel out as a full-area grid (zoom slider = thumbnails per row);
+click/Shift/Ctrl select, drag and Ctrl+Up/Down reorder through the panel's own operations (undo works), Delete/Duplicate/copy/paste,
+double-click or Enter opens Normal view, hidden slides dimmed (sdkjs f76943b391, web-apps 5359a7c021). Undo no longer switches
+the view mode except between master and slide views. Ribbon insert commands still target the (hidden) current slide.
+#99 option: right-sidebar Equation panel (document and presentation editors) with structure galleries, a searchable symbol palette
+(~500 symbols from the math autocorrect table), Professional/Linear and Unicode/LaTeX (web-apps efb1591bde, 3989d00439).
+#733 local mail merge in the desktop app: From file (xlsx/xls/ods via x2t JSON; csv/tsv parsed in the editor as UTF-8), fields,
+preview, Merge to a new unsaved tab with one section per record (sdkjs cdbb399929, web-apps 088b831418); no PDF/email output offline.
+#420 option: right-click a plain ribbon button to pin it to the in-page quick access toolbar (mirrors disabled/pressed state,
+per-editor localStorage, max 10; web-apps 12a95aaeda). Pins are not shown in the native Win/Linux title bar.
+RD-0076..RD-0089 legacy readers used claimed lengths after short reads: length-prefixed strings, OLE LinkInfo/PIC/Word 6 data,
+comment initials, form-field strings, font panose/names, PICF, string-table extra data, .doc/.xls encryption headers, .ppt
+ExObjStg (heap WRITE) and short blips (4 GB allocation), .xls formula cce, monikers/picture keys, short Continue records (heap
+WRITE) and FOPT counts (core c51ef4b0aa..69cf1181b0). 86 normal .doc/.ppt/.xls convert byte-identically. Linux compile pending.
+Tests issue-0289-slide-sorter, issue-0099-equation-panel, issue-0733-mail-merge, issue-0420-quick-access-pins, rd-0076..rd-0089.
+
 ## Root-caused, not fixed
 
 ### #2101 - IME surrounding text on Linux - Chromium limitation, not ours

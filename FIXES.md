@@ -8,11 +8,11 @@ behind its own commits when this was written, and several commit messages cite
 test directories that have never existed. Nothing here is typed in by hand, so
 nothing here can claim a test that is not on disk.
 
-- **307 issues** with at least one fix commit
-- **267** have a test artifact in `fork-fix-tests/`
+- **311 issues** with at least one fix commit
+- **271** have a test artifact in `fork-fix-tests/`
 - **40** do not - the fix is asserted by its commit message only
 - **35** fix commits carry no issue number (defects found in passing)
-- **53** defects found by our own testing (RD-NNNN), 53 with a test - counted separately from upstream issues
+- **67** defects found by our own testing (RD-NNNN), 67 with a test - counted separately from upstream issues
 
 A row here means a commit exists. It does **not** mean the fix was verified;
 that is what the Test column is for. See the verification status section of
@@ -238,6 +238,7 @@ that is what the Test column is for. See the verification status section of
 | [#766](https://github.com/ONLYOFFICE/DesktopEditors/issues/766) | desktop-apps | `8c8ec5f91b` | `issue-0766-mac-middle-click-tab-close` | 2026-11-12 |
 | [#746](https://github.com/ONLYOFFICE/DesktopEditors/issues/746) | sdkjs, web-apps | `c951cbc881` `2518219af3` | `issue-0746-default-font-test.js` | 2026-11-12 |
 | [#736](https://github.com/ONLYOFFICE/DesktopEditors/issues/736) | web-apps | `0a9d55094d` | `issue-0736-dark-loading-page-test.js` | 2026-11-12 |
+| [#733](https://github.com/ONLYOFFICE/DesktopEditors/issues/733) | sdkjs, web-apps | `cdbb399929` `088b831418` | `issue-0733-mail-merge` | 2026-11-13 |
 | [#706](https://github.com/ONLYOFFICE/DesktopEditors/issues/706) | desktop-apps | `a877e2fc4c` | `issue-706-saveas-dotted-name` | 2026-11-11 |
 | [#694](https://github.com/ONLYOFFICE/DesktopEditors/issues/694) | desktop-sdk | `963c2394ad` | `issue-0694-linux-qt-scale-factor` | 2026-11-11 |
 | [#676](https://github.com/ONLYOFFICE/DesktopEditors/issues/676) | sdkjs | `d32100e8a1` `d32100e8a1` | `issue-676-nautilus-image-paste-test.js` | 2026-09-15 |
@@ -259,6 +260,7 @@ that is what the Test column is for. See the verification status section of
 | [#517](https://github.com/ONLYOFFICE/DesktopEditors/issues/517) | desktop-sdk, sdkjs, web-apps | `b5d8ce9cd5` `ed400de638` `3ce41d0683` | `issue-0517-new-file-save-format` | 2026-11-12 |
 | [#482](https://github.com/ONLYOFFICE/DesktopEditors/issues/482) | web-apps | `7ddbfa80c2` | `issue-0482-csv-row-limit-warning-test.js` | 2026-11-11 |
 | [#432](https://github.com/ONLYOFFICE/DesktopEditors/issues/432) | desktop-apps, web-apps | `367ff6911d` `1591170a48` | `issue-0432-os-region-units` | 2026-11-12 |
+| [#420](https://github.com/ONLYOFFICE/DesktopEditors/issues/420) | web-apps | `12a95aaeda` | `issue-0420-quick-access-pins` | 2026-11-13 |
 | [#388](https://github.com/ONLYOFFICE/DesktopEditors/issues/388) | desktop-apps, web-apps | `896bea2db7` `674be1df21` | `issue-0388-mac-edit-menu-undo` | 2026-11-11 |
 | [#371](https://github.com/ONLYOFFICE/DesktopEditors/issues/371) | sdkjs, web-apps | `f302f97ceb` `f1d5ed2a3f` | `issue-0371-thai-line-break-test.js` | 2026-11-13 |
 | [#348](https://github.com/ONLYOFFICE/DesktopEditors/issues/348) | sdkjs | `b258d6e942` | `issue-0348-pptx-negative-indent` | 2026-11-13 |
@@ -268,6 +270,7 @@ that is what the Test column is for. See the verification status section of
 | [#334](https://github.com/ONLYOFFICE/DesktopEditors/issues/334) | sdkjs | `b7a1614833` | `issue-334-copy-math-justification-test.js` | 2026-11-11 |
 | [#322](https://github.com/ONLYOFFICE/DesktopEditors/issues/322) | web-apps | `62bf4b1e8b` | `issue-0322-comments-search-test.js` | 2026-11-12 |
 | [#307](https://github.com/ONLYOFFICE/DesktopEditors/issues/307) | sdkjs | `67b7cbe97c` | `issue-0307-wrapped-overflow-valign-test.js` | 2026-11-11 |
+| [#289](https://github.com/ONLYOFFICE/DesktopEditors/issues/289) | sdkjs, web-apps | `f76943b391` `5359a7c021` | `issue-0289-slide-sorter` | 2026-11-13 |
 | [#281](https://github.com/ONLYOFFICE/DesktopEditors/issues/281) | desktop-sdk | `c8d2135de6` | `issue-0281-print-oversize-page` | 2026-11-11 |
 | [#278](https://github.com/ONLYOFFICE/DesktopEditors/issues/278) | sdkjs, web-apps | `cca3a897a9` `5fdc08a71f` | `issue-0278-custom-error-bars` | 2026-11-13 |
 | [#247](https://github.com/ONLYOFFICE/DesktopEditors/issues/247) | sdkjs | `4acf06a079` | `issue-0247-mac-edit-cell-key-test.js` | 2026-11-12 |
@@ -285,6 +288,7 @@ that is what the Test column is for. See the verification status section of
 | [#141](https://github.com/ONLYOFFICE/DesktopEditors/issues/141) | core | `a60044ddd3` | `issue-0141-adobe-fonts-windows` | 2026-11-12 |
 | [#139](https://github.com/ONLYOFFICE/DesktopEditors/issues/139) | core | `fd679c60c1` `fd679c60c1` | `issue-139-pptx-invalid-xml-chars` | 2026-09-15 |
 | [#100](https://github.com/ONLYOFFICE/DesktopEditors/issues/100) | core, sdkjs | `48a2f86930` `87ae50a92a` | `issue-0100-docvars-core` | 2026-11-12 |
+| [#99](https://github.com/ONLYOFFICE/DesktopEditors/issues/99) | web-apps | `3989d00439` `efb1591bde` | `issue-0099-equation-panel` | 2026-11-13 |
 | [#83](https://github.com/ONLYOFFICE/DesktopEditors/issues/83) | desktop-apps, desktop-sdk | `8dc58c3989` `6afd78afa0` | `issue-0083-csv-save-keeps-options` | 2026-11-12 |
 | [#73](https://github.com/ONLYOFFICE/DesktopEditors/issues/73) | sdkjs | `33475b76ae` | `issue-0073-mac-cmd-up-down-test.js` | 2026-11-11 |
 | [#69](https://github.com/ONLYOFFICE/DesktopEditors/issues/69) | desktop-apps | `6aa7e7249c` | `issue-0069-mac-open-recent` | 2026-11-12 |
@@ -342,6 +346,20 @@ They have not been demonstrated.
 
 | ID | Where | Commit | Test | Landed | What |
 |---|---|---|---|---|---|
+| RD-0089 | core | `69cf1181b0` | `rd-0089-xls-fopt-count-past-record` | 2026-11-13 | an .xls drawing whose property table (FOPT) claims more properties than its reco |
+| RD-0088 | core | `0ee329b64d` | `rd-0088-xls-short-continue-wraps` | 2026-11-13 | an .xls Continue record shorter than its header (shared strings, sort data) made |
+| RD-0087 | core | `195e8f254a` | `rd-0087-xls-moniker-key-lengths` | 2026-11-13 | an .xls hyperlink moniker or picture key whose length runs past its record made  |
+| RD-0086 | core | `e7eeadd8ab` | `rd-0086-xls-formula-cce-past-record` | 2026-11-13 | an .xls formula whose length (cce) runs past its record made x2t read past the r |
+| RD-0085 | core | `99ffd2a161` | `rd-0085-ppt-blip-shorter-than-header` | 2026-11-13 | a .ppt picture record shorter than its blip header made x2t allocate and write ~ |
+| RD-0084 | core | `22a2d5fd45` | `rd-0084-ppt-exobjstg-short-record` | 2026-11-13 | a .ppt compressed OLE/VBA storage record shorter than 4 bytes made x2t write pas |
+| RD-0083 | core | `c148ca7643` | `rd-0083-doc-xls-encryption-header-lengths` | 2026-11-13 | a .doc/.xls encryption header whose salt or verifier runs past its stream or rec |
+| RD-0082 | core | `ef943988d4` | `rd-0082-doc-sttb-extra-past-stream` | 2026-11-13 | a .doc string table whose last extra data is cut short by the end of its stream  |
+| RD-0081 | core | `7b1a53b56d` | `rd-0081-doc-picf-past-data` | 2026-11-13 | a .doc picture header (PICF) cut short by the end of the Data stream made x2t re |
+| RD-0080 | core | `62ac577a75` | `rd-0080-doc-font-panose-past-stream` | 2026-11-13 | a .doc font table cut short inside a font's panose or name made x2t read past it |
+| RD-0079 | core | `f10b6b07c2` | `rd-0079-doc-form-field-string-past-data` | 2026-11-13 | a .doc form field whose name or other string runs past the Data stream made x2t  |
+| RD-0078 | core | `9411918428` | `rd-0078-doc-comment-initials-cch` | 2026-11-13 | a .doc comment whose author initials claim more characters than they hold crashe |
+| RD-0077 | core | `aec1bdbcb2` | `rd-0077-doc-ole-linkinfo-past-stream` | 2026-11-13 | a .doc OLE object whose LinkInfo string, PIC borders or Word 6 data run past the |
+| RD-0076 | core | `c52dabb841` | `rd-0076-doc-length-prefixed-string-past-stream` | 2026-11-13 | a .doc OLE CompObj/Word 6 string whose length runs past its stream made x2t read |
 | RD-0075 | core | `07ae492180` | `rd-0075-doc-huge-papx-past-data` | 2026-11-13 | a .doc huge PAPX or table-properties grpprl running past the Data stream made x2 |
 | RD-0074 | core | `a733a82513` | `rd-0074-doc-tab-sprm-short` | 2026-11-13 | a .doc tab-stop sprm shorter than its tab count made x2t read past the sprm; tab |
 | RD-0073 | core | `9a120ed6d4` | `rd-0073-doc-string-table-past-stream` | 2026-11-13 | a .doc string table entry running past the end of its stream made x2t convert me |
