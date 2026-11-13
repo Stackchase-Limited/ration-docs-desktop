@@ -1324,6 +1324,14 @@ ExObjStg (heap WRITE) and short blips (4 GB allocation), .xls formula cce, monik
 WRITE) and FOPT counts (core c51ef4b0aa..69cf1181b0). 86 normal .doc/.ppt/.xls convert byte-identically. Linux compile pending.
 Tests issue-0289-slide-sorter, issue-0099-equation-panel, issue-0733-mail-merge, issue-0420-quick-access-pins, rd-0076..rd-0089.
 
+### RD-0090 - xlsx inline-string cells without a sharedStrings part were folded into the row's first cell - DONE 2026-11-13
+CRow::compressCell (OOXML/XlsxFormat/Worksheets/SheetData.cpp:4744) treated a cell with only m_oRichText (inline string not yet
+moved to m_oValue when there is no sharedStrings part) as empty and folded it into the previous cell as a repeat; same for an
+empty cell after a formula-only cell. Effect: mail-merge JSON lost the cells, ODS lost them, and the base64 Editor.bin used by
+desktop convert_local_file / "send to" copied the first cell across ("Name,Name,Name"). The normal desktop open (streaming XLSB)
+was not affected. x2t's own csv->xlsx writes inline strings. Fixed (core 012cb19776); 48 POI xlsx identical in 5 formats.
+Test rd-0090-xlsx-inline-strings-folded (RD_X2T + RD_X2T_LIBS for the end-to-end part).
+
 ## Root-caused, not fixed
 
 ### #2101 - IME surrounding text on Linux - Chromium limitation, not ours

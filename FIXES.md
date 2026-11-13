@@ -12,7 +12,7 @@ nothing here can claim a test that is not on disk.
 - **271** have a test artifact in `fork-fix-tests/`
 - **40** do not - the fix is asserted by its commit message only
 - **35** fix commits carry no issue number (defects found in passing)
-- **67** defects found by our own testing (RD-NNNN), 67 with a test - counted separately from upstream issues
+- **68** defects found by our own testing (RD-NNNN), 68 with a test - counted separately from upstream issues
 
 A row here means a commit exists. It does **not** mean the fix was verified;
 that is what the Test column is for. See the verification status section of
@@ -346,6 +346,7 @@ They have not been demonstrated.
 
 | ID | Where | Commit | Test | Landed | What |
 |---|---|---|---|---|---|
+| RD-0090 | core | `012cb19776` | `rd-0090-xlsx-inline-strings-folded` | 2026-11-13 | inline-string cells in an xlsx without sharedStrings were folded into the first  |
 | RD-0089 | core | `69cf1181b0` | `rd-0089-xls-fopt-count-past-record` | 2026-11-13 | an .xls drawing whose property table (FOPT) claims more properties than its reco |
 | RD-0088 | core | `0ee329b64d` | `rd-0088-xls-short-continue-wraps` | 2026-11-13 | an .xls Continue record shorter than its header (shared strings, sort data) made |
 | RD-0087 | core | `195e8f254a` | `rd-0087-xls-moniker-key-lengths` | 2026-11-13 | an .xls hyperlink moniker or picture key whose length runs past its record made  |
