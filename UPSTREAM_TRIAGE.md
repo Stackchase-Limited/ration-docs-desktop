@@ -1242,6 +1242,19 @@ PowerPoint fits it. Now kept, written, used by the shaper when size >= kern, and
 unchanged. Mixed-version co-editing would misread a change carrying Kern. Tests issue-0343-pptx-tab-wrap-space-height,
 issue-0346-pptx-kerning.
 
+### #1675 / #1858 / #2045 - resume position (option); extract pages to PDF; duplicate document - DONE 2026-11-13
+#1675 Advanced setting "Offer to continue where you left off when a document is reopened" (document editor, desktop local
+files, off by default): caret kept as a path of element indexes + characters-before-caret (stable across save/reopen,
+tables and content controls), per hashed path in localStorage, max 100; a non-blocking tip jumps there (sdkjs c1be872fcf,
+web-apps 9754c42810). Turning the option off deletes the saved places. #1858 PDF editor thumbnail menu "Save pages as new
+PDF..." - CPDFDoc.GetPagesBinary bytes through the existing blob download to the native Save dialog (sdkjs e48439ad4f,
+web-apps 09b9b8911e); macOS already handles it (AppDelegate.mm onCEFStartSave) - the earlier note saying otherwise was
+wrong. OnBeforeDownload still offers the dialog for downloads from any frame (portal downloads, Save as picture use it);
+narrowing it is a separate decision. #2045 File > Duplicate for local desktop files (docx/xlsx/pptx, not PDF): writes the
+current state as Editor.bin and opens it via the existing OpenBinaryAsNewFile route, which since RD-0031 drops copied
+changes (sdkjs fd08e90c1c, web-apps 37c2ce2b87). Tests issue-1675-resume-position-test.js, issue-1858-extract-pages-test.js,
+issue-2045-duplicate-tab-test.js. GUI checks pending.
+
 ## Root-caused, not fixed
 
 ### #2566 (remaining) - ODP bullets: wrapped lines start left of the bullet text

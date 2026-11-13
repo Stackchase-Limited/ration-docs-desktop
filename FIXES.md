@@ -8,8 +8,8 @@ behind its own commits when this was written, and several commit messages cite
 test directories that have never existed. Nothing here is typed in by hand, so
 nothing here can claim a test that is not on disk.
 
-- **293 issues** with at least one fix commit
-- **253** have a test artifact in `fork-fix-tests/`
+- **296 issues** with at least one fix commit
+- **256** have a test artifact in `fork-fix-tests/`
 - **40** do not - the fix is asserted by its commit message only
 - **35** fix commits carry no issue number (defects found in passing)
 - **37** defects found by our own testing (RD-NNNN), 37 with a test - counted separately from upstream issues
@@ -133,6 +133,7 @@ that is what the Test column is for. See the verification status section of
 | [#2071](https://github.com/ONLYOFFICE/DesktopEditors/issues/2071) | sdkjs | `b98bcb7c01` | `issue-2071-unhide-all-rows-test.js` | 2026-09-15 |
 | [#2062](https://github.com/ONLYOFFICE/DesktopEditors/issues/2062) | sdkjs | `599f986ab7` | `issue-2062-latex-space-hang-test.js` | 2026-11-11 |
 | [#2056](https://github.com/ONLYOFFICE/DesktopEditors/issues/2056) | desktop-sdk | `6cd7c621ee` | `issue-2056-flush-before-success` | 2026-09-12 |
+| [#2045](https://github.com/ONLYOFFICE/DesktopEditors/issues/2045) | sdkjs, web-apps | `fd08e90c1c` `37c2ce2b87` | `issue-2045-duplicate-tab-test.js` | 2026-11-13 |
 | [#2033](https://github.com/ONLYOFFICE/DesktopEditors/issues/2033) | sdkjs | `177bd1c53b` | `issue-2033-persian-calendar-format-test.js` | 2026-11-12 |
 | [#2031](https://github.com/ONLYOFFICE/DesktopEditors/issues/2031) | desktop-apps | `fb27173cb1` | `issue-2031-installer-assoc-selection` | 2026-11-10 |
 | [#2022](https://github.com/ONLYOFFICE/DesktopEditors/issues/2022) | core | `b398371970` | `issue-2022-csv-last-row` | 2026-09-15 |
@@ -158,6 +159,7 @@ that is what the Test column is for. See the verification status section of
 | [#1872](https://github.com/ONLYOFFICE/DesktopEditors/issues/1872) | desktop-sdk | `61e4e166ab` | `issue-1872-screen-reader-accessibility-test.js` | 2026-11-12 |
 | [#1868](https://github.com/ONLYOFFICE/DesktopEditors/issues/1868) | core, sdkjs | `d353ff8898` `4ec75acf9a` `68457630dd` | `issue-1868-active-cell-x2t` | 2026-11-13 |
 | [#1864](https://github.com/ONLYOFFICE/DesktopEditors/issues/1864) | sdkjs, web-apps | `5f7ad1f89c` `1ecc12124b` | `issue-1864-print-preview-wait-test.js` | 2026-11-12 |
+| [#1858](https://github.com/ONLYOFFICE/DesktopEditors/issues/1858) | sdkjs, web-apps | `e48439ad4f` `09b9b8911e` | `issue-1858-extract-pages-test.js` | 2026-11-13 |
 | [#1855](https://github.com/ONLYOFFICE/DesktopEditors/issues/1855) | core | `4116fbeb76` | `issue-1855-pdf-outline-pagemode` | 2026-09-15 |
 | [#1847](https://github.com/ONLYOFFICE/DesktopEditors/issues/1847) | desktop-apps | `ccb7f894af` `b76fc9693a` | `issue-1847-reopen-closed-tab` | 2026-11-12 |
 | [#1829](https://github.com/ONLYOFFICE/DesktopEditors/issues/1829) | desktop-apps | `d269d54a3c` | `issue-1829-user-name-chars` | 2026-11-12 |
@@ -166,6 +168,7 @@ that is what the Test column is for. See the verification status section of
 | [#1760](https://github.com/ONLYOFFICE/DesktopEditors/issues/1760) | sdkjs | `9f3cc5dd87` | `issue-1760-copy-picture-image-png-test.js` | 2026-11-10 |
 | [#1710](https://github.com/ONLYOFFICE/DesktopEditors/issues/1710) | desktop-apps | `eecac8e789` | `issue-1710-flatpak-single-instance` | 2026-11-12 |
 | [#1695](https://github.com/ONLYOFFICE/DesktopEditors/issues/1695) | web-apps | `c1f5d70991` | `issue-1695-theme-template-test.js` | 2026-11-12 |
+| [#1675](https://github.com/ONLYOFFICE/DesktopEditors/issues/1675) | sdkjs, web-apps | `c1be872fcf` `9754c42810` | `issue-1675-resume-position-test.js` | 2026-11-13 |
 | [#1674](https://github.com/ONLYOFFICE/DesktopEditors/issues/1674) | desktop-apps | `6093e48df2` | `issue-1674-save-on-close-test.js` | 2026-11-12 |
 | [#1672](https://github.com/ONLYOFFICE/DesktopEditors/issues/1672) | sdkjs, web-apps | `e88d90ee71` `c32ac680e4` `73d504525b` | `issue-1672-hidden-slides-pdf-print-test.js` | 2026-11-10 |
 | [#1664](https://github.com/ONLYOFFICE/DesktopEditors/issues/1664) | core, desktop-apps, desktop-sdk, onlyoffice.github.io, sdkjs, web-apps | `0228100ad6` `ff6eb2e4e3` `b0a9cfb763` | `issue-1664-no-remote-scripts-test.js` | 2026-11-11 |
