@@ -12,7 +12,7 @@ nothing here can claim a test that is not on disk.
 - **271** have a test artifact in `fork-fix-tests/`
 - **40** do not - the fix is asserted by its commit message only
 - **35** fix commits carry no issue number (defects found in passing)
-- **68** defects found by our own testing (RD-NNNN), 68 with a test - counted separately from upstream issues
+- **76** defects found by our own testing (RD-NNNN), 76 with a test - counted separately from upstream issues
 
 A row here means a commit exists. It does **not** mean the fix was verified;
 that is what the Test column is for. See the verification status section of
@@ -346,6 +346,14 @@ They have not been demonstrated.
 
 | ID | Where | Commit | Test | Landed | What |
 |---|---|---|---|---|---|
+| RD-0101 | core | `f5a02ff33e` | `rd-0101-xlsx-bin-cell-row` | 2026-11-13 | cells of a C++-written Editor.bin came back one row below their row (<row r="1"> |
+| RD-0100 | core | `3606acc7de` | `rd-0100-csv-general-numfmt` | 2026-11-13 | a number format built on General was written as "1000eneral" in json/csv export; |
+| RD-0096 | core | `558d235a1c` | `rd-0096-doc-blip-size-past-record` | 2026-11-13 | a .doc picture (blip) record claiming more bytes than it holds put uninitialised |
+| RD-0095 | core | `d493a21e09` | `rd-0095-xlsb-cf-formula-rgcb-missing` | 2026-11-13 | an .xlsb conditional-format formula whose extra data (rgcb) is missing made x2t  |
+| RD-0094 | core | `1f2f77f8f6` | `rd-0094-doc-variable-sprm-operand-short` | 2026-11-13 | a .doc table sprm whose variable-size operand is shorter than its structure made |
+| RD-0093 | core | `df565af111` | `rd-0093-doc-fixed-sprm-operand-cut` | 2026-11-13 | a .doc fixed-size sprm cut short at the end of its grpprl made x2t read past its |
+| RD-0092 | core | `be82c083d8` | `rd-0092-xls-encrypted-boundsheet-short` | 2026-11-13 | an encrypted .xls with a BoundSheet8 record shorter than 4 bytes made x2t decryp |
+| RD-0091 | core | `8a74f585e9` | `rd-0091-xls-filepass-short-salt-iv` | 2026-11-13 | an encrypted .xls whose FilePass header ends before its salt made x2t read 16 by |
 | RD-0090 | core | `012cb19776` | `rd-0090-xlsx-inline-strings-folded` | 2026-11-13 | inline-string cells in an xlsx without sharedStrings were folded into the first  |
 | RD-0089 | core | `69cf1181b0` | `rd-0089-xls-fopt-count-past-record` | 2026-11-13 | an .xls drawing whose property table (FOPT) claims more properties than its reco |
 | RD-0088 | core | `0ee329b64d` | `rd-0088-xls-short-continue-wraps` | 2026-11-13 | an .xls Continue record shorter than its header (shared strings, sort data) made |

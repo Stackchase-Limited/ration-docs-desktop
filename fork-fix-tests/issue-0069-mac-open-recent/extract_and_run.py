@@ -92,8 +92,13 @@ static NSString * g_recovery;
 @interface FakeDelegate : NSObject <NSMenuDelegate>
 @property (weak) NSMenu *openRecentMenu;
 - (NSArray<NSString *> *)recentLocalDocuments:(NSUInteger)limit;
+- (void)updateDictationMenuItem:(NSMenu *)menu;
+- (IBAction)onMenuStartDictation:(id)sender;
 @end
 @implementation FakeDelegate
+// the Edit menu's Start Dictation item (#2391) shares menuNeedsUpdate:; not exercised here
+- (void)updateDictationMenuItem:(NSMenu *)menu {}
+- (IBAction)onMenuStartDictation:(id)sender {}
 %(methods)s
 @end
 

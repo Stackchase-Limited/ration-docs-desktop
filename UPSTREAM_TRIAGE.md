@@ -1332,6 +1332,20 @@ desktop convert_local_file / "send to" copied the first cell across ("Name,Name,
 was not affected. x2t's own csv->xlsx writes inline strings. Fixed (core 012cb19776); 48 POI xlsx identical in 5 formats.
 Test rd-0090-xlsx-inline-strings-folded (RD_X2T + RD_X2T_LIBS for the end-to-end part).
 
+### RD-0091..RD-0096, RD-0100, RD-0101 - legacy reader leftovers and CSV/bin writer defects - DONE 2026-11-13
+RD-0091 xls FilePass too short: ECMADecryptor used an empty salt as the CBC iv (16-byte read from a 1-byte buffer); DecryptCipher
+now zero-pads short ivs (CryptTransform.cpp; core 8a74f585e9). RD-0092 encrypted xls with a BoundSheet8 under 4 bytes:
+Decrypt(data+4, size-4) wrapped - XOR overflow write / 16 EB allocation (CFRecord.cpp; be82c083d8). RD-0093 fixed-size .doc sprm
+operands cut short are zero-padded to their [MS-DOC] size (SinglePropertyModifier.cpp; df565af111). RD-0094 variable-size table
+sprms shorter than their structure (borders, cell width/padding/valign, CSSA, TDefTable, TC80, PropRMark) now skipped
+(1f2f77f8f6). RD-0095 XLSB CF formula RevName/RevExtern read one unchecked byte (d493a21e09). RD-0096 .doc MemoryStream::ReadBytes
+allocated the claimed count and copied fewer - 943 bytes of uninitialised heap ended up in an output PNG, a huge size crashed
+(MemoryStream.cpp, BitmapBlip.cpp; 558d235a1c). 237 of 238 normal files identical (the other differs run to run on base too).
+RD-0100 a number format built on General was written as "1000eneral" in mail-merge JSON, and Save as CSV dropped the literal text
+of formats such as General" kg" (CSVWriter.cpp; 3606acc7de). 79 xlsx: csv identical, json differs only where fixed. RD-0101 cells
+of a C++-written Editor.bin came back one row low in bin -> xlsx (BinaryReaderS.cpp ReadCells; f5a02ff33e) - not reached from the
+desktop. Linux compile pending. Tests rd-0091..rd-0096, rd-0100, rd-0101.
+
 ## Root-caused, not fixed
 
 ### #2101 - IME surrounding text on Linux - Chromium limitation, not ours
