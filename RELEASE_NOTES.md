@@ -250,8 +250,8 @@ All of these are **off by default** unless noted, so nothing changes until you t
 
   | Platform | Status |
   |---|---|
-  | macOS (Apple Silicon) | **To be confirmed** by the integrator before publishing |
-  | Linux x64 | Built and smoke-tested on Ubuntu 24.04 (installs, About reports 2026.3.0.1, the bundled converter round-trips DOCX/XLSX/PPTX/ODF, new Home page in light and dark). That build predates the last start-page style fix (desktop-apps `ebfd5ebef`); **rebuild from the tag before publishing** |
+  | macOS (Apple Silicon) | `RationDocs-2026.3.0-arm64.dmg` built from the tag (768 MB, sha256 `680bc06b…2d5afb`). **Requires macOS 12 (Monterey) or later** (was 11). Smoke-tested: new Home page, typing and saving, bundled conversions. About window to be checked by hand |
+  | Linux x64 | `ration-docs_2026.3.0-1_amd64.deb` built from the tag (sha256 `277459d7…775d925`). Install test of this exact build pending; the previous build of the same release passed it |
   | Windows | **Not built.** Windows code in this release (#34, #1177, #2106 and others) has not been compiled yet |
 
 - **GUI checks pending.**
