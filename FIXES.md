@@ -357,6 +357,7 @@ They have not been demonstrated.
 | ID | Where | Commit | Test | Landed | What |
 |---|---|---|---|---|---|
 | RD-0112 | core | `d179ace671` | `rd-0112-xlsb-color-sort-no-dxfid-crash` | 2026-11-13 | x2t crashed writing .xlsb when a sort condition sorts by cell/font colour withou |
+| RD-0113 | desktop-apps | `54973742e` | `rd-0113-no-update-service` | 2026-11-20 | The Windows installers installed ONLYOFFICE's update service (auto-start) though the app has no update module; removed, and upgrades remove it |
 | RD-0111 | core | `24a9dbda62` | `rd-0111-xlsb-phonetic-run-garbage` | 2026-11-13 | shared strings with phonetic properties were written to .xlsb with uninitialised |
 | RD-0110 | core | `36f9fa5ab0` | `rd-0110-xlsb-table-ref-collast` | 2026-11-13 | a structured table reference written to .xlsb (Table1[Col], Table1[#All]) had an |
 | RD-0109 | core | `aa16ec2c0d` | `rd-0109-xlsb-long-number-as-text` | 2026-11-13 | numbers such as 25.78 were written to .xlsb as text (inline strings), on Save As |
