@@ -58,7 +58,8 @@ function extract(text, marker) {
 const recent = src('common/loginpage/src/panelrecent.js');
 const esc = extract(src('common/loginpage/src/htmlutils.js'), 'function escapeHtml(value)');
 const tpl = 'function ' + extract(recent, 'listitemtemplate: function (info)').replace(/^listitemtemplate: function /, '');
-const listitemtemplate = new Function('isSvgIcons', esc + '\nreturn ' + tpl + ';')(true);
+const listitemtemplate = new Function('isSvgIcons', 'utils', esc + '\nreturn ' + tpl + ';')(true,
+	{ rdFileIcon: (fmt) => '<svg class="rd-file-icon" data-fmt="' + fmt + '"></svg>' }); // page global since the Home restyle
 
 function nameTitle(info) {
 	const html = listitemtemplate(info);

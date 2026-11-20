@@ -71,12 +71,13 @@ const recent = src('common/loginpage/src/panelrecent.js');
 const tplAt = recent.indexOf('args.tplPage = `');
 const tplSrc = recent.slice(tplAt + 'args.tplPage = '.length, recent.indexOf('`;', tplAt + 16) + 1);
 const lang = new Proxy({}, { get: (t, k) => typeof k === 'string' ? k : undefined });
-const panelHtml = new Function('args', '_lang', 'welcomeBannerTemplate', 'return ' + tplSrc + ';')({ action: 'recents' }, lang, '');
+const panelHtml = new Function('args', '_lang', 'welcomeBannerTemplate', 'utils', 'return ' + tplSrc + ';')({ action: 'recents' }, lang, '',
+	{ Lang: lang, rdFileIcon: () => '<svg></svg>' }); // page global since the Home restyle
 
 const dom = new JSDOM(`<!doctype html><body><div id="panel">${panelHtml}</div></body>`, { runScripts: 'outside-only' });
 const w = dom.window;
 w.eval(fs.readFileSync(path.join(APPS, 'common/loginpage/vendor/jquery/jquery.js'), 'utf8'));
-w.eval('var utils = {Lang:{}}; var Menu = {closeAll(){}, opened:false};');
+w.eval('var utils = {Lang:{}, rdFileIcon: function(){ return "<svg></svg>"; }}; var Menu = {closeAll(){}, opened:false};');
 // model.js is 'use strict', so its declarations stay inside the eval unless exported
 w.eval(src('common/loginpage/src/model.js') + '\n;window.Collection = Collection; window.FileModel = FileModel;');
 w.eval(extract(src('common/loginpage/src/htmlutils.js'), 'function escapeHtml(value)'));
