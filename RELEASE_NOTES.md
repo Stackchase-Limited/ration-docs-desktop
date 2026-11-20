@@ -251,7 +251,7 @@ All of these are **off by default** unless noted, so nothing changes until you t
   | Platform | Status |
   |---|---|
   | macOS (Apple Silicon) | `RationDocs-2026.3.0-arm64.dmg` built from the tag (768 MB, sha256 `680bc06b…2d5afb`). **Requires macOS 12 (Monterey) or later** (was 11). Smoke-tested: new Home page, typing and saving, bundled conversions. About window to be checked by hand |
-  | Linux x64 | `ration-docs_2026.3.0-1_amd64.deb` built from the tag (sha256 `277459d7…775d925`). Install test of this exact build pending; the previous build of the same release passed it |
+  | Linux x64 | `ration-docs_2026.3.0-1_amd64.deb` built from the tag (409 MB, sha256 `277459d7…775d925`). Install-tested on Ubuntu 24.04: About 2026.3.0.1, new Home page, bundled conversions. Repository signing tested with a throwaway key only |
   | Windows | **Not built.** Windows code in this release (#34, #1177, #2106 and others) has not been compiled yet |
 
 - **GUI checks pending.**
