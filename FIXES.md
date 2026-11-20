@@ -358,6 +358,31 @@ They have not been demonstrated.
 |---|---|---|---|---|---|
 | RD-0112 | core | `d179ace671` | `rd-0112-xlsb-color-sort-no-dxfid-crash` | 2026-11-13 | x2t crashed writing .xlsb when a sort condition sorts by cell/font colour withou |
 | RD-0113 | desktop-apps | `54973742e` | `rd-0113-no-update-service` | 2026-11-20 | The Windows installers installed ONLYOFFICE's update service (auto-start) though the app has no update module; removed, and upgrades remove it |
+| upstream ed424af8e4 | web-apps | 421379f73f | fork-fix-tests/upstream-ed424af8e4-not-enough-resources | 2026-11-20 | License type 17 (server out of resources) now locks editing and disconnects, so edits are no longer silently lost |
+| upstream dbc71b0951 | web-apps | 99feac1f77 | fork-fix-tests/upstream-dbc71b0951-wopi-disable-copy-export | 2026-11-20 | WOPI DisableCopy/DisableExport now turn off copy and download (online only) |
+| upstream 9c764ad966 | web-apps | a8f6d11def | fork-fix-tests/upstream-9c764ad966-iframe-clipboard-write | 2026-11-20 | Editor iframe no longer grants clipboard-write to embedding web pages; kept for the desktop app |
+| upstream 3f9b9168e4 | web-apps | 1f55eb623e | fork-fix-tests/upstream-3f9b9168e4-pdf-right-panel-plugin | 2026-11-20 | PDF editor: docking a plugin no longer leaves the right panel hidden or stuck across mode switches (hand port) |
+| upstream fe000348f0 | web-apps | 3cc030467f | fork-fix-tests/upstream-fe000348f0-edit-chart-data | 2026-11-20 | "Edit chart data" spreadsheet no longer throws a TypeError |
+| upstream fcd820a9de | web-apps | 4b37472c30 | fork-fix-tests/upstream-fcd820a9de-macros-before-load | 2026-11-20 | View > Macros no longer throws when clicked before its dialog has loaded |
+| upstream 4e3568c926 | core | 036373296a | fork-fix-tests/upstream-4e3568c926-css-transform-oob | 2026-11-20 | SVG/CSS transform without ")" read past the string and crashed |
+| upstream 3cf5178838 | core | a114b34e22 | fork-fix-tests/upstream-3cf5178838-svg-css-regex-stack-overflow | 2026-11-20 | large SVG @font-face block overflowed the stack (regex) on Linux/Windows |
+| upstream 4a68bd2470 | core | 8b9dbe831b | fork-fix-tests/upstream-3cf5178838-svg-css-regex-stack-overflow | 2026-11-20 | long CSS url(data:...) overflowed the stack (regex) on Linux/Windows |
+| upstream ef6efb16b5 | core | a4c93729ec | fork-fix-tests/upstream-3cf5178838-svg-css-regex-stack-overflow | 2026-11-20 | SVG @font-face properties split inside quotes, font faces dropped |
+| upstream 86a717a42f | core | 40bfdac972 | fork-fix-tests/upstream-86a717a42f-builder-file-escape | 2026-11-20 | builder scripts could read files outside the document folder |
+| upstream 7a9c80e60c | core | 56e8603427 | fork-fix-tests/upstream-86a717a42f-builder-file-escape | 2026-11-20 | docbuilder params could redirect x2t's input/output/temp paths |
+| upstream 7d08152895 | core | 73083ac6f6 | fork-fix-tests/upstream-7d08152895-emf-saved-as-preview | 2026-11-20 | EMF/WMF pictures saved as their raster/SVG preview, vector lost |
+| upstream 60a3e45d01 | core | e4e2f8a3c5 | fork-fix-tests/upstream-60a3e45d01-xlsx-inline-string-lost | 2026-11-20 | inline-string cell text lost when saving to xlsx (xlsb→xlsx) |
+| upstream 336a529b85 | sdkjs | 61decf01d5 | fork-fix-tests/upstream-336a529b85-remove-duplicates-typed-values | 2026-11-20 | Remove Duplicates no longer deletes rows that only look equal once formatted (with efcfc6f160, 1406a86512, 40cf307032) |
+| upstream 55851dae87 | sdkjs | 16fa6276f2 | fork-fix-tests/upstream-55851dae87-xlsx-form-control-save | 2026-11-20 | Workbooks with form controls save to xlsx again (was x2t error 80) |
+| upstream 4f4e0fb256 | sdkjs | b2485712ef | fork-fix-tests/upstream-4f4e0fb256-compare-comments-merged-paras | 2026-11-20 | Compare Documents keeps comments of a document with tracked paragraph deletions |
+| upstream 279413255a | sdkjs | bfadc5f5e4 | fork-fix-tests/upstream-279413255a-docx-duplicate-comment-marks | 2026-11-20 | Duplicate comment marks keep the first range; text after them is no longer lost (adapted) |
+| upstream 3d96c24b12 | sdkjs | badb625c83 | fork-fix-tests/upstream-3d96c24b12-multirange-paste-values | 2026-11-20 | Multi-range paste keeps the copied formula results |
+| upstream 88e3c58d5d | sdkjs | 9e2d845cce | fork-fix-tests/upstream-88e3c58d5d-find-escape-regexp | 2026-11-20 | Whole-word Find with "(" no longer throws and drops the editor to view-only |
+| upstream 52cac5d143 | sdkjs | ced56176b2 | fork-fix-tests/upstream-52cac5d143-hyperlink-cursor-crash | 2026-11-20 | Cursor correction in an empty hyperlink no longer crashes |
+| upstream a85f2f55dd | sdkjs | 96ce86fb3d | fork-fix-tests/upstream-a85f2f55dd-area-chart-empty-series | 2026-11-20 | 3D area chart with an empty series no longer crashes drawing or PDF export (adapted) |
+| upstream 9717a00f4f | sdkjs | 8e32038043 | fork-fix-tests/upstream-9717a00f4f-empty-presentation-notes-focus | 2026-11-20 | Empty presentation with notes focused no longer crashes |
+| upstream c0758e150e | sdkjs | 6069981437 | fork-fix-tests/upstream-c0758e150e-image-load-during-font-load | 2026-11-20 | No image-load redraw while fonts are still loading |
+| upstream d2b7aa7f89 | sdkjs | 685d601fc2 | fork-fix-tests/upstream-d2b7aa7f89-license-not-enough-resources | 2026-11-20 | Add c_oLicenseResult.NotEnoughResources = 17 (pairs with web-apps ed424af8e4) |
 | RD-0111 | core | `24a9dbda62` | `rd-0111-xlsb-phonetic-run-garbage` | 2026-11-13 | shared strings with phonetic properties were written to .xlsb with uninitialised |
 | RD-0110 | core | `36f9fa5ab0` | `rd-0110-xlsb-table-ref-collast` | 2026-11-13 | a structured table reference written to .xlsb (Table1[Col], Table1[#All]) had an |
 | RD-0109 | core | `aa16ec2c0d` | `rd-0109-xlsb-long-number-as-text` | 2026-11-13 | numbers such as 25.78 were written to .xlsb as text (inline strings), on Save As |
