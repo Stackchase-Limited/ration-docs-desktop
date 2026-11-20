@@ -383,6 +383,7 @@ They have not been demonstrated.
 | upstream 9717a00f4f | sdkjs | 8e32038043 | fork-fix-tests/upstream-9717a00f4f-empty-presentation-notes-focus | 2026-11-20 | Empty presentation with notes focused no longer crashes |
 | upstream c0758e150e | sdkjs | 6069981437 | fork-fix-tests/upstream-c0758e150e-image-load-during-font-load | 2026-11-20 | No image-load redraw while fonts are still loading |
 | upstream d2b7aa7f89 | sdkjs | 685d601fc2 | fork-fix-tests/upstream-d2b7aa7f89-license-not-enough-resources | 2026-11-20 | Add c_oLicenseResult.NotEnoughResources = 17 (pairs with web-apps ed424af8e4) |
+| RD-0114 | core | `104f3c7400` | `rd-0114-docbuilder-txt-layout-abort` | 2026-11-20 | docbuilder overflowed a stack array (abort) on script arguments containing ' quotes or more than 4 arguments, e.g. SaveFile params with documentLayout, in any format; the params now reach SaveFile whole and the save succeeds |
 | RD-0111 | core | `24a9dbda62` | `rd-0111-xlsb-phonetic-run-garbage` | 2026-11-13 | shared strings with phonetic properties were written to .xlsb with uninitialised |
 | RD-0110 | core | `36f9fa5ab0` | `rd-0110-xlsb-table-ref-collast` | 2026-11-13 | a structured table reference written to .xlsb (Table1[Col], Table1[#All]) had an |
 | RD-0109 | core | `aa16ec2c0d` | `rd-0109-xlsb-long-number-as-text` | 2026-11-13 | numbers such as 25.78 were written to .xlsb as text (inline strings), on Save As |
