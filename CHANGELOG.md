@@ -1,5 +1,13 @@
 # Change log
 
+## Ration Docs 2026.3.0
+
+101 more upstream issues fixed (98 with a regression test), 68 defects of our own (RD-0020..RD-0112, with
+gaps), mostly converter crashes and memory errors in legacy .doc/.ppt/.xls and .xlsb files. Security fixes
+for script injection through file names, clipboard HTML from linked cells, and a temp-path leak in
+converted presentations. New features are options, off by default. Presentation text layout (kerning, tabs)
+now matches PowerPoint. New Home page design in light and dark. Not yet signed; no Windows build. Details: `RELEASE_NOTES.md`.
+
 ## Ration Docs 2026.2.0
 
 First Ration Docs release for macOS, Windows and Linux: 125 more upstream issues fixed (209 in all),

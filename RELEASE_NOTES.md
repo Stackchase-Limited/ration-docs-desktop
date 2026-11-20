@@ -1,3 +1,522 @@
+# Ration Docs Desktop 2026.3.0
+
+The third release of Ration Docs Desktop, a hard fork of ONLYOFFICE Desktop Editors 9.4. It is built
+from the same branch as 2026.2.0 and adds fixes, a long list of options you can turn on, and a large
+batch of converter hardening.
+
+## At a glance
+
+- **101 more reported upstream issues fixed** since 2026.2.0, and 98 of them have a regression test
+  that fails without the fix. The full list is below. The fix registry (`FIXES.md`) now counts 321
+  upstream issues in all. That is more than 209 + 101 because it now also credits earlier commits
+  that fixed an issue without naming it (see *Credited late* below).
+- **68 further defects that we found ourselves** (RD-0020 to RD-0112, with gaps), each with a test.
+  Most are converter crashes, hangs and memory errors in old `.doc`, `.ppt` and `.xls` files, found
+  by running the converter over thousands of public test documents. Another group (RD-0090 to
+  RD-0112) are spreadsheet read and write defects, mostly in `.xlsb`.
+- **Most new features are options and are off by default.** Nothing changes until you turn them
+  on. See *New options* below.
+- **Three security fixes**, plus many memory-safety fixes in the file converter. See *Security*.
+- **This release is not signed yet.** See *Known limitations* and *Installing*.
+
+## Security
+
+- **File names can no longer inject script into the editor (RD-0030).** When you dropped a file
+  onto the editor, inserted one, or picked a name in the save dialog, the file name was placed into
+  the editor's script without escaping. A file with a deliberately crafted name could run script
+  inside the editor. Names are now escaped everywhere they are used this way. Upgrade if you open
+  files from people or places you don't trust.
+- **Copying spreadsheet cells with a link now produces safe clipboard HTML (RD-0052).** A cell with
+  an external link was copied as HTML with the link left open and its address and tooltip
+  unescaped. Pasting into another application could therefore carry markup the cell never had. The
+  link is now closed and its attributes are escaped.
+- **Converted presentations no longer reveal a temporary path (RD-0070).** Saving an old `.ppt` as
+  `.pptx` wrote embedded OLE objects as *links* to a file in the converter's temporary folder,
+  instead of embedding them. The saved file disclosed a local path, and the object was lost once
+  the temp folder was cleaned. The objects are now embedded in the `.pptx`.
+- **The file converter is much harder to crash with a damaged or hostile file.** More than 40
+  defects in the readers for old binary Office formats (`.doc`, `.ppt`, `.xls`, encrypted
+  `.doc`/`.xls`, OLE compound files), `.xlsb` and ODF are fixed (RD-0021 to RD-0027, RD-0040 to
+  RD-0049, RD-0072 to RD-0096 and RD-0102 to RD-0112).
+  - Before, a malformed file could make the converter read or write past the end of a buffer,
+    allocate gigabytes, or loop until it was killed.
+  - A few of these were heap *writes*, which is the kind of memory error that matters most for
+    security.
+  - Each reader now trusts only the bytes actually in the file.
+- **Saved files no longer carry stray memory.** Several writers put uninitialised bytes into the
+  output: `.xlsb` sort conditions, phonetic text, table references and sheet properties, colours,
+  and `.doc` pictures. These bytes could include leftover memory from the
+  converter process. Output is now fully initialised, and the same input gives the same file every
+  time (RD-0096, RD-0106 to RD-0108, RD-0110, RD-0111).
+- **A `tel:` link to a phone number now opens your calling app without asking (#603).** This
+  relaxes one rule from 2026.2.0, which asked before opening any non-web link. Only links that hold
+  a phone number are affected; any other `tel:` text still asks first.
+
+## Behaviour you will notice
+
+- **A new start page.** The Home page has a new layout, with a light version and a dark version.
+  The dark version is used with the Dark, Contrast dark and Night themes. The page has a "Home" title,
+  a row of Create tiles, one Recent/Recover switch with a count of files that can be recovered, and
+  the Inter typeface (SIL Open Font License 1.1, credited in About). Nothing on it was removed.
+- **Presentations look more like PowerPoint.** This mostly affects decks made in PowerPoint.
+  - **Kerning (#346).** Slide text is now kerned when the deck asks for it, and PowerPoint's
+    default styles do. Lines can therefore fit or wrap differently than in 2026.2.0, now as they do
+    in PowerPoint.
+  - **Kerning is now saved.** Every earlier save silently removed kerning from a deck, and that
+    data loss is fixed.
+  - **Kerning in Word documents is unchanged.** Body text in Word documents keeps its 2026.2.0
+    layout.
+  - **Tabs and line heights (#343).** A tab that would run past the right edge of a text box now
+    wraps to the next line, as in PowerPoint; before, it was squeezed onto the line.
+  - **Large spaces now count towards the height of a line.** Some slides therefore move down a
+    little, again to match PowerPoint. Word documents, including their text boxes, are unchanged.
+  - **Negative indents (#348).** A paragraph with a negative first-line indent at zero margin no
+    longer starts outside its text box.
+  - **Videos follow PowerPoint's settings.** Videos set to loop (#2005), hide while not playing
+    (#2007) or play full screen (#2008) now do so in the slide show.
+  - **Trimmed videos stay trimmed.** A video's trim is now kept when you save (#2002); before, the
+    trim was lost.
+- **`.xlsb` workbooks.**
+  - **Text opens as text (RD-0105).** Text cells of some `.xlsb` files opened as `0`, and they now
+    open with their text. This also affects files saved by Excel.
+  - **Numbers are saved as numbers (RD-0109).** Earlier builds, including ONLYOFFICE's, saved some
+    numbers (for example 25.78) into `.xlsb` as text.
+  - **Old `.xlsb` files may show numbers as text.** A file saved by an earlier build still stores
+    some numbers as text, and they now show as text (for example `-25.780000000000001`), exactly as
+    Excel shows them. To repair them, convert the cells back to numbers once and save.
+  - **Colours (RD-0108).** Colours stored without transparency were given a random transparency
+    value when written to `.xlsb`/`.xlsx`. They are now solid. A colour that looked faint or wrong
+    may now show at full strength. Saved files also change from run to run less: the same workbook
+    now gives the same file.
+- **Slide sorter (#289) and undo.**
+  - **Undo no longer switches views.** Undoing a change made in Normal view no longer jumps you
+    from the Slide Sorter back to Normal view. The only view switch undo still makes is between
+    master and slide views.
+  - **Reordering in the sorter can be undone.**
+  - **Ribbon insert commands still target the current slide**, which is hidden while the sorter is
+    open.
+- **Damaged legacy files are handled more strictly.** This applies to `.doc`, `.ppt` and `.xls`.
+  - **What used to happen:** a damaged file could crash the converter, hang it, or open with
+    garbage.
+  - **What happens now:** it either opens with the unreadable parts left out, or fails with an
+    error. Left-out parts include an over-long string, a slide's unreadable records, and tab stops
+    past the end of their record.
+  - **Undamaged files are unaffected.** Several hundred undamaged files convert byte for byte as
+    before.
+  - **Some damaged files open with less in them.** If a damaged file used to open with odd content,
+    it may now open with less content, or report an error instead.
+- **CSV: Ctrl+S keeps the file's delimiter and encoding (#83).** A CSV opened with semicolons or
+  a non-UTF-8 code page used to be rewritten with commas and UTF-8 on Ctrl+S. It now keeps the
+  options it was opened with. Save As now also offers a semicolon-separated CSV.
+- **Move sheet to a new workbook now moves it (#1905).** It used to leave the sheet behind, which
+  made it a copy.
+- **Copy sheet to a new workbook (RD-0031).** The copy could have edits made to other sheets
+  replayed onto it. It now opens clean.
+- **Keys:**
+  - Alt+Shift+Up/Down (Option+Shift on macOS) now move the selected paragraphs or list items up
+    or down (#1203). They used to extend the selection.
+  - In context menus, typing a letter now picks the item that starts with it (#1292).
+- **Media:** dropping a video or audio file on a slide now inserts it (#2544).
+- **Pictures:**
+  - A picture copied in Inkscape now pastes as a picture, not as SVG text (#2180).
+  - PowerPoint's "Set Transparent Color" on a picture is now shown in the editor (#2484). It is
+    still opaque in PDF export and print.
+- **Printing:**
+  - Spreadsheet cell borders now print without a gap at every vertical border (#2437). Underlines
+    and sparkline axes in print move by the same half pixel.
+  - On Linux the print dialog's "Pages per side" now works (#1215).
+- **Slide shows on three screens (#1548).** A presenter on the middle screen no longer gets the
+  slide show over the presenter view.
+- **Starting a slide show no longer crashes the app** when the window hangs off the edge of the
+  desktop (#1548).
+- **Documents:**
+  - Document variables (`w:docVars`) are now kept when you save (#100). Before, Word fields that
+    read them showed an error after the document was saved here.
+  - Hyperlinks on slide shapes and pictures now work in exported PDFs (#1885).
+- **Old Word, ODF and RTF files:**
+  - A `.doc` header that came and went between opens now always shows (RD-0045).
+  - RTF font names keep their spaces (RD-0062).
+  - ODP imports keep line breaks, list spacing and outline sizes (#2566).
+- **Linux:**
+  - With an Azerbaijani, Basque or Malay system locale, the app now starts in that language
+    (#1355).
+  - A desktop set to greyscale font smoothing no longer gets colour fringes in the interface
+    (#2130).
+  - fcitx now works in documents on Plasma 6 Wayland (#1522).
+  - The distribution's hunspell dictionaries are now also used for spell checking, for languages
+    the app ships no dictionary for (#195).
+- **Accessibility:** VoiceOver on macOS (#1872) and Orca on Linux (#1828) can now read the
+  toolbars, menus and dialogs. The document page itself is still not readable. Nothing changes
+  unless a screen reader is running.
+- **macOS:** File > Open Recent now lists your recent documents (#69). Window > Move Tab to New
+  Window is new (#1814).
+- **Windows and Linux:**
+  - F11 now toggles full screen for the whole window (#858). On macOS, Ctrl+Cmd+F already did this
+    in 2026.2.0.
+  - Interface scaling also offers 105-145% in 5% steps (#2342).
+- **Links that open your browser now say so** in their tooltip (#1363).
+
+## New options
+
+All of these are **off by default** unless noted, so nothing changes until you turn them on.
+
+**In the start page's Settings** (desktop app):
+
+- "Reopen documents from the last session at start": local files only (#1847).
+- "Save changes automatically when closing a document" (#1674).
+- "Ctrl+Tab goes to the most recently used tab" (#2139).
+- "Colour tabs by document type" (#2436).
+- "Built-in plugins can be removed in the Plugin Manager". After a restart, bundled plugins can be
+  removed and restored. The app folder is never written to (#2466).
+- "Add spelling dictionary..." installs a Hunspell dictionary into your profile (#1438).
+- Windows and Linux:
+  - "Pinch to zoom (touchpad, touchscreen)" (#1611).
+  - "Slideshow screen": Automatic by default (#1548).
+- Windows: make Ration Docs the default app for all supported file types again (#1177).
+- Linux:
+  - "Title bar: Built-in / System (window manager)": Built-in by default (#2504).
+  - "Window buttons: Close only" (#1899).
+  - "Use the desktop's file dialog (portal)" on X11 (#2321).
+
+**In the editors, File > Advanced settings:**
+
+- **Documents:**
+  - "Default font" (#746) and "Default page margins" (#1166) for new blank documents.
+  - "Format for new documents": OpenDocument instead of Office Open XML for the first save
+    (#517).
+  - Smooth scrolling with the mouse wheel (#1925).
+  - Break Thai, Lao, Khmer and Myanmar lines between words (#371).
+  - "Show the Equation panel in the right sidebar when editing an equation" (#99, also in
+    presentations).
+  - Offer to continue where you left off when a document is reopened (#1675). Turning it off
+    deletes the saved places.
+  - "Underline text while an input method composes it" (#2100). This one is **on** by default, so
+    behaviour is unchanged unless you turn it off.
+  - Numeral "Context": Hindi digits in right-to-left paragraphs (#2160).
+- **Presentations:**
+  - "Default presentation language" (#527).
+  - The Slide Size dialog's "Use this size for new presentations" (#2137).
+- **Spreadsheets:**
+  - "Highlight active row/column" (#1521).
+  - Ctrl+D / Ctrl+R fill down / right (#2258).
+  - Ctrl+Shift+V pastes values only (#2020).
+- **PDF:** new text boxes take the last text box's style (#1687).
+- **All editors:**
+  - Shift+mouse wheel scrolls sideways on Windows and Linux (#852).
+  - Name the last action in the Undo tooltip (#1064).
+  - "Command search (Alt+/)" finds and runs a ribbon command by name (#1801).
+  - Allow pinning toolbar buttons to the quick access toolbar (#420).
+- AutoCorrect has "Correct TWo INitial CApitals" (#222). It starts unticked.
+
+**New commands that are simply there:**
+
+- **Desktop:**
+  - File > Save Copy as (#982).
+  - File > Duplicate (#2045).
+  - Mail merge on local files (#733).
+- **PDF:** "Save pages as new PDF" (#1858).
+- **Presentations:**
+  - Slide Sorter view (#289).
+  - Video trim, mute, loop, rewind and hide in Playback (#2002, #2003, #2005, #2006, #2007).
+  - Play/Pause/Stop media animations (#2550).
+  - "From clipboard" picture fills (#1969).
+- **Spreadsheets:**
+  - "Merge and keep content" (#2044).
+  - Custom error bars (#278).
+- **All editors:**
+  - Search in the Comments panel (#322).
+  - The Dictionary... list, to remove added words (#630).
+  - Odd/even-only printing (#2299), and manual two-sided printing on Windows and Linux (#2422).
+- **AI:**
+  - Groq as an AI provider (#2225).
+  - Hand-entered model names (#2239).
+  - An editable grammar-check prompt (#2219).
+
+**For whoever builds the release:**
+
+- `desktop-apps/macos/make_pkg.sh` can build a macOS `.pkg` for MDM (#2477).
+- The Linux package can carry one menu entry per editor with `EDITOR_LAUNCHERS=1` (#591).
+- Neither is wired into the release build.
+
+## Known limitations of this release
+
+- **Not signed.**
+  - 2026.3.0 is published unsigned on every platform: there is no Apple Developer ID, no Windows
+    code-signing certificate and no Linux repository key yet.
+  - Signed macOS, Windows and Linux builds will follow **from the same `v2026.3.0` tag** once the
+    certificates exist. The code will be identical; only the signatures will differ.
+  - Until then, the same guidance as 2026.2.0 applies; see *Installing* below.
+- **Platforms.**
+
+  | Platform | Status |
+  |---|---|
+  | macOS (Apple Silicon) | **To be confirmed** by the integrator before publishing |
+  | Linux x64 | Built and smoke-tested on Ubuntu 24.04 (installs, About reports 2026.3.0.1, the bundled converter round-trips DOCX/XLSX/PPTX/ODF, new Home page in light and dark). That build predates the last start-page style fix (desktop-apps `ebfd5ebef`); **rebuild from the tag before publishing** |
+  | Windows | **Not built.** Windows code in this release (#34, #1177, #2106 and others) has not been compiled yet |
+
+- **GUI checks pending.**
+  - Most new options and dialogs were verified by tests and builds, but not yet by hand in each
+    operating system's interface.
+  - This includes the slide sorter, mail merge, the Equation panel, the command search, the Linux
+    title-bar and file-dialog settings, and the Windows installer associations.
+- **Co-editing across versions.** Kerning (#346) is a new property in saved changes. Editing the
+  same document live with an older build, or with an online server not built from this release,
+  can misread those changes. Keep the server and the desktop app on the same version.
+- **Online edition.**
+  - Fixes in `core`, `sdkjs` and `web-apps` can reach the online edition: 65 of the 101 issues and
+    66 of the 68 defects. That covers all the converter and `.xlsb` fixes, the presentation layout
+    changes and the clipboard fix (RD-0052).
+  - They reach it only once the server is built from this release's trees. The online server
+    currently running is an ONLYOFFICE build with none of our fixes.
+  - Some of those 65 appear only in the desktop app, such as Save Copy as, Duplicate, local mail
+    merge and the defaults for new documents.
+  - The other 36 issues, RD-0030 and RD-0031 are desktop-only, because they are in the desktop
+    shell (`desktop-apps`, `desktop-sdk`) or the bundled plugins. Examples are the Settings options,
+    F11, the screen-reader support, the slide-show players and the file-name escaping fix.
+- **Partial fixes.**
+  - #1085 and #220 are covered only by the new "Title bar: System" setting. The built-in title bar
+    still has no button-style or left-side-buttons choice.
+  - #2484 transparent colours are not yet in PDF export or print.
+  - #2566 ODP bullets still wrap left of the bullet text.
+- **Held back, not in this release:** #164, #2114, #1347, #1330, #1876, #2391, #564 and #1718 (the
+  macOS font-weight change). Work on these exists but is not included in 2026.3.0.
+
+## Credited late
+
+Nine upstream issues were fixed by commits that are **already in 2026.2.0**, but were not counted
+there.
+
+- Eight are fixed by commits that do not name them, and are now credited through
+  `tools/fix-claims.txt`: #402, #1179, #1509, #2310, #1333, #1016, #626 and #466.
+- #73 (Cmd+Up/Down on macOS) shipped in 2026.2.0 but was missing from its notes.
+
+None of the nine is new in 2026.3.0, and none is in the count above.
+
+Likewise, **#858, #1847, #1868 and #2275** were counted in earlier releases and are not counted
+again, although this release extends them:
+
+- F11 full screen on Windows and Linux (#858).
+- Reopening the last session (#1847).
+- A saved workbook now reopens with the cursor where you left it (#1868).
+- `&F` in a spreadsheet header no longer prints "null" in a PDF saved from the desktop (#2275).
+
+## Reported issues fixed in 2026.3.0
+
+- On Windows a document dropped on the tab bar or title bar did not open; it now does, and capitalised and macro-enabled file names are accepted ([#34](https://github.com/ONLYOFFICE/DesktopEditors/issues/34))
+- File > Open Recent on macOS was hidden and empty; it now lists recent local documents and opens them ([#69](https://github.com/ONLYOFFICE/DesktopEditors/issues/69))
+- Ctrl+S on a CSV opened with semicolons or a non-UTF-8 code page rewrote it as comma/UTF-8; it now keeps the options it was opened with, and Save As offers a semicolon CSV ([#83](https://github.com/ONLYOFFICE/DesktopEditors/issues/83))
+- An Equation panel in the right sidebar gives structures, a searchable symbol palette and the linear/professional switch while editing an equation (option) ([#99](https://github.com/ONLYOFFICE/DesktopEditors/issues/99))
+- Document variables (w:docVars) were dropped by every save from the editor, breaking DOCVARIABLE fields in Word; they are now kept ([#100](https://github.com/ONLYOFFICE/DesktopEditors/issues/100))
+- On Windows, fonts activated from Adobe Fonts in Creative Cloud now appear in the font list ([#141](https://github.com/ONLYOFFICE/DesktopEditors/issues/141))
+- INDIRECT("Sheet!Table[Column]") gave #REF!; it now returns the column, so a validation list from another sheet's table works ([#159](https://github.com/ONLYOFFICE/DesktopEditors/issues/159))
+- The Keyboard Shortcuts search now finds an action by words from its name or its description ([#179](https://github.com/ONLYOFFICE/DesktopEditors/issues/179))
+- On Linux the spell checker now also uses the distribution's hunspell dictionaries for languages the app ships none for ([#195](https://github.com/ONLYOFFICE/DesktopEditors/issues/195))
+- A folder could not be taken off "Recent folders"; right-click now offers Open, Pin/Unpin and Remove from list ([#201](https://github.com/ONLYOFFICE/DesktopEditors/issues/201))
+- The OCR plugin skipped TIFF pictures silently; it now reads them and says when it cannot read a file ([#211](https://github.com/ONLYOFFICE/DesktopEditors/issues/211))
+- With "System (window manager)" title bar on Linux, the desktop's own window buttons are used, left or right as configured (part: no choice for the built-in bar) ([#220](https://github.com/ONLYOFFICE/DesktopEditors/issues/220))
+- AutoCorrect can correct TWo INitial CApitals ("HEllo" -> "Hello") - option, off by default ([#222](https://github.com/ONLYOFFICE/DesktopEditors/issues/222))
+- Charts can have custom error bars whose plus/minus values come from sheet ranges (Error Bars > More options...) ([#278](https://github.com/ONLYOFFICE/DesktopEditors/issues/278))
+- A Slide Sorter view (View tab) shows all slides as a grid to select, reorder, delete, duplicate and open ([#289](https://github.com/ONLYOFFICE/DesktopEditors/issues/289))
+- The Comments panel has a search box that narrows the list to comments containing the typed text ([#322](https://github.com/ONLYOFFICE/DesktopEditors/issues/322))
+- Slide text with tabs past the right edge and large spaces now lays out as in PowerPoint ([#343](https://github.com/ONLYOFFICE/DesktopEditors/issues/343))
+- Slide text is now kerned where the deck asks for it, and kerning survives saving ([#346](https://github.com/ONLYOFFICE/DesktopEditors/issues/346))
+- A slide paragraph with no left margin and a negative indent no longer starts outside its text box ([#348](https://github.com/ONLYOFFICE/DesktopEditors/issues/348))
+- Thai, Lao, Khmer and Myanmar text can break lines between words (option, off by default) ([#371](https://github.com/ONLYOFFICE/DesktopEditors/issues/371))
+- A plain ribbon button can be pinned to the quick access toolbar (option, off by default) ([#420](https://github.com/ONLYOFFICE/DesktopEditors/issues/420))
+- The first save of a new document can offer OpenDocument instead of docx/xlsx/pptx (option) ([#517](https://github.com/ONLYOFFICE/DesktopEditors/issues/517))
+- New blank presentations can get a chosen language ("Default presentation language") ([#527](https://github.com/ONLYOFFICE/DesktopEditors/issues/527))
+- The Linux package can carry one menu entry per editor (build option, off by default) ([#591](https://github.com/ONLYOFFICE/DesktopEditors/issues/591))
+- A tel: phone link can be entered as a hyperlink and opens the calling application ([#603](https://github.com/ONLYOFFICE/DesktopEditors/issues/603))
+- A word added to the dictionary can now be removed again (Proofing > Dictionary...) ([#630](https://github.com/ONLYOFFICE/DesktopEditors/issues/630))
+- Mail merge works on a local file in the desktop app, with no document server ([#733](https://github.com/ONLYOFFICE/DesktopEditors/issues/733))
+- With document dark mode on, the PDF editor's loading page was white; it is now dark, and the document editor's follows the theme ([#736](https://github.com/ONLYOFFICE/DesktopEditors/issues/736))
+- The font and size of new blank documents can be chosen ("Default font") ([#746](https://github.com/ONLYOFFICE/DesktopEditors/issues/746))
+- EMF and WMF pictures can now be picked in Insert > Image from file ([#780](https://github.com/ONLYOFFICE/DesktopEditors/issues/780))
+- Shift+mouse wheel can scroll documents, presentations and PDFs sideways (option, off by default) ([#852](https://github.com/ONLYOFFICE/DesktopEditors/issues/852))
+- A dark interface theme with coloured document-type headers is available as an example, and a custom Visio header colour now reaches the Visio tab ([#888](https://github.com/ONLYOFFICE/DesktopEditors/issues/888))
+- On Linux the window manager's own title bar can be chosen in Settings instead of with a command-line switch ([#926](https://github.com/ONLYOFFICE/DesktopEditors/issues/926))
+- The Table settings panel can set the vertical alignment of the selected cells ([#947](https://github.com/ONLYOFFICE/DesktopEditors/issues/947))
+- Save As into another format made the new file the open document; File > Save Copy as now writes a copy and leaves the open document as it was ([#982](https://github.com/ONLYOFFICE/DesktopEditors/issues/982))
+- The Undo tooltip can name the step it undoes, e.g. "Undo: Typing" (option, off by default) ([#1064](https://github.com/ONLYOFFICE/DesktopEditors/issues/1064))
+- On Linux a title bar that matches the desktop can be picked in Settings (part: no button-style choice for the built-in bar) ([#1085](https://github.com/ONLYOFFICE/DesktopEditors/issues/1085))
+- The page margins of new blank documents can be chosen ("Default page margins") ([#1166](https://github.com/ONLYOFFICE/DesktopEditors/issues/1166))
+- On Windows, Settings can make Ration Docs the default app for every supported file type again ([#1177](https://github.com/ONLYOFFICE/DesktopEditors/issues/1177))
+- Paragraphs and list items can be moved up or down with Alt+Shift+Up / Alt+Shift+Down ([#1203](https://github.com/ONLYOFFICE/DesktopEditors/issues/1203))
+- On Linux the print dialog's "Pages per side" was ignored; it now reaches the printer (part) ([#1215](https://github.com/ONLYOFFICE/DesktopEditors/issues/1215))
+- Typing a letter now picks an item in the editors' context menus ([#1292](https://github.com/ONLYOFFICE/DesktopEditors/issues/1292))
+- Azerbaijani, Basque and Malay shipped but could not be chosen; they are now in the interface language list ([#1355](https://github.com/ONLYOFFICE/DesktopEditors/issues/1355))
+- Links and the Feedback & Support button opened the web browser without saying so; their tooltips now say so ([#1363](https://github.com/ONLYOFFICE/DesktopEditors/issues/1363))
+- A Hunspell dictionary for another language can be added from Settings, without touching the app's folder ([#1438](https://github.com/ONLYOFFICE/DesktopEditors/issues/1438))
+- The active cell's row and/or column can be highlighted across the sheet (option, off by default) ([#1521](https://github.com/ONLYOFFICE/DesktopEditors/issues/1521))
+- fcitx could not be used in the document on Plasma 6 Wayland; the app now points GTK at fcitx when the session uses it ([#1522](https://github.com/ONLYOFFICE/DesktopEditors/issues/1522))
+- The slide show screen can be chosen on Windows/Linux; with three screens it no longer covers the presenter view, and a window off the desktop edge no longer crashes it ([#1548](https://github.com/ONLYOFFICE/DesktopEditors/issues/1548))
+- Pinch to zoom can be turned on for Windows/Linux touchpads and touchscreens (option, off by default) ([#1611](https://github.com/ONLYOFFICE/DesktopEditors/issues/1611))
+- Closing a modified local document can save it without asking (option, off by default) ([#1674](https://github.com/ONLYOFFICE/DesktopEditors/issues/1674))
+- A reopened document can offer "Continue where you left off" (option, off by default) ([#1675](https://github.com/ONLYOFFICE/DesktopEditors/issues/1675))
+- A new PDF text box can take the style of the last one (option, off by default) ([#1687](https://github.com/ONLYOFFICE/DesktopEditors/issues/1687))
+- The full example themes were invalid and incomplete; they are now a complete, loadable template for a custom theme ([#1695](https://github.com/ONLYOFFICE/DesktopEditors/issues/1695))
+- A command search finds a ribbon command by name and runs it (option, off by default) ([#1801](https://github.com/ONLYOFFICE/DesktopEditors/issues/1801))
+- On macOS a tab could be moved to its own window only by dragging; Window > Move Tab to New Window now does it ([#1814](https://github.com/ONLYOFFICE/DesktopEditors/issues/1814))
+- Orca read nothing in the editors on Linux; the interface is now readable while a screen reader runs ([#1828](https://github.com/ONLYOFFICE/DesktopEditors/issues/1828))
+- Selected PDF pages can be saved as a new PDF from the page menu ([#1858](https://github.com/ONLYOFFICE/DesktopEditors/issues/1858))
+- The print preview of a large spreadsheet now shows "please wait" while it is built ([#1864](https://github.com/ONLYOFFICE/DesktopEditors/issues/1864))
+- VoiceOver read nothing but the window title on macOS; toolbars, menus and dialogs are now readable ([#1872](https://github.com/ONLYOFFICE/DesktopEditors/issues/1872))
+- A hyperlink on a slide shape, picture or group is now a clickable link in the exported PDF ([#1885](https://github.com/ONLYOFFICE/DesktopEditors/issues/1885))
+- On Linux the built-in title bar can show the close button only ("Window buttons: Close only") ([#1899](https://github.com/ONLYOFFICE/DesktopEditors/issues/1899))
+- Move sheet to a new workbook left the sheet in the source (a copy); it now moves it ([#1905](https://github.com/ONLYOFFICE/DesktopEditors/issues/1905))
+- Mouse-wheel scrolling in documents can be smooth instead of a notch at a time (option, off by default) ([#1925](https://github.com/ONLYOFFICE/DesktopEditors/issues/1925))
+- Hovering a recent file now shows its full path ([#1952](https://github.com/ONLYOFFICE/DesktopEditors/issues/1952))
+- A slide background or shape picture fill can be taken from the clipboard ([#1969](https://github.com/ONLYOFFICE/DesktopEditors/issues/1969))
+- A video's trim was lost on every save; it is now kept, played as trimmed and can be set in Playback ([#2002](https://github.com/ONLYOFFICE/DesktopEditors/issues/2002))
+- A video or audio can be set to play muted, and the setting reaches the player ([#2003](https://github.com/ONLYOFFICE/DesktopEditors/issues/2003))
+- A video or audio can loop until stopped, and one that loops in PowerPoint now loops here ([#2005](https://github.com/ONLYOFFICE/DesktopEditors/issues/2005))
+- A video or audio can rewind after playing, as PowerPoint's option does ([#2006](https://github.com/ONLYOFFICE/DesktopEditors/issues/2006))
+- A video or audio can be hidden in the slide show while not playing, and PowerPoint decks that ask for it now hide it ([#2007](https://github.com/ONLYOFFICE/DesktopEditors/issues/2007))
+- A video set to Play Full Screen in PowerPoint now fills the slide show while it plays ([#2008](https://github.com/ONLYOFFICE/DesktopEditors/issues/2008))
+- Ctrl+Shift+V can paste values only in the cell grid (option, off by default) ([#2020](https://github.com/ONLYOFFICE/DesktopEditors/issues/2020))
+- Number formats with the Persian calendar now show Jalali dates ([#2033](https://github.com/ONLYOFFICE/DesktopEditors/issues/2033))
+- Cells can be merged keeping all their contents, one per line ("Merge and keep content") ([#2044](https://github.com/ONLYOFFICE/DesktopEditors/issues/2044))
+- File > Duplicate opens a local document's current state as a copy in a new tab ([#2045](https://github.com/ONLYOFFICE/DesktopEditors/issues/2045))
+- The underline under text an input method is composing can be turned off (option, on by default) ([#2100](https://github.com/ONLYOFFICE/DesktopEditors/issues/2100))
+- The Windows installer registers .dot, .docm, .xlt, .ppsm, .fodp, .hwp and .hwpx for Default apps ([#2106](https://github.com/ONLYOFFICE/DesktopEditors/issues/2106))
+- The document dark-mode page colour now comes from the interface theme, so a theme can make it black ([#2112](https://github.com/ONLYOFFICE/DesktopEditors/issues/2112))
+- On Linux with greyscale font smoothing the interface still had colour fringes; it now follows the desktop's setting ([#2130](https://github.com/ONLYOFFICE/DesktopEditors/issues/2130))
+- The Slide Size dialog can set the size of new presentations (option) ([#2137](https://github.com/ONLYOFFICE/DesktopEditors/issues/2137))
+- Ctrl+Tab can go to the most recently used tab (option, off by default) ([#2139](https://github.com/ONLYOFFICE/DesktopEditors/issues/2139))
+- Numeral can be "Context": Hindi digits in right-to-left paragraphs, Arabic digits elsewhere ([#2160](https://github.com/ONLYOFFICE/DesktopEditors/issues/2160))
+- A picture copied in Inkscape pasted as SVG source text; it now pastes as a picture ([#2180](https://github.com/ONLYOFFICE/DesktopEditors/issues/2180))
+- The AI grammar check's prompt can be changed (Grammar & Spelling > Settings) ([#2219](https://github.com/ONLYOFFICE/DesktopEditors/issues/2219))
+- The AI agent can use Groq as a provider ([#2225](https://github.com/ONLYOFFICE/DesktopEditors/issues/2225))
+- An AI agent provider can be given model names by hand, next to the fetched list ([#2239](https://github.com/ONLYOFFICE/DesktopEditors/issues/2239))
+- Ctrl+D / Ctrl+R can fill down / right in the cell grid (option, off by default) ([#2258](https://github.com/ONLYOFFICE/DesktopEditors/issues/2258))
+- The document and PDF print panels can print only the odd or only the even pages ([#2299](https://github.com/ONLYOFFICE/DesktopEditors/issues/2299))
+- On X11 the file dialogs can use the desktop's own dialog (option, off by default) ([#2321](https://github.com/ONLYOFFICE/DesktopEditors/issues/2321))
+- Interface scaling jumped from 100% to 125% to 150%; 105-145% in 5% steps are now offered ([#2342](https://github.com/ONLYOFFICE/DesktopEditors/issues/2342))
+- An installed copy started from another folder took itself for the portable ZIP; it no longer does, and the ZIP is documented ([#2404](https://github.com/ONLYOFFICE/DesktopEditors/issues/2404))
+- Documents and PDFs can be printed on both sides manually on Windows/Linux ([#2422](https://github.com/ONLYOFFICE/DesktopEditors/issues/2422))
+- Document tabs can show a strip in the colour of their type (option, off by default) ([#2436](https://github.com/ONLYOFFICE/DesktopEditors/issues/2436))
+- Printed cell borders broke at every vertical border; they now meet ([#2437](https://github.com/ONLYOFFICE/DesktopEditors/issues/2437))
+- Plugins installed with the app can be removed and restored in the Plugin Manager (option, off by default) ([#2466](https://github.com/ONLYOFFICE/DesktopEditors/issues/2466))
+- A macOS installer package (.pkg) can be built for MDM deployment ([#2477](https://github.com/ONLYOFFICE/DesktopEditors/issues/2477))
+- A picture's transparent colour (PowerPoint's Set Transparent Color) is now drawn in the editors (not yet in PDF or print) ([#2484](https://github.com/ONLYOFFICE/DesktopEditors/issues/2484))
+- On Linux the system title bar needed a command-line switch; Settings now has "Title bar: Built-in / System" ([#2504](https://github.com/ONLYOFFICE/DesktopEditors/issues/2504))
+- A video or audio file dropped on a slide is now inserted ([#2544](https://github.com/ONLYOFFICE/DesktopEditors/issues/2544))
+- Media Play, Pause and Stop animations can be added to a video or audio (Animation > Media) ([#2550](https://github.com/ONLYOFFICE/DesktopEditors/issues/2550))
+- ODP import dropped text before a line break, added empty paragraphs before sub-lists and gave outline levels 2-9 level 1's size; all three fixed ([#2566](https://github.com/ONLYOFFICE/DesktopEditors/issues/2566))
+
+## Defects we found ourselves
+
+- **RD-0020** Adding, changing or removing an animation dropped the slide's video/audio settings (mute, volume, loop, hide, full screen); they are now kept
+- **RD-0021** A .doc whose comment-range bookmarks have no tag data, or fewer end positions than starts, crashed x2t; such ranges are now skipped
+- **RD-0022** Saving as ODT a document whose date/text/list content control has no font size in scope crashed x2t; the control is sized with a 12 pt default
+- **RD-0023** An ODF table column or cell repeated "-1" (or any huge count) made x2t allocate without bound; the repeat count now stops at 16384
+- **RD-0024** A compound (OLE) file whose directory entries link back in a loop made x2t recurse and allocate until killed; each entry is now listed once
+- **RD-0025** A .ppt container whose records overran its length sent the reader back to the start of the stream, re-reading it until x2t was killed; it now resumes after the container
+- **RD-0026** A .doc table row whose end has no paragraph properties crashed x2t; the row is now read without table properties
+- **RD-0027** A .doc whose header counts more main-text characters than the file holds kept x2t converting for minutes; the main text now ends where the text does
+- **RD-0030** Dropped, inserted and saved file names were put into the editor's script unescaped, so a crafted name could run script; they are now escaped (security)
+- **RD-0031** A sheet copied to a new workbook could get the source's edits replayed on it; the copy now opens without them
+- **RD-0040** A .doc character FKP claiming more runs than its page holds left NULL run properties that crashed x2t; such runs now get empty properties
+- **RD-0041** A .doc without paragraph FKPs crashed x2t in its headers, footers or text boxes; they now start with no inherited paragraph properties
+- **RD-0042** .doc readers used the length a record claimed instead of the bytes the stream held, reading past their buffers; they now use the bytes actually read
+- **RD-0043** A .doc sprm cut short at the end of its grpprl was read past the buffer (and could ask for a 4 GB copy); its operand is now limited to the bytes present
+- **RD-0044** A .ppt slide whose records could not be read crashed x2t; the slide is now written without them
+- **RD-0045** The .doc header/footer table was read one position past its end, so an empty header came and went between runs; it is now read within the table
+- **RD-0046** A .ppt whose edit chain loops back kept x2t reading it until killed; each edit is now read once
+- **RD-0047** A .doc whose PAPX/CHPX bin table length runs past the table stream made x2t read wild memory or allocate gigabytes; the table now holds only what the stream has
+- **RD-0048** .doc lengths and counts far beyond the file made x2t allocate until killed; PLEX, LFO and Clx reads are now limited by the stream
+- **RD-0049** .doc footnote/endnote and comment-author loops never ended on a damaged file, writing until x2t was killed; they now stop at the end of their table or stream
+- **RD-0050** docbuilder took an x2t that could not start or crashed for a successful conversion and then aborted on open; such runs now fail the open/save
+- **RD-0051** A drawing or form control below rows without a height came back from ODS at row 18446744071562068031; such rows now count with the default height
+- **RD-0052** Copying cells with an external link put an unclosed link and its unescaped address and tooltip into the clipboard HTML; the link is closed and its attributes escaped (security)
+- **RD-0053** The font ranges table credited fonts with characters they lack; each font's marks are now cleared
+- **RD-0054** The font ranges table ended its last range at U+10FFFE although it covers U+10FFFF; it now ends at U+10FFFF
+- **RD-0055** A macro assigned to a chart was dropped when saving as ODS; the chart's binding now goes through ODS like a shape's
+- **RD-0056** ODF frames wrote their event listeners before the frame content, which the ODF schema does not allow; the listeners now follow the content
+- **RD-0060** A compound file over ~7 MB (e.g. a password-protected save) listed sector 0 in its unused DIFAT slots; they are now marked free
+- **RD-0062** RTF font names written as \uN lost their spaces on open ("TimesNewRoman"); the whole name is now trimmed, not each piece
+- **RD-0070** .ppt OLE objects were written to .pptx as external links to x2t's temp file, disclosing a local path; they are now embedded (security)
+- **RD-0072** A .doc whose section properties run past the end of the WordDocument stream made x2t read past its buffer; only the bytes read are parsed
+- **RD-0073** A .doc string table entry running past the end of its stream made x2t convert memory past the buffer; only the bytes read are converted
+- **RD-0074** A .doc tab-stop sprm shorter than its tab count made x2t read past the sprm; tabs past the end are now dropped
+- **RD-0075** A .doc huge PAPX or table-properties grpprl running past the Data stream made x2t read past its buffer; only the bytes read are parsed
+- **RD-0076** A .doc OLE CompObj/Word 6 string whose length runs past its stream made x2t read past its buffer; only the bytes read are converted
+- **RD-0077** A .doc OLE object whose LinkInfo string, picture borders or Word 6 data run past their stream made x2t read past its buffer; only the bytes read are used
+- **RD-0078** A .doc comment whose author initials claim more characters than they hold crashed x2t; only the characters read are converted
+- **RD-0079** A .doc form field whose name or other string runs past the Data stream made x2t read past its buffer; only the characters read are converted
+- **RD-0080** A .doc font table cut short inside a font's panose or name made x2t read past its buffer; only the bytes read are used
+- **RD-0081** A .doc picture header cut short by the end of the Data stream made x2t read past its buffer; only the bytes read are used
+- **RD-0082** A .doc string table whose last extra data is cut short by the end of its stream made x2t read past its buffer; such extra data is not kept
+- **RD-0083** A .doc/.xls encryption header whose salt or verifier runs past its stream or record made x2t read past its buffer; only the bytes present are used
+- **RD-0084** A .ppt compressed OLE/VBA storage record shorter than 4 bytes made x2t write past its buffer; such a record now holds no object
+- **RD-0085** A .ppt picture record shorter than its header made x2t allocate and write ~4 GB; such a record now holds no picture
+- **RD-0086** An .xls formula whose length runs past its record made x2t read past the record buffer; the formula stops at the end of the record
+- **RD-0087** An .xls hyperlink moniker or picture key whose length runs past its record made x2t read past the record buffer; lengths are limited to the record
+- **RD-0088** An .xls Continue record shorter than its header made x2t write past a heap buffer; such a record adds no data
+- **RD-0089** An .xls drawing whose property table claims more properties than its record holds made x2t read past the record buffer; properties stop at the end of the record
+- **RD-0090** Inline-string cells in an xlsx without shared strings were folded into the first cell of the row (mail merge, ODS and "send to" lost them); they are now kept
+- **RD-0091** An encrypted .xls whose encryption header ends before its salt made x2t read 16 bytes from an empty salt; a short value is now zero-padded
+- **RD-0092** An encrypted .xls with a sheet record shorter than 4 bytes made x2t decrypt past the record (heap overflow); such a record is not decrypted
+- **RD-0093** A .doc fixed-size sprm cut short at the end of its grpprl made x2t read past its operand; the operand is now zero-padded to its size
+- **RD-0094** A .doc table sprm whose variable-size operand is shorter than its structure made x2t read past the operand; such operands are now checked before use
+- **RD-0095** An .xlsb conditional-format formula whose extra data is missing made x2t read past the record; the book type is now 0 there
+- **RD-0096** A .doc picture record claiming more bytes than it holds put uninitialised memory into the .docx image, or made x2t over-read 4 GB; only the bytes present are read
+- **RD-0100** A number format built on General was written as "1000eneral" in JSON/CSV export, and Save as CSV dropped literal text such as General" kg"; the value is now written with the format's text
+- **RD-0101** Cells of a C++-written Editor.bin came back one row below their row in xlsx; a cell now takes the row it is read in
+- **RD-0102** x2t crashed writing CSV/JSON when a cell's style has no entry or a shared string table is missing - reachable by Save As CSV of an unedited workbook; such a cell is now written unstyled / with its stored value
+- **RD-0103** Every number of a typed cell was written to xlsb as 0 on some conversion paths, formula results too; the stored value is now written
+- **RD-0104** x2t crashed converting any .xlsb for External Links update or mail merge; the xlsb is now read as an xlsb on those paths
+- **RD-0105** An .xlsb's inline strings and string-formula cells opened in the editor as 0 (text lost); they now open with their text
+- **RD-0106** An .xlsb sheet with a short sheet-properties record got a random sync reference, different every run; it now gets none
+- **RD-0107** Every .xlsb written with a sort condition carried 8 uninitialised bytes; they are now 0
+- **RD-0108** A 6-digit rgb colour (no alpha) got a random alpha byte in xlsb/xlsx; it is now opaque
+- **RD-0109** Numbers such as 25.78 were written to .xlsb as text, on Save As xlsb too; they are written as numbers
+- **RD-0110** A structured table reference written to .xlsb (Table1[Col], Table1[#All]) had an uninitialised column bound; it is now set
+- **RD-0111** Shared strings with phonetic properties were written to .xlsb with uninitialised bytes; they are now 0
+- **RD-0112** x2t crashed writing .xlsb when a sort condition sorts by cell or font colour without a format id; the condition is now written
+
+## Installing
+
+**2026.3.0 is not signed or notarised.** The guidance is the same as for 2026.2.0.
+
+- Download only from the project's own release page.
+- Check the SHA-256 against the checksum published beside the file:
+
+      shasum -a 256 <file>        # macOS
+      sha256sum <file>            # Linux
+
+### macOS
+
+Gatekeeper will refuse the first launch, usually with *"Apple cannot check it for malicious
+software"*, or *"is damaged and can't be opened"*. That message is expected for this release and
+does not mean the download is corrupt.
+
+1. Drag **Ration Docs.app** to `/Applications`.
+2. Remove the quarantine attribute:
+
+       xattr -dr com.apple.quarantine "/Applications/Ration Docs.app"
+
+3. Open it normally.
+
+### Linux
+
+    sudo apt install ./ration-docs_2026.3.0-1_amd64.deb
+
+The exact file name is to be confirmed by the integrator before publishing. The package is unsigned. `apt` will report it as untrusted if you add it to a repository rather
+than installing the file directly.
+
+### Windows
+
+There is no Windows build of 2026.3.0 yet.
+
+### About the missing signature
+
+An unsigned build means **you are trusting the source of the file**, and nothing else is vouching
+for it. If that is not acceptable, wait for the signed builds. They will be made from the same
+`v2026.3.0` tag.
+
+---
+
 # Ration Docs Desktop 2026.2.0
 
 The second release of Ration Docs Desktop, a hard fork of ONLYOFFICE Desktop Editors 9.4, and the
