@@ -1,3 +1,149 @@
+# Ration Docs Desktop 2026.3.1
+
+A fix release on top of 2026.3.0. It brings in 25 crash, data-loss and security fixes that ONLYOFFICE
+has made since our fork point, and fixes two defects of our own. Nothing else changes: there are no
+new features and no new options.
+
+## At a glance
+
+- **25 ONLYOFFICE fixes backported** (8 in the file converter, 11 in the editors, 6 in the editor
+  interface). We picked them by checking every change ONLYOFFICE has made up to 10.0 and its 9.4.1
+  hotfixes, and taking the ones that fix a crash, lost data or a security hole. Each one has a test
+  that fails without it.
+- **Two defects of our own fixed:** a docbuilder crash (RD-0114) and the Windows installers'
+  update service (RD-0113).
+- **Tested:** 450 of 463 regression tests pass, including all 23 that run against a document
+  server in Docker. The 13 that do not pass test work held back from this release or are still being looked into;
+  none of them tests a fix in this release.
+- **Still not signed.** See *Known limitations*.
+
+## Security
+
+- **SVG and CSS in documents can no longer crash the converter (ONLYOFFICE 4e3568c926, 3cf5178838,
+  4a68bd2470).** A transform with no closing bracket made the converter read past the end of the
+  text. On Linux and Windows, a large `@font-face` block or a long `url(data:...)` value overflowed
+  the stack and crashed it. These files can arrive inside any Office document. The Linux test
+  build confirmed that 2026.3.0 crashes on the two stack cases and 2026.3.1 converts them.
+- **Builder scripts are confined to the document's folder (ONLYOFFICE 86a717a42f, 7a9c80e60c).**
+  A docbuilder or document-renderer script could read files elsewhere on the disk, and its
+  `OpenFile`/`SaveFile` parameters could redirect the converter's input, output and temporary
+  paths.
+- **Online only: WOPI copy and export restrictions are honoured (ONLYOFFICE dbc71b0951).** A host
+  that set `DisableCopy` or `DisableExport` still let users copy and download.
+- **Online only: the editor frame no longer grants clipboard-write to the page that embeds it
+  (ONLYOFFICE 9c764ad966).** The desktop app keeps it, because it needs it.
+- **The Windows installers no longer install ONLYOFFICE's update service (RD-0113).** The service
+  started with Windows, although Ration Docs has no update module that
+  uses it. Installing 2026.3.1 over an older version removes it and turns update checks off.
+
+## Data loss
+
+- **Inline cell text is kept when saving to `.xlsx` (ONLYOFFICE 60a3e45d01).** Cells holding
+  inline strings, common in files from other programs and in `.xlsb` converted to `.xlsx`, were
+  saved empty.
+- **EMF and WMF pictures keep their vector original (ONLYOFFICE 7d08152895).** On save, the picture
+  was replaced by its display preview, so it lost quality for good.
+- **Remove Duplicates no longer deletes rows that only look the same (ONLYOFFICE 336a529b85 and
+  three follow-ups).** Values were compared as displayed, so 1.001 and 1.002 in a two-decimal column,
+  or the number 1 and the text "1", counted as duplicates. Text now matches regardless of case, as in Excel.
+- **Workbooks with form controls save to `.xlsx` again (ONLYOFFICE 55851dae87).** A checkbox or
+  button made the save fail.
+- **Comments survive in two cases where they were lost (ONLYOFFICE 4f4e0fb256, 279413255a).**
+  Compare Documents dropped the comments of a document with tracked paragraph deletions. A `.docx`
+  whose comment had a duplicated start or end mark lost the comment's range, and the text after it.
+- **Pasting a multi-range copy keeps the formula results (ONLYOFFICE 3d96c24b12).**
+- **Online only: edits are no longer lost when the server runs out of resources (ONLYOFFICE
+  ed424af8e4, d2b7aa7f89).** A newer document server tells the editor it is out of resources; the
+  editor now locks editing and says so, instead of letting you type changes that are never saved.
+
+## Crashes
+
+- **Whole-word Find with a `(` no longer drops the spreadsheet to view-only (ONLYOFFICE 88e3c58d5d).**
+- **docbuilder no longer aborts on quoted script arguments (RD-0114).** A `SaveFile` call whose
+  parameters contained `'` quotes, such as the layout settings for plain-text output, or a call
+  with more than four arguments, overflowed a fixed array and the process was killed. ONLYOFFICE
+  10 still has this defect.
+- **Fixed crashes in the editors:** placing the cursor in an empty hyperlink (52cac5d143), drawing
+  or exporting a 3D area chart with an empty series (a85f2f55dd), and an empty presentation with
+  the notes focused (9717a00f4f).
+- **Fixed errors in the interface:** "Edit chart data" (fe000348f0), View > Macros clicked before
+  its dialog loaded (fcd820a9de), and a plugin docked into the PDF editor's right panel
+  (3f9b9168e4).
+- **Images that finish loading while fonts are still loading no longer trigger an early redraw
+  (c0758e150e).**
+
+## Other changes
+
+- The macOS project now records macOS 12 (Monterey) as the minimum. The 2026.3.0 build already
+  required it; this makes the source say so.
+- Build fixes, not visible in the app: the boost patch needed by Apple clang 21 is now part of the
+  normal macOS build, and the Windows dependency check accepts the VC++ runtime when Windows lists
+  it as "Microsoft Visual C++ v14".
+
+## Known limitations of this release
+
+- **Not signed.** Like 2026.3.0, this release has no Apple Developer ID, Windows code-signing
+  certificate or Linux repository key. Signed builds will follow from the same `v2026.3.1` tag.
+- **Platforms.**
+
+  | Platform | Status |
+  |---|---|
+  | macOS (Apple Silicon) | `RationDocs-2026.3.1-arm64.dmg` (801 MB, sha256 `835e1d2b33e0ed33d05755a356c0fb93760347248a9dfe511f01fcd3847fb16e`). Requires macOS 12 or later. Smoke-tested: Home page, typing and saving, bundled conversions |
+  | Linux x64 | `ration-docs_2026.3.1-1_amd64.deb` (409 MB, sha256 `96e4207434be8970b7f0bf3f5ae2bdb9dfc7b9b15251e5223699a066a361553d`). Install-tested on Ubuntu 24.04: About 2026.3.1.1, Home page, bundled conversions, and the three crash cases above |
+  | Windows | **Not built.** RD-0113 and the VC++ check have not been compiled or run yet |
+
+  Both packages were built from the same source as this release, before the version number was
+  committed; the build set 2026.3.1 itself. Rebuild from the tag if you need byte-for-byte
+  provenance.
+- **Online edition.** All the fixes except RD-0113 can reach the online edition, and four of them
+  matter only there. They reach it only once the server is built from this release's trees.
+- **Everything else** listed under *Known limitations* for 2026.3.0 still applies.
+- **Not included:** the move to libxml2 2.16 is ready on its own branch but is held back for a
+  separate decision.
+
+## Fixes in this release
+
+| Fix | Where | Our commit | Test (`fork-fix-tests/`) |
+|---|---|---|---|
+| RD-0113 | desktop-apps | 54973742e | rd-0113-no-update-service |
+| RD-0114 | core | 104f3c7400 | rd-0114-docbuilder-txt-layout-abort |
+| ONLYOFFICE 4e3568c926 | core | 036373296a | upstream-4e3568c926-css-transform-oob |
+| ONLYOFFICE 3cf5178838 | core | a114b34e22 | upstream-3cf5178838-svg-css-regex-stack-overflow |
+| ONLYOFFICE 4a68bd2470 | core | 8b9dbe831b | upstream-3cf5178838-svg-css-regex-stack-overflow |
+| ONLYOFFICE ef6efb16b5 | core | a4c93729ec | upstream-3cf5178838-svg-css-regex-stack-overflow |
+| ONLYOFFICE 86a717a42f | core | 40bfdac972 | upstream-86a717a42f-builder-file-escape |
+| ONLYOFFICE 7a9c80e60c | core | 56e8603427 | upstream-86a717a42f-builder-file-escape |
+| ONLYOFFICE 7d08152895 | core | 73083ac6f6 | upstream-7d08152895-emf-saved-as-preview |
+| ONLYOFFICE 60a3e45d01 | core | e4e2f8a3c5 | upstream-60a3e45d01-xlsx-inline-string-lost |
+| ONLYOFFICE 336a529b85 (+3) | sdkjs | 61decf01d5 | upstream-336a529b85-remove-duplicates-typed-values |
+| ONLYOFFICE 55851dae87 | sdkjs | 16fa6276f2 | upstream-55851dae87-xlsx-form-control-save |
+| ONLYOFFICE 4f4e0fb256 | sdkjs | b2485712ef | upstream-4f4e0fb256-compare-comments-merged-paras |
+| ONLYOFFICE 279413255a | sdkjs | bfadc5f5e4 | upstream-279413255a-docx-duplicate-comment-marks |
+| ONLYOFFICE 3d96c24b12 | sdkjs | badb625c83 | upstream-3d96c24b12-multirange-paste-values |
+| ONLYOFFICE 88e3c58d5d | sdkjs | 9e2d845cce | upstream-88e3c58d5d-find-escape-regexp |
+| ONLYOFFICE 52cac5d143 | sdkjs | ced56176b2 | upstream-52cac5d143-hyperlink-cursor-crash |
+| ONLYOFFICE a85f2f55dd | sdkjs | 96ce86fb3d | upstream-a85f2f55dd-area-chart-empty-series |
+| ONLYOFFICE 9717a00f4f | sdkjs | 8e32038043 | upstream-9717a00f4f-empty-presentation-notes-focus |
+| ONLYOFFICE c0758e150e | sdkjs | 6069981437 | upstream-c0758e150e-image-load-during-font-load |
+| ONLYOFFICE d2b7aa7f89 | sdkjs | 685d601fc2 | upstream-d2b7aa7f89-license-not-enough-resources |
+| ONLYOFFICE ed424af8e4 | web-apps | 421379f73f | upstream-ed424af8e4-not-enough-resources |
+| ONLYOFFICE dbc71b0951 | web-apps | 99feac1f77 | upstream-dbc71b0951-wopi-disable-copy-export |
+| ONLYOFFICE 9c764ad966 | web-apps | a8f6d11def | upstream-9c764ad966-iframe-clipboard-write |
+| ONLYOFFICE 3f9b9168e4 | web-apps | 1f55eb623e | upstream-3f9b9168e4-pdf-right-panel-plugin |
+| ONLYOFFICE fe000348f0 | web-apps | 3cc030467f | upstream-fe000348f0-edit-chart-data |
+| ONLYOFFICE fcd820a9de | web-apps | 4b37472c30 | upstream-fcd820a9de-macros-before-load |
+
+## Installing
+
+Same as 2026.3.0 (see below), with `2026.3.1` in the file names:
+
+    xattr -dr com.apple.quarantine "/Applications/Ration Docs.app"   # macOS, after copying the app
+    sudo apt install ./ration-docs_2026.3.1-1_amd64.deb              # Linux
+
+Check the SHA-256 against the values above before installing.
+
+---
+
 # Ration Docs Desktop 2026.3.0
 
 The third release of Ration Docs Desktop, a hard fork of ONLYOFFICE Desktop Editors 9.4. It is built

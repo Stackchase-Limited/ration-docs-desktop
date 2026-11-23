@@ -1,5 +1,13 @@
 # Change log
 
+## Ration Docs 2026.3.1
+
+Fix release. 25 ONLYOFFICE crash, data-loss and security fixes backported (SVG/CSS converter crashes, builder
+scripts reading outside the document folder, lost inline cell text and EMF/WMF originals, Remove Duplicates
+deleting distinct rows, lost comments, editor crashes). Also RD-0113 (Windows installers no longer install the
+update service) and RD-0114 (docbuilder crash on quoted arguments). No new features. Not yet signed; no Windows
+build. Details: `RELEASE_NOTES.md`.
+
 ## Ration Docs 2026.3.0
 
 101 more upstream issues fixed (98 with a regression test), 68 defects of our own (RD-0020..RD-0112, with
