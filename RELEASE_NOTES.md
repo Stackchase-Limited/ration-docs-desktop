@@ -88,13 +88,12 @@ new features and no new options.
 
   | Platform | Status |
   |---|---|
-  | macOS (Apple Silicon) | `RationDocs-2026.3.1-arm64.dmg` (801 MB, sha256 `835e1d2b33e0ed33d05755a356c0fb93760347248a9dfe511f01fcd3847fb16e`). Requires macOS 12 or later. Smoke-tested: Home page, typing and saving, bundled conversions |
-  | Linux x64 | `ration-docs_2026.3.1-1_amd64.deb` (409 MB, sha256 `96e4207434be8970b7f0bf3f5ae2bdb9dfc7b9b15251e5223699a066a361553d`). Install-tested on Ubuntu 24.04: About 2026.3.1.1, Home page, bundled conversions, and the three crash cases above |
+  | macOS (Apple Silicon) | `RationDocs-2026.3.1-arm64.dmg` built from the tag (801 MB, sha256 `e8e88ac84233df21b8879ff353f292d6a20390899c5dd71e36dfe9732f692e11`). Requires macOS 12 or later. Smoke-tested: About 2026.3.1.1, Home page, typing, bundled conversions |
+  | Linux x64 | `ration-docs_2026.3.1-1_amd64.deb` built from the tag (409 MB, sha256 `4573b7b376a6baaf89390e62bc15ab49060374f25bceea47f9e18781bf009235`). Install-tested on Ubuntu 24.04: About 2026.3.1.1, Home page, bundled conversions, and the three crash cases above |
   | Windows | **Not built.** RD-0113 and the VC++ check have not been compiled or run yet |
 
-  Both packages were built from the same source as this release, before the version number was
-  committed; the build set 2026.3.1 itself. Rebuild from the tag if you need byte-for-byte
-  provenance.
+  Both packages were built from the `v2026.3.1` tag; every source file was checked against it
+  before building.
 - **Online edition.** All the fixes except RD-0113 can reach the online edition, and four of them
   matter only there. They reach it only once the server is built from this release's trees.
 - **Everything else** listed under *Known limitations* for 2026.3.0 still applies.
