@@ -21,13 +21,12 @@ Current release: **[2026.3.1](https://github.com/Stackchase-Limited/ration-docs-
 | Platform | File |
 |---|---|
 | macOS, Apple Silicon | [`RationDocs-2026.3.1-arm64.dmg`](https://github.com/Stackchase-Limited/ration-docs-desktop/releases/download/v2026.3.1/RationDocs-2026.3.1-arm64.dmg) |
+| Windows x64 (Intel/AMD) | [`RationDocs-2026.3.1.1-x64.exe`](https://github.com/Stackchase-Limited/ration-docs-desktop/releases/download/v2026.3.1/RationDocs-2026.3.1.1-x64.exe) |
 | Windows on Arm | [`RationDocs-2026.3.1.1-arm64.exe`](https://github.com/Stackchase-Limited/ration-docs-desktop/releases/download/v2026.3.1/RationDocs-2026.3.1.1-arm64.exe) |
 | Linux x64, Debian/Ubuntu | [`ration-docs_2026.3.1-1_amd64.deb`](https://github.com/Stackchase-Limited/ration-docs-desktop/releases/download/v2026.3.1/ration-docs_2026.3.1-1_amd64.deb) |
 | Linux arm64, Debian/Ubuntu | [`ration-docs_2026.3.1-1_arm64.deb`](https://github.com/Stackchase-Limited/ration-docs-desktop/releases/download/v2026.3.1/ration-docs_2026.3.1-1_arm64.deb) |
 | Linux arm64, other | [`ration-docs-2026.3.1-1-aarch64.tar.xz`](https://github.com/Stackchase-Limited/ration-docs-desktop/releases/download/v2026.3.1/ration-docs-2026.3.1-1-aarch64.tar.xz) |
 | Offline help | [`ration-docs-help-2026.3.1-1-any.tar.xz`](https://github.com/Stackchase-Limited/ration-docs-desktop/releases/download/v2026.3.1/ration-docs-help-2026.3.1-1-any.tar.xz) |
-
-Windows on Intel/AMD (x64) is not built for this release yet.
 
 `SHA256SUMS` beside the files covers all of them.
 
@@ -98,7 +97,7 @@ Beyond the fixes:
   cloud-signup page have been removed rather than repointed, because we do not run
   those services. The editors still connect to an ONLYOFFICE, Nextcloud or ownCloud
   server that *you* run, if you ask them to.
-- **Linux arm64 and Windows on Arm builds**, which took a long list of fixes to
+- **Linux arm64 and Windows on Arm builds**, as well as x64, which took a long list of fixes to
   build tooling that assumed an x86 host. `build_tools/ARM64_DESKTOP_BUILD.md`
   records the Linux bring-up.
 
