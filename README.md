@@ -97,7 +97,7 @@ Beyond the fixes:
   cloud-signup page have been removed rather than repointed, because we do not run
   those services. The editors still connect to an ONLYOFFICE, Nextcloud or ownCloud
   server that *you* run, if you ask them to.
-- **Linux arm64 and Windows on Arm builds**, as well as x64, which took a long list of fixes to
+- **Linux arm64 and Windows on Arm builds**, which took a long list of fixes to
   build tooling that assumed an x86 host. `build_tools/ARM64_DESKTOP_BUILD.md`
   records the Linux bring-up.
 
