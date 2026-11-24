@@ -136,11 +136,16 @@ Linux, `desktop-apps/package` then produces the deb and tarball; on macOS,
 Windows, `desktop-apps/package/make.ps1` and `make_inno.ps1` build the installer.
 
 On Linux arm64 use `--platform linux_arm64`. Qt is the catch there: the package
-does not depend on a system Qt, so the payload has to carry its own, and with
-Ubuntu's Qt (`--qt-dir /usr`) the copy step finds nothing and says nothing. Check
-for `libQt5Core.so.5` in the output before packaging. `build_tools/ARM64_DESKTOP_BUILD.md`
-covers the Linux arm64 path in detail, including the packages the machine needs and
-the failures that do not say what they mean.
+does not depend on a system Qt, so the payload has to carry its own. Ubuntu's Qt
+(`--qt-dir /usr`) keeps its files where the copy step did not look, so at the
+`v2026.3.1` tag the copy finds nothing and says nothing; check for
+`libQt5Core.so.5` in the output before packaging. `build_tools` on
+`ration/9.4-stability` (from `fa7a4fe`) asks Qt's own `qmake` where its files are,
+copies them, and stops the build if QtCore is missing. Ubuntu's Qt also links a few
+system libraries that are not part of Qt (double-conversion, pcre2-16, md4c,
+xcb-xinput); copy those into the payload as well.
+`build_tools/ARM64_DESKTOP_BUILD.md` covers the Linux arm64 path in detail, including
+the packages the machine needs and the failures that do not say what they mean.
 
 ## Licence and attribution
 
