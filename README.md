@@ -1,8 +1,8 @@
 # Ration Docs Desktop
 
 [![Licence](https://img.shields.io/badge/Licence-GNU%20AGPL%20v3-green.svg?style=flat)](https://www.gnu.org/licenses/agpl-3.0.en.html)
-![Platforms macOS | Linux](https://img.shields.io/badge/Platforms-macOS%20%7C%20Linux-lightgrey.svg?style=flat)
-[![Release](https://img.shields.io/badge/Release-2026.1.0-blue.svg?style=flat)](https://github.com/Stackchase-Limited/ration-docs-desktop/releases/tag/v2026.1.0)
+![Platforms macOS | Windows | Linux](https://img.shields.io/badge/Platforms-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey.svg?style=flat)
+[![Release](https://img.shields.io/badge/Release-2026.3.1-blue.svg?style=flat)](https://github.com/Stackchase-Limited/ration-docs-desktop/releases/tag/v2026.3.1)
 
 An offline office suite - documents, spreadsheets, presentations and PDFs - that
 runs on your own machine and talks to no one unless you ask it to.
@@ -16,22 +16,41 @@ Ascensio System SIA.
 
 ## Download
 
-Current release: **[2026.1.0](https://github.com/Stackchase-Limited/ration-docs-desktop/releases/tag/v2026.1.0)**
+Current release: **[2026.3.1](https://github.com/Stackchase-Limited/ration-docs-desktop/releases/tag/v2026.3.1)**
 
 | Platform | File |
 |---|---|
-| macOS, Apple Silicon | [`RationDocs-2026.1.0-arm64.dmg`](https://github.com/Stackchase-Limited/ration-docs-desktop/releases/download/v2026.1.0/RationDocs-2026.1.0-arm64.dmg) |
-| Linux arm64, Debian/Ubuntu | [`ration-docs_2026.1.0-1_arm64.deb`](https://github.com/Stackchase-Limited/ration-docs-desktop/releases/download/v2026.1.0/ration-docs_2026.1.0-1_arm64.deb) |
-| Linux arm64, other | [`ration-docs-2026.1.0-1-aarch64.tar.xz`](https://github.com/Stackchase-Limited/ration-docs-desktop/releases/download/v2026.1.0/ration-docs-2026.1.0-1-aarch64.tar.xz) |
-| Offline help | [`ration-docs-help-2026.1.0-1-any.tar.xz`](https://github.com/Stackchase-Limited/ration-docs-desktop/releases/download/v2026.1.0/ration-docs-help-2026.1.0-1-any.tar.xz) |
+| macOS, Apple Silicon | [`RationDocs-2026.3.1-arm64.dmg`](https://github.com/Stackchase-Limited/ration-docs-desktop/releases/download/v2026.3.1/RationDocs-2026.3.1-arm64.dmg) |
+| Windows on Arm | [`RationDocs-2026.3.1.1-arm64.exe`](https://github.com/Stackchase-Limited/ration-docs-desktop/releases/download/v2026.3.1/RationDocs-2026.3.1.1-arm64.exe) |
+| Linux x64, Debian/Ubuntu | [`ration-docs_2026.3.1-1_amd64.deb`](https://github.com/Stackchase-Limited/ration-docs-desktop/releases/download/v2026.3.1/ration-docs_2026.3.1-1_amd64.deb) |
+| Linux arm64, Debian/Ubuntu | [`ration-docs_2026.3.1-1_arm64.deb`](https://github.com/Stackchase-Limited/ration-docs-desktop/releases/download/v2026.3.1/ration-docs_2026.3.1-1_arm64.deb) |
+| Linux arm64, other | [`ration-docs-2026.3.1-1-aarch64.tar.xz`](https://github.com/Stackchase-Limited/ration-docs-desktop/releases/download/v2026.3.1/ration-docs-2026.3.1-1-aarch64.tar.xz) |
+| Offline help | [`ration-docs-help-2026.3.1-1-any.tar.xz`](https://github.com/Stackchase-Limited/ration-docs-desktop/releases/download/v2026.3.1/ration-docs-help-2026.3.1-1-any.tar.xz) |
 
-Checksums are published beside the files. **Neither build is signed**: on macOS,
-Gatekeeper will refuse the first launch until you clear the quarantine attribute,
-and on Linux the packages carry no repository signature. That means you are
-trusting the source of the file and nothing else is vouching for it.
+Windows on Intel/AMD (x64) is not built for this release yet.
 
-    # Linux
-    sudo apt install ./ration-docs_2026.1.0-1_arm64.deb
+`SHA256SUMS` beside the files covers all of them.
+
+**What is signed:**
+
+- **Windows:** the installer, its uninstaller and every program file in it are
+  Authenticode-signed by **Stackchase Limited** and timestamped. Windows
+  SmartScreen may still warn on the first downloads while the certificate builds
+  up reputation. Check that the publisher it names is Stackchase Limited.
+- **macOS:** not signed or notarised. Gatekeeper will refuse the first launch until
+  you clear the quarantine attribute (below).
+- **Linux:** the packages carry no repository signature.
+
+Where a build is unsigned, you are trusting the source of the file and nothing else
+is vouching for it.
+
+    # Linux (Debian/Ubuntu); use the _amd64 or _arm64 file to match your machine
+    sudo apt install ./ration-docs_2026.3.1-1_arm64.deb
+
+    # Linux tarball: unpack to / (installs to /opt/ration/docs), then make sure
+    # these two libraries are present; the .deb pulls them in for you
+    sudo tar -xJf ration-docs-2026.3.1-1-aarch64.tar.xz -C /
+    sudo apt install libegl1 libxcb-shape0
 
     # macOS, after dragging the app to /Applications
     xattr -dr com.apple.quarantine "/Applications/Ration Docs.app"
@@ -41,41 +60,47 @@ and how, and what is known to be broken.
 
 ## What is different from upstream
 
-This fork exists to fix things, not to add features. 2026.1.0 carries **84 upstream
-issue fixes plus 26 defects found while working on them** - 110 in all, weighted
-towards data loss and crashes:
+This fork exists to fix things, not to add features. Release by release
+(`CHANGELOG.md` has the summaries):
 
-| Repository | Upstream issues | With a test | Found in passing |
-|---|---|---|---|
-| `sdkjs` | 29 | 18 | 7 |
-| `core` | 22 | 13 | 4 |
-| `desktop-apps` | 22 | 11 | 4 |
-| `desktop-sdk` | 10 | 4 | 7 |
-| `web-apps` | 3 | 1 | 1 |
-| `build_tools` | 2 | 2 | 3 |
+- **2026.3.1**, a fix release: **25 ONLYOFFICE crash, data-loss and security fixes
+  backported** - converter crashes on SVG and CSS inside documents, builder scripts
+  reading outside the document's folder, lost inline cell text and EMF/WMF
+  originals, Remove Duplicates deleting rows that only looked alike, lost comments -
+  and two defects of our own: a docbuilder crash (RD-0114) and the Windows
+  installers' update service (RD-0113). Each backport has a test that fails without
+  it. No new features.
+- **2026.3.0**: **101 more upstream issues fixed** (98 with a regression test) and
+  68 defects of our own, mostly converter crashes and memory errors in legacy
+  `.doc`/`.ppt`/`.xls` and `.xlsb` files; security fixes for script injection
+  through file names, clipboard HTML from linked cells and a temp-path leak;
+  PowerPoint-accurate text layout; a new Home page in light and dark.
+- **2026.2.0**: the first release for macOS, Windows and Linux; **125 more upstream
+  issues fixed (209 in all)**, a security overhaul of plugins, links, macros and the
+  desktop bridge, and the ONLYOFFICE 10.0 security fixes backported.
+- **2026.1.0**: the first release, with **84 upstream issue fixes and 26 defects
+  found while working on them**.
 
-The column sums past 84 because one issue often spans two repositories. 48 of the
-84 have a test in `fork-fix-tests/` pinned to the commit before the fix, so it
-demonstrably fails without it; the other 36 rest on their commit message, and
+Fixes with a test have one in `fork-fix-tests/`, pinned to the commit before the fix
+so it demonstrably fails without it; the rest rest on their commit message, and
 `UPSTREAM_TRIAGE.md` says which is which rather than blurring the two. `FIXES.md`
 is the registry, generated from git history rather than kept by hand.
 
 Beyond the fixes:
 
-- **Linux arm64 builds**, which took sixteen fixes to the build tooling. Two of
-  our own earlier fixes to the Linux application turned out never to have been
-  compiled, because macOS builds `desktop-apps/macos` and never touches
-  `win-linux/`. `build_tools/ARM64_DESKTOP_BUILD.md` records the bring-up.
 - **The product is named as itself** on every platform - window title, settings
   path, URL scheme, single-instance mutex, package name. The mutex mattered most:
   sharing ONLYOFFICE's would have made a machine with both installed treat them as
   one application.
 - **Documents record their real producer.** Files saved by this build report
-  `Ration Docs/2026.1.0.0` in their properties, not somebody else's name.
+  `Ration Docs/2026.3.1.1` in their properties, not somebody else's name.
 - **No calls home to ONLYOFFICE.** The update feed, the help centre link and the
   cloud-signup page have been removed rather than repointed, because we do not run
   those services. The editors still connect to an ONLYOFFICE, Nextcloud or ownCloud
   server that *you* run, if you ask them to.
+- **Linux arm64 and Windows on Arm builds**, which took a long list of fixes to
+  build tooling that assumed an x86 host. `build_tools/ARM64_DESKTOP_BUILD.md`
+  records the Linux bring-up.
 
 ## Repository layout
 
@@ -91,7 +116,11 @@ The suite is one superproject and six submodules, mirroring upstream's split:
 | [`dictionaries`](https://github.com/Stackchase-Limited/ration-docs-dictionaries) | Spellcheck dictionaries |
 | [`build_tools`](https://github.com/Stackchase-Limited/ration-docs-build-tools) | The build: fetches dependencies, compiles, assembles the payload |
 
-    git clone --recursive https://github.com/Stackchase-Limited/ration-docs-desktop.git
+    git clone --recursive --branch v2026.3.1 https://github.com/Stackchase-Limited/ration-docs-desktop.git
+
+`build_tools` is not a submodule; clone it beside the others:
+
+    git clone --branch v2026.3.1 https://github.com/Stackchase-Limited/ration-docs-build-tools.git ration-docs-desktop/build_tools
 
 ## Building
 
@@ -102,15 +131,17 @@ before it reaches any of our code. Budget 100 GB of disk.
     python3 configure.py --module desktop --platform mac_arm64 --qt-dir /opt/homebrew/opt/qt@5
     python3 make.py
 
-On Linux arm64 the same two commands with `--platform linux_arm64 --qt-dir /usr`.
-
 The result lands in `build_tools/out/<platform>/onlyoffice/desktopeditors`. On
 Linux, `desktop-apps/package` then produces the deb and tarball; on macOS,
-`desktop-apps/macos` is an Xcode project and `appdmg` builds the disk image.
+`desktop-apps/macos` is an Xcode project and `appdmg` builds the disk image; on
+Windows, `desktop-apps/package/make.ps1` and `make_inno.ps1` build the installer.
 
-`build_tools/ARM64_DESKTOP_BUILD.md` covers the Linux arm64 path in detail,
-including the packages the machine needs and the failures that do not say what
-they mean.
+On Linux arm64 use `--platform linux_arm64`. Qt is the catch there: the package
+does not depend on a system Qt, so the payload has to carry its own, and with
+Ubuntu's Qt (`--qt-dir /usr`) the copy step finds nothing and says nothing. Check
+for `libQt5Core.so.5` in the output before packaging. `build_tools/ARM64_DESKTOP_BUILD.md`
+covers the Linux arm64 path in detail, including the packages the machine needs and
+the failures that do not say what they mean.
 
 ## Licence and attribution
 
@@ -129,4 +160,4 @@ to identify the software this product is based on. No trademark rights are grant
 by the licence, and none are claimed.
 
 The corresponding source for any released binary is this repository at the matching
-tag, including its submodules - `v2026.1.0` for the current release.
+tag, including its submodules - `v2026.3.1` for the current release.
